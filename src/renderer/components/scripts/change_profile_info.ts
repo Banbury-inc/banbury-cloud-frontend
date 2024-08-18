@@ -24,14 +24,6 @@ if (!fs.existsSync(CONFIG_FILE)) {
   fs.writeFileSync(CONFIG_FILE, config.toString());
 }
 
-function connectToRelayServer(): net.Socket {
-  const RELAY_HOST = '34.28.13.79';
-  const RELAY_PORT = 443;
-  const senderSocket = new net.Socket();
-  senderSocket.connect(RELAY_PORT, RELAY_HOST);
-  return senderSocket;
-}
-
 function loadCredentials(): Record<string, string> {
   try {
     const config = new ConfigParser();

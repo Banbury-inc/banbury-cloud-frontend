@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { get_current_date_and_time, get_device_name, get_directory_info } from './receiver';
+import * as DeviceInfo from '../scripts/device/deviceInfo';
+import * as DateUtils from '../scripts/utils/dateUtils';
+import * as FileOperations from '../scripts/fileSystem/fileOperations';
 
 
 export async function UpdateDevices(username: any) {
   return new Promise(async (resolve, reject) => {
     const user = username || "user";
     const device_number = 0;
-    const device_name = get_device_name();
-    const files = get_directory_info();
-    const date_added = get_current_date_and_time();
+    const device_name = DeviceInfo.get_device_name();
+    const files = FileOperations.get_directory_info();
+    const date_added = DateUtils.get_current_date_and_time();
 
     interface SmallDeviceInfo {
       user: string;

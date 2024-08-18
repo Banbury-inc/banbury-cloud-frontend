@@ -54,10 +54,9 @@ import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
-import InputFileUploadButton from './uploadfilebutton';
-import NewInputFileUploadButton from './newuploadfilebutton';
-import AccountMenuIcon from './AccountMenuIcon';
-import { useAuth } from '../context/AuthContext';
+import NewInputFileUploadButton from '../newuploadfilebutton';
+import AccountMenuIcon from '../AccountMenuIcon';
+import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { TreeView } from '@mui/x-tree-view';
@@ -69,18 +68,11 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import delete_file from './scripts/delete';
-import { download_file } from './scripts/download_file';
-import * as FileOperations from '../components/scripts/fileSystem/fileOperations';
-import * as DateUtils from '../components/scripts/utils/dateUtils';
-import * as DeviceInfo from '../components/scripts/device/deviceInfo';
+import { download_file } from '../scripts/download_file';
 
-import { UpdateDevices } from './scripts/update_devices';
-import upload_file from './scripts/upload';
-import DataManagementCard from './TreeView';
-import CustomizedTreeView from './TreeView';
+import { UpdateDevices } from '../scripts/update_devices';
+import CustomizedTreeView from '../TreeView';
 import { BorderLeft, NavigateBefore } from '@mui/icons-material';
-import TaskBadge from './TaskBadge';
 
 
 interface Device {
@@ -264,7 +256,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 
 
-export default function EnhancedTable() {
+export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof FileData>('fileName');
