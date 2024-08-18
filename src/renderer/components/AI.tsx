@@ -16,7 +16,6 @@ import TablePagination from '@mui/material/TablePagination';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import HomeIcon from '@mui/icons-material/Home';
-import Agents from './AI/agents';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import GrainIcon from '@mui/icons-material/Grain';
 import TableRow from '@mui/material/TableRow';
@@ -53,7 +52,6 @@ import AddIcon from '@mui/icons-material/Add';
 import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
 import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import TextField from '@mui/material/TextField';
-import { chat } from './scripts/ai';
 
 
 
@@ -644,7 +642,6 @@ export default function AI() {
         <Card variant='outlined' sx={{ flexGrow: 0 }}>
           <CardContent>
             <Button
-              onClick={chat}
             >
               Upload
             </Button>

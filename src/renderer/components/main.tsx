@@ -43,7 +43,6 @@ import Login from './Login';
 import Profile from './Profile';
 import Tooltip from '@mui/material/Tooltip';
 import net from 'net';
-import * as receiver5 from '../../main/receiver5';
 import { receiver, send_login_request, connectToRelayServer } from './scripts/receiver';
 
 const { ipcRenderer } = window.require('electron');

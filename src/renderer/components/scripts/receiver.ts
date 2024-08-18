@@ -5,12 +5,12 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import * as path from 'path';
 import si from '../../../../dependency/systeminformation';
+import * as DeviceInfo from './device/deviceInfo';
 import { DateTime } from 'luxon';
 import * as dotenv from 'dotenv';
 import * as net from 'net';
 import * as crypto from 'crypto';
 import ConfigParser from 'configparser';
-import * as receiver5 from '../../../main/receiver5';
 
 dotenv.config();
 
@@ -127,27 +127,15 @@ interface SpeedTestResult {
   };
 }
 
-const homeDirectory = os.homedir();
-const BANBURY_FOLDER = path.join(homeDirectory, '.banbury');
-const CONFIG_FILE = path.join(BANBURY_FOLDER, '.banbury_config.ini');
 
 
-
-if (!fs.existsSync(BANBURY_FOLDER)) {
-  fs.mkdirSync(BANBURY_FOLDER);
-}
-
-if (!fs.existsSync(CONFIG_FILE)) {
-  const config = new ConfigParser();
-  config.set('banbury_cloud', 'credentials_file', 'credentials.json');
-  fs.writeFileSync(CONFIG_FILE, config.toString());
-}
 
 let senderSocket: net.Socket | null = null;
 
 function connectToRelayServer(): net.Socket {
   // const RELAY_HOST = '0.0.0.0'; // Change this to your actual server IP
-  const RELAY_HOST = 'https://neuranet-v3xlkt54dq-uc.a.run.app/'; // Change this to your actual server IP
+  const RELAY_HOST = '107.178.220.114'; // Change this to your actual server IP
+  // const RELAY_HOST = '34.110.162.232'; // Change this to your actual server IP
   // const RELAY_HOST = '192.168.1.200'; // Change this to your actual server IP
   const RELAY_PORT = 443;
 
@@ -172,17 +160,7 @@ function connectToRelayServer(): net.Socket {
 
 
 
-function loadCredentials(): Record<string, string> {
-  try {
-    const config = new ConfigParser();
-    config.read(CONFIG_FILE);
-    const credentialsFile = config.get('banbury_cloud', 'credentials_file') || 'default_filename.json';
-    const credentialsFilePath = path.join(BANBURY_FOLDER, credentialsFile);
-    return JSON.parse(fs.readFileSync(credentialsFilePath, 'utf-8'));
-  } catch (error) {
-    return {};
-  }
-}
+
 
 // let senderSocket = connectToRelayServer();
 function send_login_request(username: string, password: string, senderSocket: net.Socket): Promise<string> {
@@ -269,7 +247,6 @@ async function receiver(username: any, senderSocket: net.Socket): Promise<void> 
         if (fileType === 'SMALL_PING_REQUEST') {
           console.log("received small ping request");
           // Handle ping request
-          let credentials = loadCredentials();
           let user = username;
           // let user = Object.keys(credentials)[0];
           let device_number = 0;
@@ -299,15 +276,15 @@ async function receiver(username: any, senderSocket: net.Socket): Promise<void> 
           let storage_capacity_GB = await get_storage_capacity();
           let max_storage_capacity_GB = 50;
           let date_added = get_current_date_and_time();
-          let ip_address = await get_ip_address();
+          let ip_address = await DeviceInfo.get_ip_address();
           let average_network_speed = 0;
           let upload_network_speed = 0;
           let download_network_speed = 0;
-          let gpu_usage = await get_gpu_usage();
-          let cpu_usage = await get_cpu_usage();
-          let ram_usage = await get_ram_usage();
-          let ram_total = await get_ram_total();
-          let ram_free = await get_ram_free();
+          let gpu_usage = await DeviceInfo.get_gpu_usage();
+          let cpu_usage = await DeviceInfo.get_cpu_usage();
+          let ram_usage = await DeviceInfo.get_ram_usage();
+          let ram_total = await DeviceInfo.get_ram_total();
+          let ram_free = await DeviceInfo.get_ram_free();
           let predicted_upload_network_speed = 0;
           let predicted_download_network_speed = 0;
           let predicted_gpu_usage = 0;
@@ -659,7 +636,7 @@ async function get_cpu_usage(): Promise<number> {
   }
 }
 
-async function get_gpu_usage(): Promise<number> {
+export async function get_gpu_usage(): Promise<number> {
   try {
     const gpuData = await si.graphics();
     const totalUtilization = gpuData.controllers.reduce((total, controller) => total + (controller.utilizationGpu || 0), 0);
@@ -736,8 +713,6 @@ async function get_ram_free(): Promise<number> {
     throw error; // Rethrow error to handle externally
   }
 }
-
-
 
 
 async function get_ip_address(): Promise<string> {

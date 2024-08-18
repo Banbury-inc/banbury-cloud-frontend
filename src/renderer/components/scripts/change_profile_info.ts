@@ -7,7 +7,6 @@ import * as dotenv from 'dotenv';
 import * as net from 'net';
 import * as crypto from 'crypto';
 import ConfigParser from 'configparser';
-import * as receiver5 from '../../../main/receiver5';
 
 dotenv.config();
 
@@ -51,19 +50,6 @@ function saveCredentials(credentials: Record<string, string>): void {
   const credentialsFile = config.get('banbury_cloud', 'credentials_file') || 'default_filename.json';
   const credentialsFilePath = path.join(BANBURY_FOLDER, credentialsFile);
   fs.writeFileSync(credentialsFilePath, JSON.stringify(credentials));
-}
-
-export default function old_change_profile_info(first_name: string, last_name: string,
-  username: any,
-  email: string,
-  password: string) {
-  const RELAY_HOST = '34.28.13.79';
-  const RELAY_PORT = 443;
-  const senderSocket = new net.Socket();
-  senderSocket.connect(RELAY_PORT, RELAY_HOST);
-
-  receiver5.send_profile_info(senderSocket, first_name, last_name, username, email, password);
-  return;
 }
 
 async function change_profile_info(first_name: string, last_name: string, username: any, email: string, password: string) {

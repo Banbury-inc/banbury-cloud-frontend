@@ -13,7 +13,6 @@ import { resolve } from 'path';
 import net from 'net';
 import { useAuth } from '../renderer/context/AuthContext';
 import { useEffect } from 'react';
-import * as receiver5 from './receiver5';
 
 let mainWindow: BrowserWindow | null;
 function createWindow(): void {

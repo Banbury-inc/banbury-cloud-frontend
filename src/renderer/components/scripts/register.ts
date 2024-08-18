@@ -7,7 +7,6 @@ import * as dotenv from 'dotenv';
 import * as net from 'net';
 import * as crypto from 'crypto';
 import ConfigParser from 'configparser';
-import * as receiver5 from '../../../main/receiver5';
 
 dotenv.config();
 
