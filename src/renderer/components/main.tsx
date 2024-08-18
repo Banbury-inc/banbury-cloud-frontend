@@ -18,29 +18,28 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import AI from './AI';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import Files from './files';
+import Files from './pages/Files';
+import Devices from './pages/Devices';
+import Profile from './pages/Profile';
+import AI from './pages/AI';
+import Settings from './pages/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import FolderIcon from '@mui/icons-material/Folder';
 import EnhancedTable from "./Table";
-import Dashboard from './Dashboard';
-import Devices from "./Devices";
 import DifferentLength from "./LineChart";
 import { Stack, Chip, Grid } from '@mui/material';
 import axios from 'axios';
 import DevicesTable from './DeviceTable';
-import Settings from './Settings';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import AccountMenuIcon from './AccountMenuIcon';
-import Login from './Login';
-import Profile from './Profile';
+import Login from './pages/Login';
 import Tooltip from '@mui/material/Tooltip';
 import net from 'net';
 import { receiver, send_login_request, connectToRelayServer } from './scripts/receiver';
@@ -275,12 +274,10 @@ export default function PermanentDrawerLeft() {
       >
         {(() => {
           switch (activeTab) {
-            case 'Dashboard':
-              return <Dashboard />;
             case 'Files':
               return <Files />;
             case 'Devices':
-              return <DevicesTable />;
+              return <Devices />;
             case 'AI':
               return <AI />;
             case 'Profile':

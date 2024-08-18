@@ -4,12 +4,9 @@ import theme from "../theme";
 import PermanentDrawerLeft from "./Drawer";
 import MiniDrawer from "./VariantDrawer";
 import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router-dom";
-import Signup from "./signup";
-import Signin from "./Login";
+import Login from "./pages/Login";
 import Main from "./main";
 import { AuthProvider } from "../context/AuthContext";
-import Settings from "./Settings";
-import Profile from "./Profile";
 import TitleBar from 'frameless-titlebar';
 import { BrowserWindow } from 'electron';
 
@@ -246,7 +243,7 @@ export default function App(): JSX.Element {
 
 
             <main>
-              <Signin />
+              <Login />
               {/* <Routes> */}
               {/*   <Route path="/" element={<Signin />} /> */}
               {/*   <Route path="/login" element={<Signin />} /> */}

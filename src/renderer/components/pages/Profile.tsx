@@ -19,16 +19,15 @@ import { Container, Typography, Grid, Button } from "@mui/material";
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import { Stack } from '@mui/material';
-import LineChart from './LineChart';
 import { exec } from "child_process";
-import AccountMenuIcon from './AccountMenuIcon';
-import { useAuth } from '../context/AuthContext';
+import AccountMenuIcon from '../AccountMenuIcon';
+import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import { Email } from '@mui/icons-material';
 import * as path from "path";
-import * as change_profile_info from './scripts/change_profile_info'
+import * as change_profile_info from '../scripts/change_profile_info'
 
 
 interface Device {

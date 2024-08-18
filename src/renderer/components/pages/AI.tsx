@@ -42,9 +42,8 @@ import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
-import InputFileUploadButton from './uploadfilebutton';
-import AccountMenuIcon from './AccountMenuIcon';
-import { useAuth } from '../context/AuthContext';
+import AccountMenuIcon from '../AccountMenuIcon';
+import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { TreeView } from '@mui/x-tree-view';
@@ -60,12 +59,9 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import delete_file from './scripts/delete';
-import upload_file from './scripts/upload';
-import DataManagementCard from './TreeView';
-import CustomizedTreeView from './TreeView';
-import { NavigateBefore } from '@mui/icons-material';
-import TaskBadge from './TaskBadge';
+import delete_file from '../scripts/delete';
+import upload_file from '../scripts/upload';
+import TaskBadge from '../TaskBadge';
 
 
 interface Device {

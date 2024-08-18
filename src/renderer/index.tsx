@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import Login from "./components/Login";
+import Login from "./components/pages/Login";
 import axios from 'axios';
 import * as fs from 'fs/promises';
 import * as path from 'path';

@@ -3,7 +3,7 @@ import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Files from './files';
+import Files from './pages/Files';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -23,10 +23,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import EnhancedTable from "./Table" 
-import Dashboard from './Dashboard';
-import Devices from "./Devices" 
-import DifferentLength from "./LineChart" 
+import EnhancedTable from "./Table"
+import Devices from "./pages/Devices"
+import DifferentLength from "./LineChart"
 
 
 
@@ -135,9 +134,9 @@ export default function MiniDrawer() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Drawer 
-      variant="permanent"
-      open={open}
+      <Drawer
+        variant="permanent"
+        open={open}
       >
         <DrawerHeader>
           <IconButton onClick={handleDrawerClose}>
@@ -149,33 +148,33 @@ export default function MiniDrawer() {
           {['Dashboard', 'Files', 'Devices'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
-              onClick={() => setActiveTab(text)}
+                onClick={() => setActiveTab(text)}
                 sx={{
                   minHeight: 48,
                   justifyContent: open ? 'initial' : 'center',
                   px: 2.5,
                 }}
               >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                }}
-              >
-                {(() => {
-                  switch (index % 3) {
-                    case 0:
-                      return <DashboardIcon />;
-                    case 1:
-                      return <FolderIcon />;
-                    case 2:
-                      return <DevicesIcon />;
-                    default:
-                      return null; // Just in case
-                  }
-                })()}
-              </ListItemIcon>
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {(() => {
+                    switch (index % 3) {
+                      case 0:
+                        return <DashboardIcon />;
+                      case 1:
+                        return <FolderIcon />;
+                      case 2:
+                        return <DevicesIcon />;
+                      default:
+                        return null; // Just in case
+                    }
+                  })()}
+                </ListItemIcon>
                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
             </ListItem>
@@ -209,7 +208,6 @@ export default function MiniDrawer() {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        {activeTab === 'Dashboard' && <Dashboard />}
         {activeTab === 'Files' && <Files />}
         {activeTab === 'Devices' && <Devices />}
         {activeTab === 'Settings' && <Typography>Settings Content</Typography>}
