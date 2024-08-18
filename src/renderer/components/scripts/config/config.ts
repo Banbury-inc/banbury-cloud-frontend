@@ -1,4 +1,4 @@
 export const CONFIG = {
-  relayHost: '107.178.220.114',
+  relayHost: '34.27.118.149',
   relayPort: 443
 };
