@@ -42,7 +42,7 @@ import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
-import AccountMenuIcon from '../AccountMenuIcon';
+import AccountMenuIcon from '../common/AccountMenuIcon';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';

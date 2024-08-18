@@ -1,7 +1,6 @@
 import { Box, CssBaseline, rgbToHex, ThemeProvider } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import theme from "../theme";
-import PermanentDrawerLeft from "./Drawer";
 import MiniDrawer from "./VariantDrawer";
 import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router-dom";
 import Login from "./pages/Login";

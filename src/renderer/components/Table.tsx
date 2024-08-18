@@ -56,7 +56,7 @@ import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import InputFileUploadButton from './uploadfilebutton';
 import NewInputFileUploadButton from './newuploadfilebutton';
-import AccountMenuIcon from './AccountMenuIcon';
+import AccountMenuIcon from './common/AccountMenuIcon';
 import { useAuth } from '../context/AuthContext';
 import Card from '@mui/material/Card';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';

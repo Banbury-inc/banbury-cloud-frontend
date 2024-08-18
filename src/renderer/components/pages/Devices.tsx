@@ -21,7 +21,7 @@ import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import { Stack } from '@mui/material';
 import { exec } from "child_process";
-import AccountMenuIcon from '../AccountMenuIcon';
+import AccountMenuIcon from '../common/AccountMenuIcon';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import { CardContent } from "@mui/material";

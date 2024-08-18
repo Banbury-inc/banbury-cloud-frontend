@@ -15,10 +15,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import Login from './Login';
-import isAuthenticated from './Login';
-import setshowMain from './Login';
+import { useAuth } from '../../context/AuthContext';
 import { fontSize } from '@mui/system';
 export default function AccountMenuIcon() {
   const { username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login } = useAuth();
