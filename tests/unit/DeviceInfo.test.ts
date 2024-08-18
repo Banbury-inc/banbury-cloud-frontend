@@ -12,7 +12,7 @@ describe('get_device_name', () => {
     const mockHostname = 'mocked-hostname';
     (os.hostname as jest.Mock).mockReturnValue(mockHostname);
 
-    const hostname = Receiver.get_device_name();
+    const hostname = DeviceInfo.get_device_name();
 
     expect(hostname).toBe(mockHostname);
   });
@@ -60,7 +60,9 @@ describe('get_storage_capacity', () => {
 
     await expect(DeviceInfo.get_storage_capacity()).rejects.toThrow('Disk read error');
   });
-}); describe('get_gpu_usage', () => {
+});
+
+describe('get_gpu_usage', () => {
   it('should return the average GPU utilization', async () => {
     // Mock the si.graphics method to return a controlled value
     const mockGraphicsData: si.Systeminformation.GraphicsData = {
@@ -87,7 +89,7 @@ describe('get_storage_capacity', () => {
 
     (si.graphics as jest.Mock).mockResolvedValue(mockGraphicsData);
 
-    const gpuUsage = await Receiver.get_gpu_usage();
+    const gpuUsage = await DeviceInfo.get_gpu_usage();
 
     expect(gpuUsage).toBe(62.5); // (50 + 75) / 2
   });
@@ -97,7 +99,7 @@ describe('get_storage_capacity', () => {
 
     (si.graphics as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(Receiver.get_gpu_usage()).rejects.toThrow('GPU read error');
+    await expect(DeviceInfo.get_gpu_usage()).rejects.toThrow('GPU read error');
   });
 });
 

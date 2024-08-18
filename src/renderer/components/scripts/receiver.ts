@@ -271,9 +271,9 @@ async function receiver(username: any, senderSocket: net.Socket): Promise<void> 
           let user = username;
           // let user = username;
           let device_number = 1;
-          let device_name = get_device_name();
+          let device_name = DeviceInfo.get_device_name();
           let files = get_directory_info();
-          let storage_capacity_GB = await get_storage_capacity();
+          let storage_capacity_GB = await DeviceInfo.get_storage_capacity();
           let max_storage_capacity_GB = 50;
           let date_added = get_current_date_and_time();
           let ip_address = await DeviceInfo.get_ip_address();
@@ -416,46 +416,6 @@ export function get_current_date_and_time(): string {
   return formattedDateTime;
 }
 
-function old_get_directory_info() {
-  const directoryName = "BCloud";
-  const directoryPath = os.homedir() + `/${directoryName}`;
-  const filesInfo: any[] = [];
-
-  // Check if the directory exists, create if it does not and create a welcome text file
-  if (!fs.existsSync(directoryPath)) {
-    fs.mkdirSync(directoryPath, { recursive: true });
-    const welcomeFilePath = directoryPath + "/welcome.txt";
-    fs.writeFileSync(welcomeFilePath,
-      "Welcome to Banbury Cloud! This is the directory that will contain all of the files " +
-      "that you would like to have in the cloud and streamed throughout all of your devices. " +
-      "You may place as many files in here as you would like, and they will appear on all of " +
-      "your other devices."
-    );
-  }
-
-  // Loop through each file in the directory
-  const files = fs.readdirSync(directoryPath);
-  for (const filename of files) {
-    const filePath = directoryPath + '/' + filename;
-
-    // Skip directories, only process files
-    if (fs.statSync(filePath).isFile()) {
-      // Get file stats
-      const stats = fs.statSync(filePath);
-      const fileInfo = {
-        "file_name": filename,
-        "date_uploaded": DateTime.fromMillis(stats.mtimeMs).toFormat('yyyy-MM-dd HH:mm:ss'),
-        "file_size": stats.size,
-        "file_priority": 5,
-        "file_path": filePath,
-        "original_device": filename,
-      };
-      filesInfo.push(fileInfo);
-    }
-  }
-
-  return filesInfo;
-}
 
 export function get_directory_info() {
   const bclouddirectoryName = "BCloud";
@@ -595,141 +555,6 @@ async function sendDeviceInfo(sender_socket: net.Socket, device_info: DeviceInfo
   sender_socket.write(full_message);
 }
 
-async function get_storage_capacity(): Promise<number> {
-  try {
-    const diskData = await si.fsSize();
-    const totalCapacityBytes = diskData.reduce((total, disk) => total + disk.size, 0);
-    const totalCapacityGB = totalCapacityBytes / (1024 * 1024 * 1024); // Convert bytes to GB
-    return totalCapacityGB;
-  } catch (error) {
-    console.error('Error retrieving storage capacity:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-
-async function get_cpu_info(): Promise<CPUPerformance> {
-  try {
-    const cpuData = await si.cpu();
-    const cpuPerformance: CPUPerformance = {
-      manufacturer: cpuData.manufacturer || 'Unknown',
-      brand: cpuData.brand || 'Unknown',
-      speed: cpuData.speed || 0,
-      cores: cpuData.cores || 0,
-      physicalCores: cpuData.physicalCores || 0,
-      processors: cpuData.processors || 0
-    };
-    return cpuPerformance;
-  } catch (error) {
-    console.error('Error retrieving CPU performance:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-
-async function get_cpu_usage(): Promise<number> {
-  try {
-    const cpuData = await si.currentLoad();
-    const cpuUsage = cpuData.currentLoad || 0;
-    return cpuUsage;
-  } catch (error) {
-    console.error('Error retrieving CPU usage:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-
-export async function get_gpu_usage(): Promise<number> {
-  try {
-    const gpuData = await si.graphics();
-    const totalUtilization = gpuData.controllers.reduce((total, controller) => total + (controller.utilizationGpu || 0), 0);
-    return totalUtilization / gpuData.controllers.length;
-  } catch (error) {
-    console.error('Error retrieving GPU utilization:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-
-async function get_ram_usage(): Promise<number> {
-  try {
-    const memData = await si.mem();
-    const totalMemory = memData.total || 0;
-    const usedMemory = memData.used || 0;
-    const freeMemory = memData.free || 0;
-
-    const usagePercentage = (usedMemory / totalMemory) * 100;
-
-    const ramUsage: memUsage = {
-      total: totalMemory,
-      free: freeMemory,
-      used: usedMemory,
-      usagePercentage: isNaN(usagePercentage) ? 0 : usagePercentage // Handle NaN case
-    };
-
-    return isNaN(usagePercentage) ? 0 : usagePercentage; // Handle NaN case
-  } catch (error) {
-    console.error('Error retrieving RAM usage:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-async function get_ram_total(): Promise<number> {
-  try {
-    const memData = await si.mem();
-    const totalMemory = memData.total || 0;
-    const usedMemory = memData.used || 0;
-    const freeMemory = memData.free || 0;
-
-    const usagePercentage = (usedMemory / totalMemory) * 100;
-
-    const ramUsage: memUsage = {
-      total: totalMemory,
-      free: freeMemory,
-      used: usedMemory,
-      usagePercentage: isNaN(usagePercentage) ? 0 : usagePercentage // Handle NaN case
-    };
-
-    return isNaN(totalMemory) ? 0 : totalMemory; // Handle NaN case
-  } catch (error) {
-    console.error('Error retrieving RAM usage:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-async function get_ram_free(): Promise<number> {
-  try {
-    const memData = await si.mem();
-    const totalMemory = memData.total || 0;
-    const usedMemory = memData.used || 0;
-    const freeMemory = memData.free || 0;
-
-    const usagePercentage = (usedMemory / totalMemory) * 100;
-
-    const ramUsage: memUsage = {
-      total: totalMemory,
-      free: freeMemory,
-      used: usedMemory,
-      usagePercentage: isNaN(usagePercentage) ? 0 : usagePercentage // Handle NaN case
-    };
-
-    return isNaN(freeMemory) ? 0 : freeMemory; // Handle NaN case
-  } catch (error) {
-    console.error('Error retrieving RAM usage:', error);
-    throw error; // Rethrow error to handle externally
-  }
-}
-
-
-async function get_ip_address(): Promise<string> {
-  let ip_address: string | null = null;
-
-  try {
-    const response = await axios.get('https://httpbin.org/ip');
-    const ip_info = response.data;
-    const origin: string = ip_info.origin || 'Unknown';
-    ip_address = origin.split(',')[0];
-  } catch (error) {
-    console.error('Error occurred:', error);
-    ip_address = 'Unknown';
-  }
-
-  return ip_address || 'Unknown';
-}
 
 // Wrap the main logic in an async function
 async function run() {

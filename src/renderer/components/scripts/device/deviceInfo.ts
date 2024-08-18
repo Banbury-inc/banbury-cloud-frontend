@@ -1,5 +1,6 @@
 import si from '../../../../../dependency/systeminformation'
 import axios from 'axios';
+import os from 'os';
 
 
 interface CPUPerformance {
@@ -19,6 +20,11 @@ interface memUsage {
   usagePercentage: number;
 }
 
+
+
+export function get_device_name(): string {
+  return os.hostname();
+}
 
 export async function get_storage_capacity(): Promise<number> {
   try {
@@ -155,4 +161,5 @@ export async function get_ip_address(): Promise<string> {
 
   return ip_address || 'Unknown';
 }
+
 

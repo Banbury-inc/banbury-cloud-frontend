@@ -88,6 +88,11 @@ You are ready to make changes to the code.
 
 Thats it!
 
+## Run tests
+   ```
+   npx jest
+   ```
+
 ## ❤️ Community
 
 The Banbury community can be found on [GitHub Discussions](https://github.com/orgs/Banbury-inc/discussions)
