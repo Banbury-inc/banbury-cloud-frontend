@@ -11,7 +11,7 @@
 
 <p align="center">
 <a href="https://discord.com/invite/A92xrEGCge">
-<img alt="Discord online members" src="https://img.shields.io/discord/1031547764020084846?color=5865F2&label=Discord&style=for-the-badge" />
+<img alt="Repository size" src="https://img.shields.io/github/repo-size/m/Banbury-Inc/Banbury-Cloud?style=for-the-badge" />
 </a>
 <img alt="Commit activity per month" src="https://img.shields.io/github/commit-activity/m/Banbury-Inc/Banbury-Cloud?style=for-the-badge" />
 </p>
