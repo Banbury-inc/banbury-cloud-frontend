@@ -41,6 +41,7 @@ import Login from './pages/Login';
 import Tooltip from '@mui/material/Tooltip';
 import net from 'net';
 import { receiver, send_login_request, connectToRelayServer } from './scripts/receiver';
+import * as RelayNetworking from '../relay/networking/relayServer'
 
 const { ipcRenderer } = window.require('electron');
 
@@ -127,7 +128,7 @@ export default function PermanentDrawerLeft() {
     async function setupConnection() {
       try {
         console.log("connecting to relay server");
-        let senderSocket = connectToRelayServer();
+        let senderSocket = RelayNetworking.connectToRelayServer();
         console.log("Starting receiver");
         receiver(username, senderSocket);
         console.log("receiver has been started");
