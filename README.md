@@ -10,8 +10,7 @@
 <p align="center"><b>Decentralized Cloud Services at Your Fingertips</b></p>
 
 <p align="center">
-<a href="https://discord.com/invite/A92xrEGCge">
-<img alt="Repository size" src="https://img.shields.io/github/repo-size/m/Banbury-Inc/Banbury-Cloud?style=for-the-badge" />
+<img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Banbury-inc/Banbury-Cloud?style=for-the-badge">
 </a>
 <img alt="Commit activity per month" src="https://img.shields.io/github/commit-activity/m/Banbury-Inc/Banbury-Cloud?style=for-the-badge" />
 </p>
