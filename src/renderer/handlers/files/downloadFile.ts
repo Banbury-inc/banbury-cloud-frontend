@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-function download_file(files: string[], devices: string[]): Promise<string> {
+export function downloadFile(files: string[], devices: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     const RELAY_HOST = '0.0.0.0';
     const RELAY_PORT = 443;

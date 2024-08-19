@@ -68,9 +68,7 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import { download_file } from '../scripts/download_file';
-
-import { UpdateDevices } from '../scripts/update_devices';
+import { handlers } from '../../handlers';
 import CustomizedTreeView from '../TreeView';
 import { BorderLeft, NavigateBefore } from '@mui/icons-material';
 
@@ -543,7 +541,7 @@ export default function Files() {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
     console.log("handling download click")
-    let result = download_file(selectedFileNames, selectedDeviceNames);
+    let result = handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
     console.log(result)
   };
 
@@ -607,7 +605,7 @@ export default function Files() {
     setDisableFetch(false);
 
     // Run update devices function after all deletions are complete
-    const update_result = await UpdateDevices(username);
+    const update_result = await handlers.devices.updateDevices(username);
     console.log(update_result);
     setUpdates(updates + 1);
   };
@@ -637,6 +635,7 @@ export default function Files() {
       console.warn("No back history available");
     }
   };
+
   const handleAddFolderClick = async () => {
     console.log("Add folder clicked")
     setDisableFetch(true);
@@ -692,7 +691,7 @@ export default function Files() {
     setNewFolderName("");
     setDisableFetch(false);
 
-    const update_result = await UpdateDevices(username);
+    const update_result = await handlers.devices.updateDevices(username);
     console.log(update_result)
     setUpdates(updates + 1);
   };

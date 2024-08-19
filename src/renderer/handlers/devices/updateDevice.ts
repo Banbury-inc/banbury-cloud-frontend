@@ -3,7 +3,7 @@ import * as FileOperations from '../../relay/fileSystem/fileOperations';
 import * as DateUtils from '../../utils/dateUtils';
 import axios from 'axios'
 
-export async function UpdateDevices(username: any) {
+export async function updateDevices(username: any) {
   return new Promise(async (resolve, reject) => {
     const user = username || "user";
     const device_number = 0;

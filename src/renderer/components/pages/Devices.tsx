@@ -27,6 +27,7 @@ import Card from '@mui/material/Card';
 import { CardContent } from "@mui/material";
 import * as path from "path";
 import deleteDevice from "../scripts/delete_device";
+import { handlers } from '../../handlers';
 
 const { spawn } = require("child_process");
 
