@@ -70,6 +70,7 @@ export async function send_device_info(sender_socket: net.Socket, device_info: D
   const device_info_with_stop_signal: string = JSON.stringify(device_info) + "END_OF_JSON";
   let full_message = file_header + device_info_with_stop_signal;
   sender_socket.write(full_message);
+  console.log("ping request response sent to server");
 }
 
 
