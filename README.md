@@ -25,12 +25,12 @@
 <p>
     <a href="https://app.plane.so/#gh-light-mode-only" target="_blank">
       <img
-        src="https://plane-marketing.s3.ap-south-1.amazonaws.com/plane-readme/plane_screen.webp"
+        src="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png"
         alt="Plane Screens"
         width="100%"
       />
     </a>
-    <a href="https://app.plane.so/#gh-dark-mode-only" target="_blank">
+    <a href="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png" target="_blank">
       <img
         src="https://plane-marketing.s3.ap-south-1.amazonaws.com/plane-readme/plane_screens_dark_mode.webp"
         alt="Plane Screens"
