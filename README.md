@@ -16,9 +16,8 @@
 </p>
 
 <p align="center">
-    <a href="https://dub.sh/plane-website-readme"><b>Website</b></a> •
+    <a href="https://banbury.io/"><b>Website</b></a> •
     <a href="https://git.new/releases"><b>Releases</b></a> •
-    <a href="https://dub.sh/planepowershq"><b>Twitter</b></a> •
     <a href="https://dub.sh/planedocs"><b>Documentation</b></a>
 </p>
 
