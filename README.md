@@ -1,8 +1,8 @@
 <br /><br />
 
 <p align="center">
-<a href="https://plane.so">
-  <img src="https://plane-marketing.s3.ap-south-1.amazonaws.com/plane-readme/plane_logo_.webp" alt="Plane Logo" width="70">
+<a href="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/NeuraNet_Icons/ios/AppIcon-83.5%402x~ipad.png">
+  <img src="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/NeuraNet_Icons/ios/AppIcon-83.5%402x~ipad.png" alt="Plane Logo" width="70">
 </a>
 </p>
 
