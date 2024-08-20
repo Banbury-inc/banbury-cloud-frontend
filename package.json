@@ -1,6 +1,6 @@
 {
-  "name": "NeuraNet",
-  "version": "1.0.1",
+  "name": "Banbury Cloud",
+  "version": "2.0.0",
   "private": true,
   "description": "A decentralized cloud storage system.",
   "main": "./dist/main.js",

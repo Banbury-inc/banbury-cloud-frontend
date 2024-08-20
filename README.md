@@ -93,6 +93,12 @@ Thats it!
    npx jest
    ```
 
+## Packaging
+
+Run `npm run package` to build and package your electron app.
+
+Run `npm run deploy` to build and package your electron app, along with creating the necessary installers.
+
 ## ❤️ Community
 
 The Banbury community can be found on [GitHub Discussions](https://github.com/orgs/Banbury-inc/discussions)
