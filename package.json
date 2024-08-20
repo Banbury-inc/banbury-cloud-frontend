@@ -92,7 +92,7 @@
   },
   "build": {
     "appId": "com.company.app",
-    "productName": "NeuraNet",
+    "productName": "BanburyCloud",
     "directories": {
       "output": "packages",
       "buildResources": "resources"
