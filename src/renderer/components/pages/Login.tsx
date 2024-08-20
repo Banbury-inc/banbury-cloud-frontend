@@ -32,7 +32,7 @@ import net from 'net';
 import useHistory from 'react-router-dom';
 import crypto from 'crypto';
 import { Dispatch, SetStateAction } from 'react';
-import { receiver, send_login_request, connectToRelayServer } from '../scripts/receiver';
+import { neuranet } from '../../neuranet';
 interface Message {
   type: string;
   content: string;
@@ -157,7 +157,7 @@ export default function SignIn() {
     if (email && password) {
       try {
 
-        let senderSocket = await connectToRelayServer();
+        let senderSocket = await neuranet.networking.connect();
         const result = await send_login_request(email, password);
         console.log(result);
         setUsername(email);

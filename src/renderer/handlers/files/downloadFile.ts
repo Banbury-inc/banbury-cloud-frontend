@@ -2,11 +2,13 @@ import * as net from 'net';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-
+import { CONFIG } from '../../config/config';
 export function downloadFile(files: string[], devices: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    const RELAY_HOST = '0.0.0.0';
-    const RELAY_PORT = 443;
+
+    const RELAY_HOST = CONFIG.relayHost; // Change this to your actual server IP
+    const RELAY_PORT = CONFIG.relayPort;
+
     const senderSocket = new net.Socket();
 
     senderSocket.connect(RELAY_PORT, RELAY_HOST, () => {

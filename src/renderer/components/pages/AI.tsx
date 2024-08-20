@@ -59,8 +59,6 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import delete_file from '../scripts/delete';
-import upload_file from '../scripts/upload';
 import TaskBadge from '../TaskBadge';
 
 
@@ -399,12 +397,6 @@ export default function AI() {
 
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
-  const handleDeleteClick = async () => {
-    setdeleteLoading(true);
-    delete_file(selectedFileNames, selectedDeviceNames);
-    setdeleteLoading(false);
-    return;
-  }
   const handleUploadClick = async () => {
     try {
 

@@ -1,8 +1,7 @@
 import * as os from 'os';
 import si from '../../dependency/systeminformation';
 import axios from 'axios';
-import * as Receiver from '../../src/renderer/components/scripts/receiver';
-import * as DeviceInfo from '../../src/renderer/components/scripts/device/deviceInfo';
+import { neuranet } from '../../src//renderer/neuranet';
 
 jest.mock('os');
 
@@ -12,7 +11,7 @@ describe('get_device_name', () => {
     const mockHostname = 'mocked-hostname';
     (os.hostname as jest.Mock).mockReturnValue(mockHostname);
 
-    const hostname = DeviceInfo.get_device_name();
+    const hostname = neuranet.device.name();
 
     expect(hostname).toBe(mockHostname);
   });
@@ -48,7 +47,7 @@ describe('get_storage_capacity', () => {
 
     (si.fsSize as jest.Mock).mockResolvedValue(mockFsSizeData);
 
-    const totalCapacity = await DeviceInfo.get_storage_capacity();
+    const totalCapacity = await neuranet.device.storage_capacity();
 
     expect(totalCapacity).toBeCloseTo(800); // 800 GB
   });
@@ -58,7 +57,7 @@ describe('get_storage_capacity', () => {
 
     (si.fsSize as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(DeviceInfo.get_storage_capacity()).rejects.toThrow('Disk read error');
+    await expect(neuranet.device.storage_capacity()).rejects.toThrow('Disk read error');
   });
 });
 
@@ -89,7 +88,7 @@ describe('get_gpu_usage', () => {
 
     (si.graphics as jest.Mock).mockResolvedValue(mockGraphicsData);
 
-    const gpuUsage = await DeviceInfo.get_gpu_usage();
+    const gpuUsage = await neuranet.device.gpu_usage();
 
     expect(gpuUsage).toBe(62.5); // (50 + 75) / 2
   });
@@ -99,7 +98,7 @@ describe('get_gpu_usage', () => {
 
     (si.graphics as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(DeviceInfo.get_gpu_usage()).rejects.toThrow('GPU read error');
+    await expect(neuranet.device.gpu_usage()).rejects.toThrow('GPU read error');
   });
 });
 
@@ -114,7 +113,7 @@ describe('get_ip_address', () => {
     const mockIpInfo = { origin: '123.45.67.89,123.45.67.90' };
     (axios.get as jest.Mock).mockResolvedValue({ data: mockIpInfo });
 
-    const ipAddress = await DeviceInfo.get_ip_address();
+    const ipAddress = await neuranet.device.ip_address();
 
     expect(ipAddress).toBe('123.45.67.89');
   });
@@ -122,7 +121,7 @@ describe('get_ip_address', () => {
   it('should return "Unknown" if the API call fails', async () => {
     (axios.get as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-    const ipAddress = await DeviceInfo.get_ip_address();
+    const ipAddress = await neuranet.device.ip_address();
 
     expect(ipAddress).toBe('Unknown');
   });
@@ -131,7 +130,7 @@ describe('get_ip_address', () => {
     // Mock the axios.get method to return an empty data object
     (axios.get as jest.Mock).mockResolvedValue({ data: {} });
 
-    const ipAddress = await DeviceInfo.get_ip_address();
+    const ipAddress = await neuranet.device.ip_address();
 
     expect(ipAddress).toBe('Unknown');
   });

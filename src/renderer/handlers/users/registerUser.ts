@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-async function registerUser(first_name: string, last_name: string, username: string, password_str: string) {
+export async function registerUser(first_name: string,
+  last_name: string,
+  username: string,
+  password_str: string) {
 
   try {
     const response = await axios.get<{

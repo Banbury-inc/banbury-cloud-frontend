@@ -40,8 +40,7 @@ import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Tooltip from '@mui/material/Tooltip';
 import net from 'net';
-import { receiver, send_login_request, connectToRelayServer } from './scripts/receiver';
-import * as RelayNetworking from '../relay/networking/relayServer'
+import { neuranet } from '../neuranet';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -128,9 +127,9 @@ export default function PermanentDrawerLeft() {
     async function setupConnection() {
       try {
         console.log("connecting to relay server");
-        let senderSocket = RelayNetworking.connectToRelayServer();
+        let senderSocket = neuranet.networking.connect();
         console.log("Starting receiver");
-        receiver(username, senderSocket);
+        neuranet.device.connect(username, senderSocket);
         console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);

@@ -1,5 +1,4 @@
-import * as DeviceInfo from '../../relay/device/deviceInfo';
-import * as FileOperations from '../../relay/fileSystem/fileOperations';
+import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import axios from 'axios'
 
@@ -7,8 +6,8 @@ export async function updateDevices(username: any) {
   return new Promise(async (resolve, reject) => {
     const user = username || "user";
     const device_number = 0;
-    const device_name = DeviceInfo.get_device_name();
-    const files = FileOperations.get_directory_info();
+    const device_name = neuranet.device.name();
+    const files = neuranet.device.directory_info();
     const date_added = DateUtils.get_current_date_and_time();
 
     interface SmallDeviceInfo {

@@ -7,9 +7,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Tooltip from '@mui/material/Tooltip';
-import uploadFile from './scripts/upload';
 import { useAuth } from '../context/AuthContext';
-
+import { handlers } from '../handlers'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -43,7 +42,7 @@ const NewInputFileUploadButton: React.FC = () => {
   const runPythonScript = async (file: File) => {
 
     setLoading(true);
-    uploadFile(file.path, file.path);
+    handlers.files.uploadFile(file.path, file.path);
     setLoading(false);
 
   }

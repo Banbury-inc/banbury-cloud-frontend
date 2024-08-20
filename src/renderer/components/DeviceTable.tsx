@@ -26,7 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import Card from '@mui/material/Card';
 import { CardContent } from "@mui/material";
 import * as path from "path";
-import deleteDevice from "./scripts/delete_device";
+import { handlers } from '../handlers';
 
 const { spawn } = require("child_process");
 
@@ -226,7 +226,7 @@ export default function DevicesTable() {
 
 
   const handleDeleteClick = async () => {
-    deleteDevice(selectedDeviceNames);
+    handlers.devices.deleteDevice(selectedDeviceNames);
     return;
   };
 

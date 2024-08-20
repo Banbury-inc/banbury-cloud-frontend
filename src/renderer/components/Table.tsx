@@ -69,18 +69,11 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import delete_file from './scripts/delete';
-import { download_file } from './scripts/download_file';
-import * as FileOperations from '../components/scripts/fileSystem/fileOperations';
-import * as DateUtils from '../components/scripts/utils/dateUtils';
-import * as DeviceInfo from '../components/scripts/device/deviceInfo';
-
-import { UpdateDevices } from './scripts/update_devices';
-import upload_file from './scripts/upload';
 import DataManagementCard from './TreeView';
 import CustomizedTreeView from './TreeView';
 import { BorderLeft, NavigateBefore } from '@mui/icons-material';
 import TaskBadge from './TaskBadge';
+import { handlers } from '../handlers'
 
 
 interface Device {
@@ -551,7 +544,7 @@ export default function EnhancedTable() {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
     console.log("handling download click")
-    let result = download_file(selectedFileNames, selectedDeviceNames);
+    let result = handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
     console.log(result)
   };
 
@@ -615,7 +608,7 @@ export default function EnhancedTable() {
     setDisableFetch(false);
 
     // Run update devices function after all deletions are complete
-    const update_result = await UpdateDevices(username);
+    const update_result = await handlers.devices.updateDevices(username);
     console.log(update_result);
     setUpdates(updates + 1);
   };
@@ -700,7 +693,7 @@ export default function EnhancedTable() {
     setNewFolderName("");
     setDisableFetch(false);
 
-    const update_result = await UpdateDevices(username);
+    const update_result = await handlers.devices.updateDevices(username);
     console.log(update_result)
     setUpdates(updates + 1);
   };

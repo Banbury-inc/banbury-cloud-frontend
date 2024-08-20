@@ -1,9 +1,8 @@
-
-import * as RelayNetworking from '../../relay/networking/relayServer'
+import { neuranet } from '../../neuranet'
 import * as CredentialUtils from '../../utils/credentialUtils'
 
 export function deleteDevice(device_name: string[]): string {
-  const senderSocket = RelayNetworking.connectToRelayServer();
+  const senderSocket = neuranet.networking.connect();
   const endOfHeader = Buffer.from('END_OF_HEADER');
   const credentials = CredentialUtils.loadCredentials();
   let username = Object.keys(credentials)[0];

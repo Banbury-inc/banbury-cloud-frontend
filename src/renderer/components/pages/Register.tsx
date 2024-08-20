@@ -18,7 +18,7 @@ import { exec } from "child_process";
 import SignIn from './Login';
 import * as path from "path";
 import NeuraNet_Logo from '../../../../static/NeuraNet_Icons/web/icon-512.png';
-import { register } from '../scripts/register'
+import { handlers } from '../../handlers';
 import axios from 'axios';
 
 function Copyright(props: any) {
@@ -88,7 +88,7 @@ export default function SignUp() {
     });
 
     try {
-      let result = await register(
+      let result = await handlers.users.registerUser(
         data.get('firstName') as string,
         data.get('lastName') as string,
         data.get('username') as string,

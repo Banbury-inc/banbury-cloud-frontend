@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-async function change_profile_info(first_name: string, last_name: string, username: any, email: string, password: string) {
+export async function change_profile_info(first_name: string, last_name: string, username: any, email: string, password: string) {
 
   try {
     const response = await axios.get<{

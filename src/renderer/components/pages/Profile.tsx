@@ -27,8 +27,7 @@ import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import { Email } from '@mui/icons-material';
 import * as path from "path";
-import * as change_profile_info from '../scripts/change_profile_info'
-
+import { handlers } from '../../handlers';
 
 interface Device {
   device_number: number;
@@ -213,7 +212,7 @@ export default function Profile() {
 
     setShowFirstnameTextField(!showFirstnameTextField);
 
-    change_profile_info.change_profile_info(new_first_name, lastname, username, email, "undefined");
+    handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
   };
 
   const [showLastnameTextField, setShowLastnameTextField] = useState(false);
@@ -227,7 +226,7 @@ export default function Profile() {
   };
   const handleLastnameConfirmClick = async () => {
     try {
-      change_profile_info.change_profile_info(firstname, new_last_name, username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -247,7 +246,7 @@ export default function Profile() {
   };
   const handleUsernameConfirmClick = async () => {
     try {
-      change_profile_info.change_profile_info(firstname, lastname, new_username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -265,7 +264,7 @@ export default function Profile() {
   };
   const handleEmailConfirmClick = async () => {
     try {
-      change_profile_info.change_profile_info(firstname, lastname, username, new_email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -284,7 +283,7 @@ export default function Profile() {
   };
   const handlePasswordConfirmClick = async () => {
     try {
-      change_profile_info.change_profile_info(firstname, lastname, username, email, new_password);
+      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
     } catch (error) {
       console.error('There was an error!', error);
 
