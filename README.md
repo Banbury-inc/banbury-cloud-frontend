@@ -27,14 +27,7 @@
       <img
         src="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png"
         alt="Plane Screens"
-        width="100%"
-      />
-    </a>
-    <a href="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png" target="_blank">
-      <img
-        src="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png"
-        alt="Plane Screens"
-        width="100%"
+        width="50%"
       />
     </a>
 </p>
