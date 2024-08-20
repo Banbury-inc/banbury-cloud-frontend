@@ -22,7 +22,7 @@
     <a href="https://dub.sh/planedocs"><b>Documentation</b></a>
 </p>
 
-<p>
+<p align="center">
     <a href="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png" target="_blank">
       <img
         src="https://github.com/Banbury-inc/Banbury-Cloud/blob/main/static/Mockup.png"
