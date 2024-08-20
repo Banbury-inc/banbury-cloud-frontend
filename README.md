@@ -17,8 +17,7 @@
 
 <p align="center">
     <a href="https://banbury.io/"><b>Website</b></a> •
-    <a href="https://git.new/releases"><b>Releases</b></a> •
-    <a href="https://dub.sh/planedocs"><b>Documentation</b></a>
+    <a href="https://github.com/Banbury-inc/Banbury-Cloud/releases"><b>Releases</b></a> •
 </p>
 
 <p align="center">
