@@ -466,6 +466,12 @@ export default function Files() {
     let result = handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
     console.log(result)
   };
+  const handleAddDeviceClick = async () => {
+    console.log("handling add device click")
+    let result = handlers.devices.addDevice();
+    console.log(result)
+  };
+
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
 
@@ -618,6 +624,19 @@ export default function Files() {
                   </Button>
                 </Tooltip>
               </Grid>
+              <Grid item paddingRight={1}>
+                <Tooltip title="Add Device">
+                  <Button
+                    onClick={handleAddDeviceClick}
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                  >
+                    <DownloadIcon
+                      fontSize="inherit"
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+
 
               <Grid item paddingRight={1}>
                 <Tooltip title="Delete">
