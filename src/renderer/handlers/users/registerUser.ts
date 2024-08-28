@@ -10,7 +10,7 @@ export async function registerUser(first_name: string,
       result: string;
       username: string;
       // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-    }>('https://website2-v3xlkt54dq-uc.a.run.app/register/' + username + '/' + password_str + '/' + first_name + '/' + last_name + '/');
+    }>('https://website2-v3xlkt54dq-uc.a.run.app/new_register/' + username + '/' + password_str + '/' + first_name + '/' + last_name + '/');
     // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/');
     const result = response.data.result;
     if (result === 'success') {
