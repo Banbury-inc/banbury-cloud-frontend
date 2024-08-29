@@ -17,6 +17,7 @@ import DevicesIcon from '@mui/icons-material/Devices';
 import DescriptionIcon from '@mui/icons-material/Description';
 import GrainIcon from '@mui/icons-material/Grain';
 import { InsertDriveFile } from '@mui/icons-material';
+import * as utils from '../utils/';
 
 
 
@@ -131,27 +132,54 @@ export default function CustomizedTreeView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/${username}/`);
-        const { first_name, last_name, devices } = response.data;
+
+        // Step 1: Fetch user information
+        const userInfoResponse = await axios.get<{
+          first_name: string;
+          last_name: string;
+          phone_number: string;
+          email: string;
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/${username}/`);
+
+        const { first_name, last_name } = userInfoResponse.data;
         setFirstname(first_name);
         setLastname(last_name);
 
-        const files = devices.flatMap((device: any, index: any) =>
-          device.files.map((file: any, fileIndex: any): FileData => ({
-            id: `device-${device.device_number}-file-${fileIndex}`,
-            fileType: file["file_type"],
-            fileName: file["file_name"],
-            fileSize: formatBytes(file["file_size"]),
-            filePath: file["file_path"],
-            kind: file["kind"],
-            dateUploaded: file["date_uploaded"],
-            deviceID: device.device_number,
-            deviceName: device.device_name,
-            fileParent: file["file_parent"],
-            original_device: file["original_device"]
+        // Step 2: Fetch device information
+        const deviceInfoResponse = await axios.get<{
+          devices: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getdeviceinfo/${username}/`);
 
-          }))
-        );
+        const { devices } = deviceInfoResponse.data;
+
+        // Step 3: Fetch files for all devices
+        const fileInfoResponse = await axios.get<{
+          files: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
+
+        const { files } = fileInfoResponse.data;
+
+        // Combine devices with their associated files
+        const allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
+            id: index * 1000 + fileIndex,
+            fileName: file.file_name,
+            fileSize: utils.formatBytes(file.file_size),
+            kind: file.kind,
+            filePath: file.file_path,
+            dateUploaded: file.date_uploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
+            deviceName: device.device_name,
+            helpers: 0,
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
+
+
+
+
+
         setFileRows([]);
         setFileRows(buildTree(files));
         console.log("file tree rebuilt")

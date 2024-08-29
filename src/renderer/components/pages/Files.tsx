@@ -222,36 +222,51 @@ export default function Files() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<{
-          devices: any[];
+        // Step 1: Fetch user information
+        const userInfoResponse = await axios.get<{
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+          phone_number: string;
+          email: string;
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/${username}/`);
 
-        const { first_name, last_name, devices } = response.data;
+        const { first_name, last_name } = userInfoResponse.data;
         setFirstname(first_name);
         setLastname(last_name);
 
-        const files = devices.flatMap((device, index) =>
-          device.files.map((file: any, fileIndex: number): FileData => ({
+        // Step 2: Fetch device information
+        const deviceInfoResponse = await axios.get<{
+          devices: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getdeviceinfo/${username}/`);
+
+        const { devices } = deviceInfoResponse.data;
+
+        // Step 3: Fetch files for all devices
+        const fileInfoResponse = await axios.get<{
+          files: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
+
+        const { files } = fileInfoResponse.data;
+
+        // Combine devices with their associated files
+        const allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
             id: index * 1000 + fileIndex,
-            fileName: file["file_name"],
-            fileSize: utils.formatBytes(file["file_size"]),
-            kind: file["kind"],
-            filePath: file["file_path"],
-            dateUploaded: file["date_uploaded"],
-            deviceID: device.device_number,
+            fileName: file.file_name,
+            fileSize: utils.formatBytes(file.file_size),
+            kind: file.kind,
+            filePath: file.file_path,
+            dateUploaded: file.date_uploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
             deviceName: device.device_name,
             helpers: 0,
-            available: device.online || 0 > 1 ? "Available" : "Unavailable",
-          }))
-        );
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
 
-        if (disableFetch) {
-          return;
-        }
-        else {
-          setAllFiles(files);
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -261,46 +276,56 @@ export default function Files() {
     };
 
     fetchData();
-  }, [updates]);
+  }, [username, disableFetch]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     const fetchData = async () => {
       try {
-        const response = await axios.get<{
-          devices: any[];
+        // Step 1: Fetch user information
+        const userInfoResponse = await axios.get<{
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+          phone_number: string;
+          email: string;
 
-        const { first_name, last_name, devices } = response.data;
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/${username}/`);
+
+        const { first_name, last_name } = userInfoResponse.data;
         setFirstname(first_name);
         setLastname(last_name);
 
-        const newFiles = devices.flatMap((device, index) =>
-          device.files.map((file: any, fileIndex: number) => ({
+        // Step 2: Fetch device information
+        const deviceInfoResponse = await axios.get<{
+          devices: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getdeviceinfo/${username}/`);
+        const { devices } = deviceInfoResponse.data;
+
+        // Step 3: Fetch files for all devices
+        const fileInfoResponse = await axios.get<{
+          files: any[];
+        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
+        const { files } = fileInfoResponse.data;
+
+        // Combine devices with their associated files
+        const allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
             id: index * 1000 + fileIndex,
-            fileName: file["file_name"],
-            fileSize: utils.formatBytes(file["file_size"]),
-            kind: file["kind"],
-            filePath: file["file_path"],
-            dateUploaded: file["date_uploaded"],
-            deviceID: device.device_number,
+            fileName: file.file_name,
+            fileSize: utils.formatBytes(file.file_size),
+            kind: file.kind,
+            filePath: file.file_path,
+            dateUploaded: file.date_uploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
             deviceName: device.device_name,
             helpers: 0,
-            available: device.online || 0 > 1 ? "Available" : "Unavailable",
-          }))
-        );
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
 
-        if (!disableFetch) {
-          if (!isEqual(newFiles, allFiles)) {
-            console.log("Updating files...");
-            setAllFiles(newFiles);
-
-
-          } else {
-            console.log("No changes in files.");
-          }
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -309,8 +334,9 @@ export default function Files() {
       }
     };
 
+
     fetchData();
-    intervalId = setInterval(fetchData, 5000);
+    intervalId = setInterval(fetchData, 50000);
     return () => clearInterval(intervalId);
   }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
 
@@ -468,9 +494,15 @@ export default function Files() {
   };
   const handleAddDeviceClick = async () => {
     console.log("handling add device click")
-    let result = handlers.devices.addDevice();
+    let result = handlers.devices.addDevice(username ?? '');
     console.log(result)
   };
+  const handleAddFileClick = async () => {
+    console.log("handling add file click")
+    let result = handlers.files.addFile(username ?? '');
+    console.log(result)
+  };
+
 
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -606,6 +638,19 @@ export default function Files() {
                   </Button>
                 </Tooltip>
               </Grid>
+              <Grid item paddingRight={1}>
+                <Tooltip title="Add file">
+                  <Button
+                    onClick={handleAddFileClick}
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                  >
+                    <CreateNewFolderOutlinedIcon
+                      fontSize="inherit"
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+
 
               <Grid item paddingRight={1}>
                 <Tooltip title="Upload">
