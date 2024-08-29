@@ -41,6 +41,7 @@ import TextField from '@mui/material/TextField';
 import { handlers } from '../../handlers';
 import * as utils from '../../utils';
 import CustomizedTreeView from '../TreeView';
+import { neuranet } from '../../neuranet';
 
 
 // Simplified data interface to match your file structure
@@ -497,9 +498,10 @@ export default function Files() {
     let result = handlers.devices.addDevice(username ?? '');
     console.log(result)
   };
-  const handleAddFileClick = async () => {
-    console.log("handling add file click")
-    let result = handlers.files.addFile(username ?? '');
+  const handleSyncClick = async () => {
+    console.log("handling sync click")
+    // let result = handlers.files.addFile(username ?? '');
+    let result = neuranet.device.directory_info(username)
     console.log(result)
   };
 
@@ -639,9 +641,9 @@ export default function Files() {
                 </Tooltip>
               </Grid>
               <Grid item paddingRight={1}>
-                <Tooltip title="Add file">
+                <Tooltip title="Sync">
                   <Button
-                    onClick={handleAddFileClick}
+                    onClick={handleSyncClick}
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
                     <CreateNewFolderOutlinedIcon

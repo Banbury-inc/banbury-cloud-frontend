@@ -1,17 +1,25 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 
-export async function addFile(username: string) {
+export async function addFile(
+  username: string,
+  fileInfo: any) {
 
-  let device_name = neuranet.device.name();
+
   try {
     const response = await axios.post<{
       result: string;
     }>('https://website2-v3xlkt54dq-uc.a.run.app/add_file/' + username + '/', {
-      device_name: device_name,
-      file_type: 'file_type',
-      file_name: 'file_name',
-      file_path: 'file_path',
+      file_type: fileInfo.file_type,
+      file_name: fileInfo.file_name,
+      file_path: fileInfo.file_path,
+      date_uploaded: fileInfo.date_uploaded,
+      date_modified: fileInfo.date_modified,
+      file_size: fileInfo.file_size,
+      file_priority: fileInfo.file_priority,
+      file_parent: fileInfo.file_parent,
+      original_device: fileInfo.original_device,
+      kind: fileInfo.kind,
     });
 
     const result = response.data.result;
@@ -21,12 +29,16 @@ export async function addFile(username: string) {
     } else if (result === 'fail') {
       console.log("Failed to add file");
       return 'failed';
-    } else if (result === 'user_already_exists') {
-      console.log("User already exists");
-      return 'exists';
+    } else if (result === 'device_not_found') {
+      console.log("Device not found");
+      return 'device not found';
+    } else if (result === 'object_id_not_found') {
+      console.log("object id not found");
+      return 'device not found';
+
     } else {
       console.log("Failed to add file");
-      return 'register failed';
+      return 'add file failed';
     }
   } catch (error) {
     console.error('Error adding file:', error);

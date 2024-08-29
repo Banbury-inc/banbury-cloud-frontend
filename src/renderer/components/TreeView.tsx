@@ -1,28 +1,23 @@
+
 import * as React from 'react';
 import { Typography, Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { TreeView, TreeItem } from '@mui/x-tree-view';
-import Folder from '@mui/icons-material/Folder';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import fs from 'fs';
+import GrainIcon from '@mui/icons-material/Grain';
+import DevicesIcon from '@mui/icons-material/Devices';
 import FolderIcon from '@mui/icons-material/Folder';
 import ImageIcon from '@mui/icons-material/Image';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
-import DevicesIcon from '@mui/icons-material/Devices';
 import DescriptionIcon from '@mui/icons-material/Description';
-import GrainIcon from '@mui/icons-material/Grain';
-import { InsertDriveFile } from '@mui/icons-material';
+import axios from 'axios';
+import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import * as utils from '../utils/';
 
-
-
 interface FileData {
-  id: string;
+  id: number | string;
   fileType: string;
   fileName: string;
   dateUploaded: string;
@@ -39,37 +34,28 @@ interface FileData {
 function getIconForKind(kind: string) {
   switch (kind) {
     case 'Core':
-      return <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Device':
-      return <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Folder':
-      return <FolderIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <FolderIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Image':
-      return <ImageIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <ImageIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Video':
-      return <VideocamIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <VideocamIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Audio':
-      return <AudiotrackIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <AudiotrackIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     case 'Document':
-      return <DescriptionIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <DescriptionIcon style={{ marginRight: 5 }} fontSize="inherit" />;
     default:
-      return <FolderIcon style={{ marginRight: 5 }} fontSize="inherit" />
+      return <FolderIcon style={{ marginRight: 5 }} fontSize="inherit" />;
   }
-}
-function formatBytes(bytes: number, decimals: number = 2): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 function buildTree(files: FileData[]): FileData[] {
   const deviceMap = new Map<string, FileData>();
   const roots: FileData[] = [];
 
-  // Create the "Core" node that will act as the parent for all device nodes
   const coreNode: FileData = {
     id: 'core',
     fileType: 'directory',
@@ -81,11 +67,10 @@ function buildTree(files: FileData[]): FileData[] {
     fileParent: '',
     deviceID: '',
     deviceName: '',
-    children: [],  // Explicitly initializing as an empty array
+    children: [],
     original_device: '',
   };
 
-  // Iterate over files to create device nodes and populate the tree
   files.forEach(file => {
     if (!deviceMap.has(file.original_device)) {
       const deviceNode: FileData = {
@@ -96,33 +81,29 @@ function buildTree(files: FileData[]): FileData[] {
         fileSize: '',
         filePath: '',
         kind: 'Device',
-        fileParent: 'core',  // Parent set to 'core' for all device nodes
+        fileParent: 'core',
         deviceID: file.deviceID,
         deviceName: file.deviceName,
-        children: [],  // Explicitly initializing as an empty array
+        children: [],
         original_device: file.original_device,
       };
       deviceMap.set(file.original_device, deviceNode);
-      coreNode.children!.push(deviceNode);  // Safely add device nodes under the "Core" node
+      coreNode.children!.push(deviceNode);
     }
   });
 
-  // Iterate over files again to assign files to the correct parent node
   files.forEach(file => {
     const deviceNode = deviceMap.get(file.original_device);
     if (deviceNode) {
-      // Find parent by file path or default to the device node
       const parent = files.find(f => f.filePath === file.fileParent) || deviceNode;
-      parent.children = parent.children || [];  // Ensure children is defined
-      parent.children.push(file);  // Push file to the parent's children array
+      parent.children = parent.children || [];
+      parent.children.push(file);
     }
   });
 
-  roots.push(coreNode);  // Add the "Core" node as the only root
+  roots.push(coreNode);
   return roots;
 }
-
-
 
 export default function CustomizedTreeView() {
   const { updates, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
@@ -132,8 +113,6 @@ export default function CustomizedTreeView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-
-        // Step 1: Fetch user information
         const userInfoResponse = await axios.get<{
           first_name: string;
           last_name: string;
@@ -145,44 +124,37 @@ export default function CustomizedTreeView() {
         setFirstname(first_name);
         setLastname(last_name);
 
-        // Step 2: Fetch device information
         const deviceInfoResponse = await axios.get<{
           devices: any[];
         }>(`https://website2-v3xlkt54dq-uc.a.run.app/getdeviceinfo/${username}/`);
 
         const { devices } = deviceInfoResponse.data;
 
-        // Step 3: Fetch files for all devices
         const fileInfoResponse = await axios.get<{
           files: any[];
         }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
 
         const { files } = fileInfoResponse.data;
 
-        // Combine devices with their associated files
-        const allFilesData = devices.flatMap((device, index) => {
+        const allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
           return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
+            // id: index * 1000 + fileIndex,
+            id: `device-${device.device_number}-file-${fileIndex}`,
             fileName: file.file_name,
             fileSize: utils.formatBytes(file.file_size),
             kind: file.kind,
             filePath: file.file_path,
             dateUploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
+            deviceID: (index + 1).toString(),
             deviceName: device.device_name,
-            helpers: 0,
-            available: device.online ? "Available" : "Unavailable",
+            original_device: device.device_name,
+            fileParent: file.file_parent,
+            fileType: file.file_type,
           }));
         });
 
-
-
-
-
-        setFileRows([]);
-        setFileRows(buildTree(files));
-        console.log("file tree rebuilt")
+        setFileRows(buildTree(allFilesData));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -190,10 +162,10 @@ export default function CustomizedTreeView() {
     fetchData();
   }, [updates]);
 
-  const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
+  const handleNodeSelect = useCallback((event: React.SyntheticEvent, nodeId: string) => {
     const findNodeById = (nodes: FileData[], id: string): FileData | null => {
       for (const node of nodes) {
-        if (node.id === id) {
+        if (node.id.toString() === id) {
           return node;
         }
         if (node.children) {
@@ -208,33 +180,30 @@ export default function CustomizedTreeView() {
 
     const selectedNode = findNodeById(fileRows, nodeId);
     if (selectedNode) {
-      setGlobal_file_path(selectedNode.filePath);
-      setGlobal_file_path_device(selectedNode.deviceName);
+      if (global_file_path !== selectedNode.filePath || global_file_path_device !== selectedNode.deviceName) {
+        setGlobal_file_path(selectedNode.filePath);
+        setGlobal_file_path_device(selectedNode.deviceName);
+      }
     }
-  };
+  }, [fileRows, global_file_path, global_file_path_device, setGlobal_file_path, setGlobal_file_path_device]);
 
-  const renderTreeItems = (nodes: FileData[]) => {
+  const renderTreeItems = useCallback((nodes: FileData[]) => {
     return nodes.map((node) => (
       <TreeItem
         key={node.id}
-        nodeId={node.id}
+        nodeId={node.id.toString()}
         label={
-          <Box sx={{
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden', // Hide overflow
-          }}>
-            {/* <Folder style={{ marginRight: 5 }} fontSize="inherit" /> */}
+          <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
             {getIconForKind(node.kind)}
             <Typography
               variant="inherit"
               sx={{
                 ml: 1,
                 mt: 0.5,
-                whiteSpace: 'nowrap', // Prevent wrapping
-                overflow: 'hidden', // Hide overflow
-                textOverflow: 'ellipsis', // Add ellipsis
-                maxWidth: 'calc(100% - 24px)', // Calculate max width to account for icon
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: 'calc(100% - 24px)',
               }}
             >
               {node.fileName}
@@ -245,7 +214,7 @@ export default function CustomizedTreeView() {
         {node.children && renderTreeItems(node.children)}
       </TreeItem>
     ));
-  };
+  }, []);
 
   return (
     <Box sx={{ width: 300, height: '100%', overflow: 'auto' }}>
@@ -253,15 +222,7 @@ export default function CustomizedTreeView() {
         aria-label="file system navigator"
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
-        sx={{
-          width: '100%',
-          flexGrow: 1,
-          // overflowY: 'auto',
-          overflow: 'auto',
-          // maxHeight: '90%'
-
-
-        }}
+        sx={{ width: '100%', flexGrow: 1, overflow: 'auto' }}
         onNodeSelect={handleNodeSelect}
       >
         {renderTreeItems(fileRows)}

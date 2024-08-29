@@ -5,7 +5,7 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import { DateTime } from 'luxon';
-
+import { handlers } from '../../handlers';
 
 interface CPUPerformance {
   manufacturer: string;
@@ -166,7 +166,7 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
-export function directory_info() {
+export function directory_info(username: any) {
   const bclouddirectoryName = "BCloud";
   const bclouddirectoryPath = os.homedir() + `/${bclouddirectoryName}`;
 
@@ -266,6 +266,7 @@ export function directory_info() {
 
         };
         filesInfo.push(fileInfo);
+        handlers.files.addFile(username, fileInfo);
 
         // If it's a directory, recurse into it
         if (stats.isDirectory()) {
