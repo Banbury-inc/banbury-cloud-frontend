@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import * as utils from '../utils/';
 
 interface FileData {
-  id: number | string;
+  id: string;
   fileType: string;
   fileName: string;
   dateUploaded: string;
@@ -52,10 +52,11 @@ function getIconForKind(kind: string) {
   }
 }
 
-function buildTree(files: FileData[]): FileData[] {
-  const deviceMap = new Map<string, FileData>();
-  const roots: FileData[] = [];
 
+function buildTree(files: FileData[]): FileData[] {
+  const fileMap = new Map<string, FileData>();
+
+  // Create the root "Core" node
   const coreNode: FileData = {
     id: 'core',
     fileType: 'directory',
@@ -71,39 +72,76 @@ function buildTree(files: FileData[]): FileData[] {
     original_device: '',
   };
 
+  // Assuming there's only one device, get its name from the first file
+  const deviceName = files.length > 0 ? files[0].deviceName : '';
+
+  // Create the device node
+  const deviceNode: FileData = {
+    id: `device-${deviceName}`,
+    fileType: 'directory',
+    fileName: deviceName,
+    dateUploaded: '',
+    fileSize: '',
+    filePath: '',
+    kind: 'Device',
+    fileParent: 'core',
+    deviceID: files.length > 0 ? files[0].deviceID : '',
+    deviceName: deviceName,
+    children: [],
+    original_device: deviceName,
+  };
+
+  // Populate the fileMap with all files and folders
   files.forEach(file => {
-    if (!deviceMap.has(file.original_device)) {
-      const deviceNode: FileData = {
-        id: `device-${file.original_device}`,
-        fileType: 'directory',
-        fileName: file.deviceName,
-        dateUploaded: '',
-        fileSize: '',
-        filePath: '',
-        kind: 'Device',
-        fileParent: 'core',
-        deviceID: file.deviceID,
-        deviceName: file.deviceName,
-        children: [],
-        original_device: file.original_device,
-      };
-      deviceMap.set(file.original_device, deviceNode);
-      coreNode.children!.push(deviceNode);
-    }
+    fileMap.set(file.id, { ...file, children: [] });
   });
 
+  // Establish parent-child relationships based on file paths
   files.forEach(file => {
-    const deviceNode = deviceMap.get(file.original_device);
-    if (deviceNode) {
-      const parent = files.find(f => f.filePath === file.fileParent) || deviceNode;
-      parent.children = parent.children || [];
-      parent.children.push(file);
-    }
+    const filePathParts = file.filePath.split('/').filter(Boolean);
+    let currentNode = deviceNode;
+
+    filePathParts.forEach((part, index) => {
+      const isLastPart = index === filePathParts.length - 1;
+      const existingNode = currentNode.children?.find(child => child.fileName === part);
+
+      if (existingNode) {
+        currentNode = existingNode;
+      } else {
+        const newNode: FileData = {
+          id: `${file.deviceID}-${part}-${index}`,
+          fileType: isLastPart ? file.fileType : 'directory',
+          fileName: part,
+          dateUploaded: '',
+          fileSize: '',
+          filePath: file.filePath,
+          kind: isLastPart ? file.kind : 'Folder',
+          fileParent: currentNode.id,
+          deviceID: file.deviceID,
+          deviceName: file.deviceName,
+          children: isLastPart && file.fileType !== 'directory' ? undefined : [],
+          original_device: file.original_device,
+        };
+
+        currentNode.children?.push(newNode);
+        currentNode = newNode;
+      }
+
+      if (isLastPart && file.fileType === 'directory') {
+        currentNode.children?.push(file);
+      }
+    });
   });
 
-  roots.push(coreNode);
-  return roots;
+  // Add the device node to the core node's children
+  coreNode.children!.push(deviceNode);
+
+  // Return the tree with "Core" as the root
+  return [coreNode];
+
+
 }
+
 
 export default function CustomizedTreeView() {
   const { updates, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
@@ -139,21 +177,20 @@ export default function CustomizedTreeView() {
         const allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
           return deviceFiles.map((file, fileIndex) => ({
-            // id: index * 1000 + fileIndex,
             id: `device-${device.device_number}-file-${fileIndex}`,
+            fileType: file.file_type,
             fileName: file.file_name,
             fileSize: utils.formatBytes(file.file_size),
-            kind: file.kind,
             filePath: file.file_path,
+            kind: file.kind,
             dateUploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(),
+            deviceID: device.device_number,
             deviceName: device.device_name,
-            original_device: device.device_name,
             fileParent: file.file_parent,
-            fileType: file.file_type,
+            original_device: file.original_device,
           }));
         });
-
+        setFileRows([]);
         setFileRows(buildTree(allFilesData));
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -163,9 +200,9 @@ export default function CustomizedTreeView() {
   }, [updates]);
 
   const handleNodeSelect = useCallback((event: React.SyntheticEvent, nodeId: string) => {
-    const findNodeById = (nodes: FileData[], id: string): FileData | null => {
+    const findNodeById = (nodes: FileData[], id: any): FileData | null => {
       for (const node of nodes) {
-        if (node.id.toString() === id) {
+        if (node.id === id) {
           return node;
         }
         if (node.children) {
@@ -191,7 +228,7 @@ export default function CustomizedTreeView() {
     return nodes.map((node) => (
       <TreeItem
         key={node.id}
-        nodeId={node.id.toString()}
+        nodeId={node.id}
         label={
           <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
             {getIconForKind(node.kind)}
@@ -230,3 +267,6 @@ export default function CustomizedTreeView() {
     </Box>
   );
 }
+
+
+
