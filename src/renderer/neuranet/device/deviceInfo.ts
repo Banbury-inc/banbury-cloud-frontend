@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { DateTime } from 'luxon';
 import { handlers } from '../../handlers';
+import { CONFIG } from '../../config/config';
 
 interface CPUPerformance {
   manufacturer: string;
@@ -167,6 +168,12 @@ export async function ip_address(): Promise<string> {
 }
 
 export function directory_info(username: any) {
+
+  const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
+
+  // Determine the directory path based on the fullDeviceSync flag
+  // const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
+
   const bclouddirectoryName = "BCloud";
   const bclouddirectoryPath = os.homedir() + `/${bclouddirectoryName}`;
 

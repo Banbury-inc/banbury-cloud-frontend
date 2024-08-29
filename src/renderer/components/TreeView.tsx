@@ -53,6 +53,8 @@ function getIconForKind(kind: string) {
 }
 
 
+
+
 function buildTree(files: FileData[]): FileData[] {
   const fileMap = new Map<string, FileData>();
 
@@ -72,75 +74,83 @@ function buildTree(files: FileData[]): FileData[] {
     original_device: '',
   };
 
-  // Assuming there's only one device, get its name from the first file
-  const deviceName = files.length > 0 ? files[0].deviceName : '';
+  // Group files by a unique device identifier based on the device name
+  const devicesMap = new Map<string, FileData>();
 
-  // Create the device node
-  const deviceNode: FileData = {
-    id: `device-${deviceName}`,
-    fileType: 'directory',
-    fileName: deviceName,
-    dateUploaded: '',
-    fileSize: '',
-    filePath: '',
-    kind: 'Device',
-    fileParent: 'core',
-    deviceID: files.length > 0 ? files[0].deviceID : '',
-    deviceName: deviceName,
-    children: [],
-    original_device: deviceName,
-  };
+  files.forEach((file, index) => {
+    // Create a unique key based on the device name
+    const uniqueDeviceKey = file.deviceName || `Unnamed-Device-${index}`;
 
-  // Populate the fileMap with all files and folders
-  files.forEach(file => {
-    fileMap.set(file.id, { ...file, children: [] });
-  });
+    if (!devicesMap.has(uniqueDeviceKey)) {
+      // Create a device node if it doesn't already exist in the map
+      const deviceNode: FileData = {
+        id: `device-${uniqueDeviceKey.replace(/\s+/g, '-')}`, // Replace spaces with dashes for a cleaner ID
+        fileType: 'directory',
+        fileName: file.deviceName || `Unnamed Device ${index}`,
+        dateUploaded: '',
+        fileSize: '',
+        filePath: '',
+        kind: 'Device',
+        fileParent: 'core',
+        deviceID: file.deviceID || `undefined-${index}`,
+        deviceName: file.deviceName || `Unnamed Device ${index}`,
+        children: [],
+        original_device: file.original_device,
+      };
+      devicesMap.set(uniqueDeviceKey, deviceNode);
+    }
 
-  // Establish parent-child relationships based on file paths
-  files.forEach(file => {
+    // Get the device node from the map
+    const deviceNode = devicesMap.get(uniqueDeviceKey);
+
+    // Create or update the file structure under the device node
     const filePathParts = file.filePath.split('/').filter(Boolean);
     let currentNode = deviceNode;
 
-    filePathParts.forEach((part, index) => {
-      const isLastPart = index === filePathParts.length - 1;
-      const existingNode = currentNode.children?.find(child => child.fileName === part);
+    filePathParts.forEach((part, partIndex) => {
+      const isLastPart = partIndex === filePathParts.length - 1;
+      const existingNode = currentNode!.children?.find(child => child.fileName === part);
 
       if (existingNode) {
         currentNode = existingNode;
       } else {
         const newNode: FileData = {
-          id: `${file.deviceID}-${part}-${index}`,
+          id: `${uniqueDeviceKey.replace(/\s+/g, '-')}-${part}-${partIndex}`,
           fileType: isLastPart ? file.fileType : 'directory',
           fileName: part,
           dateUploaded: '',
           fileSize: '',
           filePath: file.filePath,
           kind: isLastPart ? file.kind : 'Folder',
-          fileParent: currentNode.id,
-          deviceID: file.deviceID,
-          deviceName: file.deviceName,
+          fileParent: currentNode!.id,
+          deviceID: file.deviceID || `undefined-${index}`,
+          deviceName: file.deviceName || `Unnamed Device ${index}`,
           children: isLastPart && file.fileType !== 'directory' ? undefined : [],
           original_device: file.original_device,
         };
 
-        currentNode.children?.push(newNode);
+        currentNode!.children?.push(newNode);
         currentNode = newNode;
       }
 
       if (isLastPart && file.fileType === 'directory') {
-        currentNode.children?.push(file);
+        currentNode!.children?.push(file);
       }
     });
   });
 
-  // Add the device node to the core node's children
-  coreNode.children!.push(deviceNode);
+  // Add all device nodes to the core node's children
+  devicesMap.forEach(deviceNode => {
+    coreNode.children!.push(deviceNode);
+  });
 
   // Return the tree with "Core" as the root
   return [coreNode];
-
-
 }
+
+
+
+
 
 
 export default function CustomizedTreeView() {
