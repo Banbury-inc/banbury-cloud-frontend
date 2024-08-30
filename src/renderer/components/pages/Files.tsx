@@ -42,6 +42,7 @@ import { handlers } from '../../handlers';
 import * as utils from '../../utils';
 import CustomizedTreeView from '../TreeView';
 import { neuranet } from '../../neuranet';
+import TaskBox from '../TaskBox';
 
 
 // Simplified data interface to match your file structure
@@ -726,15 +727,31 @@ export default function Files() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: '95vh', overflow: 'hidden' }}>
-        <Card variant="outlined" sx={{ overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
-          <CardContent>
-            <Grid container spacing={4}>
-              <Grid item>
-                <CustomizedTreeView />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+        <Stack>
+          <Box display="flex" flexDirection="column" height="100vh">
+            <Card variant="outlined" sx={{ height: '100%', overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
+              <CardContent>
+                <Grid container spacing={4}>
+                  <Grid item>
+                    <CustomizedTreeView />
+                  </Grid>
+
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
+          <Box>
+            <Card variant="outlined" sx={{ overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
+              <CardContent sx={{ paddingBottom: '2px !important', paddingTop: '2px !important' }}>
+                <Grid container spacing={2}>
+                  <Grid item>
+                    <TaskBox />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
+        </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
             <Box my={0}>

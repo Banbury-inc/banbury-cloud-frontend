@@ -7,6 +7,7 @@ import path from 'path';
 import { DateTime } from 'luxon';
 import { handlers } from '../../handlers';
 import { CONFIG } from '../../config/config';
+import PQueue from 'p-queue';
 
 interface CPUPerformance {
   manufacturer: string;
@@ -167,6 +168,50 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
+
+async function countFilesAndFolders(directoryPath: string): Promise<number> {
+  let totalCount = 0;
+  const startTime = Date.now();
+
+  // Set up an interval to log the count every 3 seconds
+  const intervalId = setInterval(() => {
+    console.log(`Total number of files and folders: ${totalCount}`);
+  }, 3);
+
+  async function traverseAndCount(currentPath: string): Promise<void> {
+    const files = fs.readdirSync(currentPath);
+    for (const filename of files) {
+      try {
+        const filePath = path.join(currentPath, filename);
+        const stats = fs.statSync(filePath);
+
+        totalCount++; // Count the current file or directory
+
+        if (stats.isDirectory()) {
+          await traverseAndCount(filePath); // Recurse into the directory
+        }
+      } catch (error) {
+        console.error('Error reading file:', error);
+
+        // Skip to the next file
+        continue;
+      }
+    }
+  }
+
+  await traverseAndCount(directoryPath);
+
+  // Clear the interval once done
+  clearInterval(intervalId);
+
+  // Log the final count
+  console.log(`Final total number of files and folders: ${totalCount}`);
+  return totalCount;
+}
+
+
+
+
 export async function directory_info(username: any) {
 
   const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
@@ -179,8 +224,6 @@ export async function directory_info(username: any) {
 
   // const directoryName = "BCloud";
   // const directoryPath = os.homedir() + `/${directoryName}`;
-
-
 
 
   const filesInfo: any[] = [];
@@ -250,6 +293,7 @@ export async function directory_info(username: any) {
     };
     return fileTypes[ext] || 'unknown';
   }
+
   // Recursive function to get file info
   async function traverseDirectory(currentPath: any) {
     const files = fs.readdirSync(currentPath);
@@ -292,9 +336,12 @@ export async function directory_info(username: any) {
     }
 
   }
-  // Start traversing from the root directory
+
+  // Start processing the files and directories
   await traverseDirectory(directoryPath);
-  console.log(filesInfo);
+  console.log(`Total files and directories processed: ${filesInfo.length}`);
+
   return filesInfo;
+
 }
 
