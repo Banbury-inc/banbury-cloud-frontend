@@ -264,6 +264,7 @@ export default function CustomizedTreeView() {
                 textOverflow: 'ellipsis',
                 maxWidth: 'calc(100% - 24px)',
               }}
+
             >
               {node.fileName}
             </Typography>
