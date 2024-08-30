@@ -108,34 +108,43 @@ function buildTree(files: FileData[]): FileData[] {
     let currentNode = deviceNode;
 
     filePathParts.forEach((part, partIndex) => {
+      // Determine if this part of the path is the last one (i.e., the actual file or the last directory in the path)
       const isLastPart = partIndex === filePathParts.length - 1;
+
+      // Check if the current part already exists as a child node of the current directory
       const existingNode = currentNode!.children?.find(child => child.fileName === part);
 
       if (existingNode) {
+        // If the part exists, set it as the current node to continue building the path
         currentNode = existingNode;
       } else {
+        // If the part doesn't exist, create a new node for this part
         const newNode: FileData = {
           id: `${uniqueDeviceKey.replace(/\s+/g, '-')}-${part}-${partIndex}`,
-          fileType: isLastPart ? file.fileType : 'directory',
-          fileName: part,
+          fileType: isLastPart ? file.fileType : 'directory', // Set as 'directory' if it's not the last part
+          fileName: part, // Name the node after the current part of the path
           dateUploaded: '',
           fileSize: '',
-          filePath: file.filePath,
-          kind: isLastPart ? file.kind : 'Folder',
-          fileParent: currentNode!.id,
-          deviceID: file.deviceID || `undefined-${index}`,
-          deviceName: file.deviceName || `Unnamed Device ${index}`,
-          children: isLastPart && file.fileType !== 'directory' ? undefined : [],
+          // Only use the original file's path for the new node if it's the last part (actual file or directory)
+          filePath: isLastPart ? file.filePath : `${currentNode!.filePath}/${part}`,
+          kind: isLastPart ? file.kind : 'Folder', // If it's the last part, use the file's kind, otherwise 'Folder'
+          fileParent: currentNode!.id, // Set the current node's ID as the parent
+          deviceID: file.deviceID || `undefined-${index}`, // Use the device ID, or a placeholder if undefined
+          deviceName: file.deviceName || `Unnamed Device ${index}`, // Use the device name, or a placeholder if undefined
+          children: isLastPart && file.fileType !== 'directory' ? undefined : [], // Initialize children unless it's the last part and not a directory
           original_device: file.original_device,
         };
 
+        // Add the newly created node to the current node's children
         currentNode!.children?.push(newNode);
+        // Update currentNode to the new node to continue building the path
         currentNode = newNode;
       }
 
-      if (isLastPart && file.fileType === 'directory') {
-        currentNode!.children?.push(file);
-      }
+      // If this is the last part and it's a directory, push the file object itself as a child
+      // if (isLastPart && file.fileType === 'directory') {
+      // currentNode!.children?.push(file);
+      // }
     });
   });
 
@@ -209,7 +218,7 @@ export default function CustomizedTreeView() {
     fetchData();
   }, [updates]);
 
-  const handleNodeSelect = useCallback((event: React.SyntheticEvent, nodeId: string) => {
+  const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
     const findNodeById = (nodes: FileData[], id: any): FileData | null => {
       for (const node of nodes) {
         if (node.id === id) {
@@ -230,9 +239,12 @@ export default function CustomizedTreeView() {
       if (global_file_path !== selectedNode.filePath || global_file_path_device !== selectedNode.deviceName) {
         setGlobal_file_path(selectedNode.filePath);
         setGlobal_file_path_device(selectedNode.deviceName);
+        console.log(selectedNode)
+        console.log(global_file_path)
+
       }
     }
-  }, [fileRows, global_file_path, global_file_path_device, setGlobal_file_path, setGlobal_file_path_device]);
+  };
 
   const renderTreeItems = useCallback((nodes: FileData[]) => {
     return nodes.map((node) => (
