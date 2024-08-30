@@ -172,13 +172,13 @@ export function directory_info(username: any) {
   const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
 
   // Determine the directory path based on the fullDeviceSync flag
-  // const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
+  const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
 
   const bclouddirectoryName = "BCloud";
   const bclouddirectoryPath = os.homedir() + `/${bclouddirectoryName}`;
 
-  const directoryName = "BCloud";
-  const directoryPath = os.homedir() + `/${directoryName}`;
+  // const directoryName = "BCloud";
+  // const directoryPath = os.homedir() + `/${directoryName}`;
 
 
 
@@ -273,6 +273,7 @@ export function directory_info(username: any) {
 
         };
         filesInfo.push(fileInfo);
+
         handlers.files.addFile(username, fileInfo);
 
         // If it's a directory, recurse into it
@@ -282,6 +283,9 @@ export function directory_info(username: any) {
       }
       catch (error) {
         console.error('Error reading file:', error);
+
+        // Skip to the next file
+        continue
       }
     }
   }
