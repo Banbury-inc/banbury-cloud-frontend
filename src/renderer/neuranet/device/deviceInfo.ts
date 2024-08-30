@@ -167,7 +167,7 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
-export function directory_info(username: any) {
+export async function directory_info(username: any) {
 
   const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
 
@@ -251,7 +251,7 @@ export function directory_info(username: any) {
     return fileTypes[ext] || 'unknown';
   }
   // Recursive function to get file info
-  function traverseDirectory(currentPath: any) {
+  async function traverseDirectory(currentPath: any) {
     const files = fs.readdirSync(currentPath);
     for (const filename of files) {
       const filePath = path.join(currentPath, filename);
@@ -272,14 +272,16 @@ export function directory_info(username: any) {
           "kind": stats.isDirectory() ? 'Folder' : getFileKind(filename),
 
         };
-        filesInfo.push(fileInfo);
 
-        handlers.files.addFile(username, fileInfo);
+        console.log(filename);
+
+        await handlers.files.addFile(username, fileInfo);
 
         // If it's a directory, recurse into it
         if (stats.isDirectory()) {
-          traverseDirectory(filePath);
+          await traverseDirectory(filePath);
         }
+        filesInfo.push(fileInfo);
       }
       catch (error) {
         console.error('Error reading file:', error);
@@ -288,10 +290,10 @@ export function directory_info(username: any) {
         continue
       }
     }
-  }
 
+  }
   // Start traversing from the root directory
-  traverseDirectory(directoryPath);
+  await traverseDirectory(directoryPath);
   console.log(filesInfo);
   return filesInfo;
 }

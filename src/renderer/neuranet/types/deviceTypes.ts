@@ -41,14 +41,14 @@ export interface SmallDeviceInfo {
 }
 
 export interface FileInfo {
-  File_Type: string;
-  File_Name: string;
-  Kind: string;
-  Date_Uploaded: string;
-  File_Size: number;
-  File_Priority: number;
-  File_Path: string;
-  Original_Device: string;
+  file_type: string;
+  file_name: string;
+  file_path: string;
+  date_uploaded: string;
+  date_modified: string;
+  file_size: number;
+  file_priority: number;
+  file_parent: string;
+  original_device: string;
+  kind: string;
 }
-
-
