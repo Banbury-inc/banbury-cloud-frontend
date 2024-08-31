@@ -210,7 +210,7 @@ export default function Files() {
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
-  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login } = useAuth();
+  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
 
   const getSelectedFileNames = () => {
     return selected.map(id => {
@@ -497,21 +497,17 @@ export default function Files() {
   const handleAddDeviceClick = async () => {
     console.log("handling add device click")
 
-
     let device_name = neuranet.device.name();
-    let taskInfo = {
-      name: 'add device ' + device_name,
-      device: device_name,
-      status: 'pending',
-    }
-    let task_result = await neuranet.sessions.addTask(username ?? '', taskInfo);
-    if (task_result === 'success') {
-      setTasks([...(tasks || []), taskInfo]);
-    }
+    let task_description = 'add device ' + device_name;
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
 
 
-    let result = handlers.devices.addDevice(username ?? '');
-    console.log(result)
+    let result = await handlers.devices.addDevice(username ?? '');
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
   };
   const handleSyncClick = async () => {
     console.log("handling sync click")

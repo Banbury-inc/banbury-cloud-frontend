@@ -1,37 +1,41 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
+import { useAuth } from '../../context/AuthContext';
+
 
 export async function addTask(
   username: string,
-  taskInfo: any
+  task_description: string,
+  tasks: any,
+  setTasks: any
 ) {
 
 
   let user = username;
 
+  let device_name = neuranet.device.name();
+  let taskInfo = {
+    task_name: task_description,
+    task_device: device_name,
+    task_status: 'pending',
+  };
   try {
     const url = `https://website2-v3xlkt54dq-uc.a.run.app/add_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       user: user,
-      task_name: taskInfo.name,
-      task_device: taskInfo.device,
-      task_status: taskInfo.status,
+      task_name: task_description,
+      task_device: device_name,
+      task_status: 'pending',
     });
     const result = response.data.result;
 
     if (result === 'success') {
+
+      setTasks([...(tasks || []), taskInfo]);
       console.log("task add success");
 
-      // Append the new task to the tasks list
-      const newTask = {
-        name: taskInfo.name,
-        device: taskInfo.device,
-        status: taskInfo.status,
-      };
-
-
-      return 'success';
+      return taskInfo;
     }
     if (result === 'fail') {
       console.log("task add failed");

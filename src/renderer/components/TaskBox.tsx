@@ -25,13 +25,16 @@ export default function TaskBox() {
         const url = `https://website2-v3xlkt54dq-uc.a.run.app/get_session/${username}/`;
         const response = await axios.post<{
           result: string;
-          sessions: any;
+          sessions: any[];
         }>(url, {
           task_device: task_device,
         });
         const result = response.data.result;
         const sessions = response.data.sessions;
-        setTasks(sessions);
+
+        if (JSON.stringify(sessions) !== JSON.stringify(tasks)) {
+          setTasks(sessions); // Only update tasks if sessions are different
+        }
 
         console.log('sessions:', sessions);
         console.log('result:', result);
@@ -39,15 +42,15 @@ export default function TaskBox() {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
-  }, []);
 
+    fetchData();
+  }, [tasks, username]); // Add `tasks` and `username` to the dependency array
 
 
   // Function to get the appropriate icon based on status
   const getStatusIcon = (status: any) => {
     switch (status) {
-      case 'inProgress':
+      case 'pending':
         return <CircularProgress size={16} sx={{ color: theme.palette.primary.main }} />;
       case 'complete':
         return <CheckCircleIcon sx={{ fontSize: '20px', color: theme.palette.success.main }} />;

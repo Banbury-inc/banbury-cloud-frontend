@@ -11,7 +11,6 @@ export async function addFile(
     status: 'pending',
   }
 
-  let task = await neuranet.sessions.addTask(username, taskInfo);
 
   try {
     const response = await axios.post<{
