@@ -5,6 +5,13 @@ export async function addFile(
   username: string,
   fileInfo: any) {
 
+  let taskInfo = {
+    name: 'add file ' + fileInfo.file_name,
+    device: fileInfo.original_device,
+    status: 'pending',
+  }
+
+  let task = await neuranet.sessions.addTask(username, taskInfo);
 
   try {
     const response = await axios.post<{
@@ -25,8 +32,21 @@ export async function addFile(
     const result = response.data.result;
     if (result === 'success') {
       console.log("File added successfully");
+      let taskInfo = {
+        name: 'add file ' + fileInfo.file_name,
+        device: fileInfo.original_device,
+        status: 'complete',
+      }
+      let task = await neuranet.sessions.updateTask(username, taskInfo);
       return 'success';
     } else if (result === 'fail') {
+      let taskInfo = {
+        name: 'add file ' + fileInfo.file_name,
+        device: fileInfo.original_device,
+        status: 'fail',
+      }
+      let task = await neuranet.sessions.updateTask(username, taskInfo);
+
       console.log("Failed to add file");
       return 'failed';
     } else if (result === 'device_not_found') {

@@ -7,6 +7,7 @@ interface AuthContextType {
   last_name: string | null;
   updates: number;
   devices: any[] | null;
+  tasks: any[] | null;
   fileRows: any[];
   global_file_path: string | null;
   global_file_path_device: string | null;
@@ -19,9 +20,12 @@ interface AuthContextType {
   setGlobal_file_path_device: (global_file_path_device: string | null) => void;
   setFileRows: (fileRows: any[]) => void;
   setDevices: (devices: any[] | null) => void;
+  setTasks: (tasks: any[] | null) => void;
   isAuthenticated: boolean; // Change the type to boolean directly
   redirect_to_login: boolean;
   setredirect_to_login: (redict_to_login: boolean) => void;
+  taskbox_expanded: boolean;
+  setTaskbox_expanded: (taskbox_expanded: boolean) => void;
   run_receiver: boolean
   files_is_loading: boolean
   setrun_receiver: (run_receiver: boolean) => void;
@@ -41,10 +45,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [last_name, setLast] = useState<string | null>(null);
   const [updates, setUp] = useState<number>(1);
   const [devices, setDev] = useState<any[] | null>(null);
+  const [tasks, setTa] = useState<any[] | null>(null);
   const [fileRows, setFiles] = useState<any[]>([]);
   const [global_file_path, setFile] = useState<string | null>(null);
   const [global_file_path_device, setFile_Device] = useState<string | null>(null);
   const [redirect_to_login, setredirect_to_login] = useState<boolean>(false); // Add redirect_to_login state
+  const [taskbox_expanded, setTaskbox_expanded] = useState<boolean>(false); // Add redirect_to_login state
   const [run_receiver, setrun_receiver] = useState<boolean>(false); // Add redirect_to_login state
   const [files_is_loading, setFilesIsLoading] = useState<boolean>(false); // Add redirect_to_login state
 
@@ -72,6 +78,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const setDevices = (devices: any[] | null) => {
     setDev(devices);
   };
+  const setTasks = (tasks: any[] | null) => {
+    setTa(tasks);
+  };
+
   const setFileRows = (fileRows: any[] | []) => {
     setFiles(fileRows);
   };
@@ -89,6 +99,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       first_name,
       last_name,
       devices,
+      tasks,
       fileRows,
       global_file_path,
       global_file_path_device,
@@ -99,6 +110,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setFirstname,
       setLastname,
       setDevices,
+      setTasks,
       setFileRows,
       setGlobal_file_path,
       setUpdates,
@@ -107,6 +119,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       isAuthenticated,
       redirect_to_login,
       setredirect_to_login,
+      taskbox_expanded,
+      setTaskbox_expanded,
       run_receiver,
       setrun_receiver,
 

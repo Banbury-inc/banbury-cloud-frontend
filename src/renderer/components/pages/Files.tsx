@@ -210,7 +210,7 @@ export default function Files() {
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
-  const { updates, setUpdates, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login } = useAuth();
+  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login } = useAuth();
 
   const getSelectedFileNames = () => {
     return selected.map(id => {
@@ -496,6 +496,20 @@ export default function Files() {
   };
   const handleAddDeviceClick = async () => {
     console.log("handling add device click")
+
+
+    let device_name = neuranet.device.name();
+    let taskInfo = {
+      name: 'add device ' + device_name,
+      device: device_name,
+      status: 'pending',
+    }
+    let task_result = await neuranet.sessions.addTask(username ?? '', taskInfo);
+    if (task_result === 'success') {
+      setTasks([...(tasks || []), taskInfo]);
+    }
+
+
     let result = handlers.devices.addDevice(username ?? '');
     console.log(result)
   };
@@ -735,19 +749,20 @@ export default function Files() {
                   <Grid item>
                     <CustomizedTreeView />
                   </Grid>
-
                 </Grid>
               </CardContent>
             </Card>
           </Box>
           <Box>
             <Card variant="outlined" sx={{ overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
-              <CardContent sx={{ paddingBottom: '2px !important', paddingTop: '2px !important' }}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <TaskBox />
-                  </Grid>
-                </Grid>
+              <CardContent sx={{
+                width: '100%',
+                paddingLeft: '0px !important',
+                paddingRight: '0px !important',
+                paddingBottom: '0px !important',
+                paddingTop: '0px !important'
+              }}>
+                <TaskBox />
               </CardContent>
             </Card>
           </Box>

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 
+
 export async function addDevice(username: string) {
 
 
@@ -23,6 +24,8 @@ export async function addDevice(username: string) {
   let sync_status = false;
   let optimization_status = false;
   let online = true;
+
+
 
 
   try {
