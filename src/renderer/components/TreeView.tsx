@@ -195,7 +195,6 @@ export default function CustomizedTreeView() {
         }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
 
         const { files } = fileInfoResponse.data;
-        set_Files(files);
 
         const allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
@@ -219,6 +218,8 @@ export default function CustomizedTreeView() {
         setAllFiles(allFilesData); if (!disableFetch) {
           setAllFiles(allFilesData);
         }
+
+        set_Files(allFilesData);
 
       } catch (error) {
         console.error('Error fetching data:', error);

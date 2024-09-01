@@ -22,21 +22,6 @@ export default function AccountMenuIcon() {
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/${username}/`);
-        const fetchedFirstname = response.data.first_name;
-        const fetchedLastname = response.data.last_name;
-        setFirstname(fetchedFirstname);
-        setLastname(fetchedLastname);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 

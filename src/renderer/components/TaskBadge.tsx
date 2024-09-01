@@ -35,21 +35,6 @@ export default function TaskBadge() {
   const navigate = useNavigate();
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`https://website2-v3xlkt54dq-uc.a.run.app/get_small_user_info/${username}/`);
-        const fetchedFirstname = response.data.first_name;
-        const fetchedLastname = response.data.last_name;
-        setFirstname(fetchedFirstname);
-        setLastname(fetchedLastname);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 

@@ -87,40 +87,6 @@ export default function Profile() {
   };
 
 
-  const handleApiCall = async () => {
-    const selectedDeviceNames = getSelectedDeviceNames();
-  }
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get<UserResponse>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-
-        const data = response.data;
-        // Processing data for the frontend, assuming your API returns data directly usable by the UI
-        const roundedDevices = data.devices.map(device => ({
-          ...device,
-          average_upload_speed: parseFloat(device.average_upload_speed.toFixed(2)),
-          storage_capacity_GB: formatBytes(device.storage_capacity_GB),
-          average_download_speed: parseFloat(device.average_download_speed.toFixed(2)),
-          average_gpu_usage: parseFloat(device.average_gpu_usage.toFixed(2)),
-          average_cpu_usage: parseFloat(device.average_cpu_usage.toFixed(2)),
-          average_ram_usage: parseFloat(device.average_ram_usage.toFixed(2)),
-          date_added: device.date_added.map(dateStr => new Date(dateStr)), // Transforming date strings to Date objects
-          onlineStatus: device.online ? "Online" : "Offline"
-        }));
-
-        setDevices(roundedDevices);
-        setDeviceRows(roundedDevices);
-        setFirstname(data.first_name);
-        setLastname(data.last_name);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
-
-
 
   function formatBytes(gigabytes: number, decimals: number = 2): string {
     if (gigabytes === 0) return '0 GB';
@@ -138,41 +104,6 @@ export default function Profile() {
     const adjustedIndex = Math.max(i, 0);
     return parseFloat((gigabytes / Math.pow(k, adjustedIndex)).toFixed(dm)) + ' ' + sizes[adjustedIndex];
   }
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const fetchData = async () => {
-        try {
-          const response = await axios.get<UserResponse>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-          const data = response.data;
-          // Processing data for the frontend, assuming your API returns data directly usable by the UI
-          const roundedDevices = data.devices.map(device => ({
-            ...device,
-            average_upload_speed: parseFloat(device.average_upload_speed.toFixed(2)),
-            storage_capacity_GB: formatBytes(device.storage_capacity_GB),
-            average_download_speed: parseFloat(device.average_download_speed.toFixed(2)),
-            average_gpu_usage: parseFloat(device.average_gpu_usage.toFixed(2)),
-            average_cpu_usage: parseFloat(device.average_cpu_usage.toFixed(2)),
-            average_ram_usage: parseFloat(device.average_ram_usage.toFixed(2)),
-            date_added: device.date_added.map(dateStr => new Date(dateStr)), // Transforming date strings to Date objects
-            onlineStatus: device.online ? "Online" : "Offline"
-          }));
-
-          setDevices(roundedDevices);
-          setDeviceRows(roundedDevices);
-          setFirstname(data.first_name);
-          setLastname(data.last_name);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-      fetchData();
-    }, 10000); // Refresh every 10 seconds 
-
-    return () => clearInterval(interval);
-  },
-    []);
-
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -218,56 +149,6 @@ export default function Profile() {
   const isSelected = (device_number: number) => selected.indexOf(device_number) !== -1;
 
 
-  const handleDeleteClick = async () => {
-    try {
-
-      const scriptPath = 'src/main/deleteDevice.py'; // Update this to the path of your Python script
-
-      exec(`python "${scriptPath}" "${selectedDeviceNames}"`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          return;
-        }
-        if (stderr) {
-          console.error(`Python Script Error: ${stderr}`);
-          return
-        }
-        if (stdout) {
-          console.log(`Python Script Message: ${stdout}`);
-          return
-        }
-        console.log(`Python Script Message: ${stdout}`);
-
-      });
-    } catch (error) {
-      console.error('There was an error!', error);
-
-    }
-  };
-
-
-  const [Firstname, setFirstname] = useState<string>('');
-  const [Lastname, setLastname] = useState<string>('');
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get<{
-          devices: any[]
-          first_name: string;
-          last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-
-        const fetchedFirstname = response.data.first_name;
-        const fetchedLastname = response.data.last_name;
-        setFirstname(fetchedFirstname);
-        setLastname(fetchedLastname);
-        console.log(fetchedFirstname);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const [checked, setChecked] = React.useState(true);
 
@@ -277,13 +158,10 @@ export default function Profile() {
 
 
   return (
-    <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
+    <Box sx={{ width: '100%', height: '100vh', pl: 4, pr: 4, mt: 0, pt: 5 }}>
       <Stack spacing={2}>
         <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
           <Grid item>
-            <Typography variant="h2" textAlign="left">
-              Settings
-            </Typography>
           </Grid>
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
@@ -294,7 +172,7 @@ export default function Profile() {
         <Grid container spacing={1}>
         </Grid>
       </Stack>
-      <Grid container spacing={2} columns={1}>
+      <Grid container spacing={2} columns={1} overflow="scroll">
         <Grid item xs={8}>
 
           <Stack spacing={4}>
@@ -369,7 +247,7 @@ export default function Profile() {
                           </Typography>
                         </Grid>
                         <Grid item pr={4}>
-                          <Button variant="outlined" onClick={handleDeleteClick} size="small">
+                          <Button variant="outlined" size="small">
                             Open
                           </Button>
                         </Grid>

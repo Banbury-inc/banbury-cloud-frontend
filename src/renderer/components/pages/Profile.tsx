@@ -134,29 +134,6 @@ export default function Profile() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-
-    const interval = setInterval(() => {
-      const fetchData = async () => {
-        try {
-          const response = await axios.get(`https://website2-v3xlkt54dq-uc.a.run.app/get_small_user_info/${username}/`);
-          const fetchedFirstname = response.data.first_name;
-          const fetchedLastname = response.data.last_name;
-
-          // Processing data for the frontend, assuming your API returns data directly usable by the UI
-          setFirstname(fetchedFirstname);
-          setLastname(fetchedLastname);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-      fetchData();
-    }, 1000); // Refresh every 10 seconds 
-
-    return () => clearInterval(interval);
-  },
-    []);
-
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
