@@ -7,7 +7,6 @@ import path from 'path';
 import { DateTime } from 'luxon';
 import { handlers } from '../../handlers';
 import { CONFIG } from '../../config/config';
-import PQueue from 'p-queue';
 
 interface CPUPerformance {
   manufacturer: string;

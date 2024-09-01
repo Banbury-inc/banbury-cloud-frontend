@@ -744,12 +744,12 @@ export default function Files() {
           </Stack>
         </CardContent>
       </Card>
-      <Stack direction="row" spacing={0} sx={{ width: '100%', height: '95vh', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={0} sx={{ width: '100%', height: '89%', overflow: 'hidden' }}>
         <Stack>
-          <Box display="flex" flexDirection="column" height="100vh">
-            <Card variant="outlined" sx={{ height: '100%', overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
+          <Box display="flex" flexDirection="column" height="100%">
+            <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'scroll', borderLeft: 0, borderRight: 0 }}>
               <CardContent>
-                <Grid container spacing={4}>
+                <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                   <Grid item>
                     <CustomizedTreeView />
                   </Grid>
@@ -757,7 +757,7 @@ export default function Files() {
               </CardContent>
             </Card>
           </Box>
-          <Box>
+          <Box mt="auto">
             <Card variant="outlined" sx={{ overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
               <CardContent sx={{
                 width: '100%',
