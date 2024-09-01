@@ -512,7 +512,15 @@ export default function Files() {
   const handleSyncClick = async () => {
     console.log("handling sync click")
     // let result = handlers.files.addFile(username ?? '');
-    let result = neuranet.device.directory_info(username)
+    let task_description = 'scanning filesystem, this may take a while...';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await neuranet.device.scanFilesystem(username ?? '')
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
     console.log(result)
   };
 

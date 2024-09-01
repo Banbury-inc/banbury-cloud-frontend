@@ -5,14 +5,37 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import { DateTime } from 'luxon';
+import { handlers } from '../../handlers';
+import { CONFIG } from '../../config/config';
 
 
-export function scanFilesystem() {
-  const rootDirectory = os.platform() === 'win32' ? 'C:\\' : '/';
-  const filesInfo: any[] = [];
-  let fileCount = 0;
-  let lastDisplayTime = Date.now();
+export async function scanFilesystem(username: any) {
 
+  const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
+
+  // Determine the directory path based on the fullDeviceSync flag
+  const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
+
+  const bclouddirectoryName = "BCloud";
+  const bclouddirectoryPath = os.homedir() + `/${bclouddirectoryName}`;
+
+  // const directoryName = "BCloud";
+  // const directoryPath = os.homedir() + `/${directoryName}`;
+
+
+  let filesInfo: any[] = [];
+
+  // Check if the directory exists, create if it does not and create a welcome text file
+  if (!fs.existsSync(bclouddirectoryPath)) {
+    fs.mkdirSync(bclouddirectoryPath, { recursive: true });
+    const welcomeFilePath = path.join(bclouddirectoryPath, "welcome.txt");
+    fs.writeFileSync(welcomeFilePath,
+      "Welcome to Banbury Cloud! This is the directory that will contain all of the files " +
+      "that you would like to have in the cloud and streamed throughout all of your devices. " +
+      "You may place as many files in here as you would like, and they will appear on all of " +
+      "your other devices."
+    );
+  }
   function getFileKind(filename: string) {
     const ext = path.extname(filename).toLowerCase();
     const fileTypes: { [key: string]: string } = {
@@ -67,8 +90,9 @@ export function scanFilesystem() {
     };
     return fileTypes[ext] || 'unknown';
   }
+
   // Recursive function to get file info
-  function traverseDirectory(currentPath: any) {
+  async function traverseDirectory(currentPath: any) {
     const files = fs.readdirSync(currentPath);
     for (const filename of files) {
       const filePath = path.join(currentPath, filename);
@@ -89,27 +113,43 @@ export function scanFilesystem() {
           "kind": stats.isDirectory() ? 'Folder' : getFileKind(filename),
 
         };
-        filesInfo.push(fileInfo);
-        fileCount++;
 
-        if (fileCount % 1000 === 0) {
-          console.log('Files scanned:', fileCount);
+        // await handlers.files.addFile(username, fileInfo);
+        // if the length of filesInfo is more than 100, send the filesInfo to the server
+        if (filesInfo.length > 1000) {
+          await handlers.files.addFiles(username, filesInfo);
+          console.log('Sent 1000 files to the server');
+          // Clear the filesInfo array
+          filesInfo = [];
         }
+
         // If it's a directory, recurse into it
         if (stats.isDirectory()) {
-          traverseDirectory(filePath);
+          await traverseDirectory(filePath);
         }
+        filesInfo.push(fileInfo);
       }
       catch (error) {
         console.error('Error reading file:', error);
+
+        // Skip to the next file
+        continue
       }
     }
+
   }
 
-  // Start traversing from the root directory
-  traverseDirectory(rootDirectory);
-  console.log(filesInfo);
-  return filesInfo;
+  // Start processing the files and directories
+  await traverseDirectory(directoryPath);
+
+  // After traversing all directories, send the remaining files to the server
+  if (filesInfo.length > 0) {
+    await handlers.files.addFiles(username, filesInfo);
+  }
+
+  const result = 'success'
+
+  return result;
+
 }
 
-scanFilesystem();

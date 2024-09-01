@@ -166,8 +166,11 @@ export default function CustomizedTreeView() {
   const { updates, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
   const [fileRows, setFileRows] = useState<FileData[]>([]);
   const [expanded, setExpanded] = useState<string[]>(['core']);
+  const [allFiles, setAllFiles] = useState<FileData[]>([]);
+  const [disableFetch, setDisableFetch] = useState(false);
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     const fetchData = async () => {
       try {
         const userInfoResponse = await axios.get<{
@@ -211,12 +214,25 @@ export default function CustomizedTreeView() {
         });
         setFileRows([]);
         setFileRows(buildTree(allFilesData));
+
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
+
+
+
     fetchData();
-  }, [updates]);
+
+
+    intervalId = setInterval(fetchData, 50000);
+
+    return () => clearInterval(intervalId);
+  }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
 
   const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
     const findNodeById = (nodes: FileData[], id: any): FileData | null => {
