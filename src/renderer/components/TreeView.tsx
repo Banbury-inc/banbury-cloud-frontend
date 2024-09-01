@@ -163,7 +163,7 @@ function buildTree(files: FileData[]): FileData[] {
 
 
 export default function CustomizedTreeView() {
-  const { updates, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
+  const { updates, files, set_Files, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
   const [fileRows, setFileRows] = useState<FileData[]>([]);
   const [expanded, setExpanded] = useState<string[]>(['core']);
   const [allFiles, setAllFiles] = useState<FileData[]>([]);
@@ -195,6 +195,7 @@ export default function CustomizedTreeView() {
         }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
 
         const { files } = fileInfoResponse.data;
+        set_Files(files);
 
         const allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
@@ -304,7 +305,8 @@ export default function CustomizedTreeView() {
         {renderTreeItems(fileRows)}
       </TreeView>
     </Box>
-  );
+  )
+
 }
 
 

@@ -7,6 +7,7 @@ interface AuthContextType {
   last_name: string | null;
   updates: number;
   devices: any[] | null;
+  files: any[] | [];
   tasks: any[] | null;
   fileRows: any[];
   global_file_path: string | null;
@@ -20,6 +21,7 @@ interface AuthContextType {
   setGlobal_file_path_device: (global_file_path_device: string | null) => void;
   setFileRows: (fileRows: any[]) => void;
   setDevices: (devices: any[] | null) => void;
+  set_Files: (files: any[] | []) => void;
   setTasks: (tasks: any[] | null) => void;
   isAuthenticated: boolean; // Change the type to boolean directly
   redirect_to_login: boolean;
@@ -45,6 +47,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [last_name, setLast] = useState<string | null>(null);
   const [updates, setUp] = useState<number>(1);
   const [devices, setDev] = useState<any[] | null>(null);
+  const [files, setFi] = useState<any[] | any[]>([]);
   const [tasks, setTa] = useState<any[] | null>(null);
   const [fileRows, setFiles] = useState<any[]>([]);
   const [global_file_path, setFile] = useState<string | null>(null);
@@ -78,6 +81,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const setDevices = (devices: any[] | null) => {
     setDev(devices);
   };
+  const set_Files = (files: any[] | []) => {
+    setFi(files);
+  };
+
   const setTasks = (tasks: any[] | null) => {
     setTa(tasks);
   };
@@ -99,6 +106,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       first_name,
       last_name,
       devices,
+      files,
       tasks,
       fileRows,
       global_file_path,
@@ -110,6 +118,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setFirstname,
       setLastname,
       setDevices,
+      set_Files,
       setTasks,
       setFileRows,
       setGlobal_file_path,

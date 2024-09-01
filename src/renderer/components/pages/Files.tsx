@@ -33,6 +33,7 @@ import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import NewInputFileUploadButton from '../newuploadfilebutton';
 import AccountMenuIcon from '../common/AccountMenuIcon';
+import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
@@ -43,6 +44,7 @@ import * as utils from '../../utils';
 import CustomizedTreeView from '../TreeView';
 import { neuranet } from '../../neuranet';
 import TaskBox from '../TaskBox';
+import SyncIcon from '@mui/icons-material/Sync';
 
 
 // Simplified data interface to match your file structure
@@ -95,7 +97,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort(event, property);
   };
 
-  const { global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
+  const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
   const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
 
   // Function to handle breadcrumb click, might need more logic to actually navigate
@@ -249,6 +251,7 @@ export default function Files() {
         }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
 
         const { files } = fileInfoResponse.data;
+
 
         // Combine devices with their associated files
         const allFilesData = devices.flatMap((device, index) => {
@@ -665,7 +668,7 @@ export default function Files() {
                     onClick={handleSyncClick}
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
-                    <CreateNewFolderOutlinedIcon
+                    <SyncIcon
                       fontSize="inherit"
                     />
                   </Button>
@@ -696,7 +699,7 @@ export default function Files() {
                     onClick={handleAddDeviceClick}
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
-                    <DownloadIcon
+                    <AddToQueueIcon
                       fontSize="inherit"
                     />
                   </Button>
