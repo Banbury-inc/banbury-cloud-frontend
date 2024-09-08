@@ -16,7 +16,7 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
   "include": [
     "src/renderer/neuranet/**/*.ts"
   ],
