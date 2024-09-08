@@ -150,15 +150,15 @@ export default function Profile() {
 
 
 
-  const [checked, setChecked] = React.useState(true);
+  const [sync_entire_device_checked, set_sync_entire_device_checked] = React.useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
+    set_sync_entire_device_checked(event.target.checked);
   };
 
 
   return (
-    <Box sx={{ width: '100%', height: '100vh', pl: 4, pr: 4, mt: 0, pt: 5 }}>
+    <Box sx={{ width: '100%', height: '100vh', pl: 2, pr: 2, mt: 0, pt: 5 }}>
       <Stack spacing={2}>
         <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
           <Grid item>
@@ -192,49 +192,12 @@ export default function Profile() {
                       <Divider orientation="horizontal" variant="middle" />
                       <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
                         <Grid item>
-                          <Typography variant="subtitle1" gutterBottom>Automatic Updates</Typography>
-                          <Typography variant="body2" gutterBottom>Turn this off to prevent the app from checking for updates.
+                          <Typography variant="subtitle1" gutterBottom>Sync Entire Device</Typography>
+                          <Typography variant="body2" gutterBottom> Sync your entire device starting from the root directory
                           </Typography>
                         </Grid>
                         <Grid item pr={4}>
-                          <Switch checked={checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
-                        </Grid>
-                      </Grid>
-                      <Divider orientation="horizontal" variant="middle" />
-
-                      <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
-                        <Grid item>
-                          <Typography variant="subtitle1" gutterBottom>Sync Devices</Typography>
-                          <Typography variant="body2" gutterBottom>Allow files to sync with all other devices, when the space is available.
-                          </Typography>
-                        </Grid>
-                        <Grid item pr={4}>
-                          <Switch checked={checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
-                        </Grid>
-                      </Grid>
-                      <Divider orientation="horizontal" variant="middle" />
-
-                      <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
-                        <Grid item>
-                          <Typography variant="subtitle1" gutterBottom>Keep Original Files</Typography>
-                          <Typography variant="body2" gutterBottom>When sync is turned on, ensure that the devices keep all of their original files.
-                          </Typography>
-                        </Grid>
-                        <Grid item pr={4}>
-                          <Switch checked={checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
-                        </Grid>
-                      </Grid>
-                      <Divider orientation="horizontal" variant="middle" />
-
-                      <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
-                        <Grid item>
-                          <Typography variant="subtitle1" gutterBottom>Contribute to NeuraNet</Typography>
-                          <Typography variant="body2" gutterBottom>Allow others to use your device resources when needed This includes things like storage space, GPU, CPU,
-                            RAM. In return, you will receive the recources of the NeuraNet when you need them.
-                          </Typography>
-                        </Grid>
-                        <Grid item pr={4}>
-                          <Switch checked={checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
+                          <Switch checked={sync_entire_device_checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
                         </Grid>
                       </Grid>
                       <Divider orientation="horizontal" variant="middle" />

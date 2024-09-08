@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "es2021",
     "module": "commonjs",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "allowJs": true,
     "jsx": "react",
     "sourceMap": true,
@@ -14,4 +17,11 @@
     "strictNullChecks": true,
     "allowSyntheticDefaultImports": true
   }
+  "include": [
+    "src/renderer/neuranet/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

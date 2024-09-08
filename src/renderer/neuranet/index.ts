@@ -4,7 +4,9 @@ import * as networking from './networking';
 import * as sessions from './sessions';
 import * as types from './types';
 
-
+/**
+ * The main entry point for the neuranet library.
+ */
 export const neuranet = {
   device,
   handlers,

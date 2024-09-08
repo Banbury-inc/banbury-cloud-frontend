@@ -210,6 +210,7 @@ export default function CustomizedTreeView() {
             deviceName: device.device_name,
             fileParent: file.file_parent,
             original_device: file.original_device,
+            available: device.online ? "Available" : "Unavailable",
           }));
         });
         setFileRows([]);

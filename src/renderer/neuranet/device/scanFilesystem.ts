@@ -12,6 +12,7 @@ import { CONFIG } from '../../config/config';
 export async function scanFilesystem(username: any) {
 
   const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
+  const skip_dot_files = CONFIG.skip_dot_files; // Change this to your actual server IP
 
   // Determine the directory path based on the fullDeviceSync flag
   const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
@@ -97,6 +98,11 @@ export async function scanFilesystem(username: any) {
     for (const filename of files) {
       const filePath = path.join(currentPath, filename);
       const stats = fs.statSync(filePath);
+
+      // Skip folders that start with a dot if skip_dot_files is true
+      if (skip_dot_files && stats.isDirectory() && filename.startsWith('.')) {
+        continue;
+      }
 
       try {
         // Determine if it is a file or directory and push appropriate info to filesInfo
