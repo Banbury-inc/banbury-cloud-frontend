@@ -747,7 +747,7 @@ export default function Files() {
           </Stack>
         </CardContent>
       </Card>
-      <Stack direction="row" spacing={0} sx={{ width: '100%', height: '89%', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 120px)', overflow: 'hidden' }}>
         <Stack>
           <Box display="flex" flexDirection="column" height="100%">
             <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'scroll', borderLeft: 0, borderRight: 0 }}>
