@@ -270,13 +270,10 @@ export default function Profile() {
 
   return (
 
-    <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
+    <Box sx={{ width: '100%', height: '100vh', pl: 2, pr: 2, mt: 0, pt: 5 }}>
       <Stack spacing={2}>
         <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
           <Grid item>
-            <Typography variant="h2" textAlign="left">
-              Profile
-            </Typography>
           </Grid>
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
@@ -287,7 +284,7 @@ export default function Profile() {
         <Grid container spacing={1}>
         </Grid>
       </Stack>
-      <Grid container spacing={2} columns={1}>
+      <Grid container spacing={2} columns={1} overflow="inherit">
         <Grid item xs={8}>
           <Card variant='outlined'>
             <CardContent>
@@ -296,7 +293,6 @@ export default function Profile() {
                   <Typography variant="h4" gutterBottom>Account</Typography>
                   <Stack spacing={1}>
                     <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
-
                       <Grid item>
                         <Typography variant="subtitle1" gutterBottom>First Name</Typography>
                         {showFirstnameTextField ? (

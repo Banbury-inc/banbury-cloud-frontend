@@ -172,11 +172,9 @@ export default function Profile() {
         <Grid container spacing={1}>
         </Grid>
       </Stack>
-      <Grid container spacing={2} columns={1} overflow="scroll">
+      <Grid container spacing={2} columns={1} overflow="inherit">
         <Grid item xs={8}>
-
           <Stack spacing={4}>
-
             <Card variant='outlined'>
               <CardContent>
                 <Box my={0}>
@@ -197,7 +195,7 @@ export default function Profile() {
                           </Typography>
                         </Grid>
                         <Grid item pr={4}>
-                          <Switch checked={sync_entire_device_checked} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
+                          <Switch checked={sync_entire_device_checked} onChange={handleChange} color="success" inputProps={{ 'aria-label': 'controlled' }} />
                         </Grid>
                       </Grid>
                       <Divider orientation="horizontal" variant="middle" />
