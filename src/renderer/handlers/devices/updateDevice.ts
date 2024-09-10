@@ -2,7 +2,7 @@ import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import axios from 'axios'
 
-export async function updateDevices(username: any) {
+export async function updateDevice(username: any) {
   return new Promise(async (resolve, reject) => {
     const user = username || "user";
     const device_number = 0;
@@ -40,7 +40,7 @@ export async function updateDevices(username: any) {
     console.log(device_info_json);
 
     try {
-      const response = await axios.post(`https://website2-v3xlkt54dq-uc.a.run.app/update_devices/${username}/`, device_info_json);
+      const response = await axios.post(`https://website2-389236221119.us-central1.run.app/update_devices/${username}/`, device_info_json);
       if (response.status === 200) {
         if (response.data.response === 'success') {
           console.log("Successfully updated devices");

@@ -10,7 +10,7 @@ export async function addFiles(
   try {
     const response = await axios.post<{
       result: string;
-    }>('https://website2-v3xlkt54dq-uc.a.run.app/add_files/' + username + '/', {
+    }>('https://website2-389236221119.us-central1.run.app/add_files/' + username + '/', {
       files: filesInfo,
       device_name: device,
     });

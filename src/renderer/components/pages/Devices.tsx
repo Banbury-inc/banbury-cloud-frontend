@@ -97,7 +97,7 @@ export default function DevicesTable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<UserResponse>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        const response = await axios.get<UserResponse>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const data = response.data;
         // Processing data for the frontend, assuming your API returns data directly usable by the UI
@@ -150,7 +150,7 @@ export default function DevicesTable() {
     const interval = setInterval(() => {
       const fetchData = async () => {
         try {
-          const response = await axios.get<UserResponse>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+          const response = await axios.get<UserResponse>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
           const data = response.data;
           // Processing data for the frontend, assuming your API returns data directly usable by the UI
           const roundedDevices = data.devices.map(device => ({
@@ -240,7 +240,7 @@ export default function DevicesTable() {
           devices: any[]
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        }>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const fetchedFirstname = response.data.first_name;
         const fetchedLastname = response.data.last_name;

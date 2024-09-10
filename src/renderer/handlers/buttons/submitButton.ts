@@ -9,7 +9,7 @@ export async function submitButton(
   try {
     const response = await axios.post<{
       result: string;
-    }>('https://website2-v3xlkt54dq-uc.a.run.app/add_file/' + username + '/', {
+    }>('https://website2-v3xlkt54dq-uc.a.run.app/update_settings/' + username + '/', {
       sync_entire_device_checked: sync_entire_device_checked,
     });
 

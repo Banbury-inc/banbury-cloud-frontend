@@ -21,6 +21,7 @@ export async function add_multiple_files(username: string, filesInfo: any[]) {
     });
 
     const result = response.data.result;
+    console.log(result);
     if (result === 'success') {
       console.log("Files added successfully");
       return 'success';

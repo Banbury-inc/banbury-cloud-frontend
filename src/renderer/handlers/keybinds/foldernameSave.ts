@@ -45,7 +45,7 @@ export async function foldernameSave(
   setNewFolderName("");
   setDisableFetch(false);
 
-  const update_result = await handlers.devices.updateDevices(username);
+  const update_result = await handlers.devices.updateDevice(username);
   console.log(update_result);
   setUpdates(updates + 1);
 }

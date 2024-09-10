@@ -294,7 +294,7 @@ export default function Files() {
           phone_number: string;
           email: string;
 
-        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/${username}/`);
+        }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
 
         const { first_name, last_name } = userInfoResponse.data;
         setFirstname(first_name);
@@ -303,13 +303,13 @@ export default function Files() {
         // Step 2: Fetch device information
         const deviceInfoResponse = await axios.get<{
           devices: any[];
-        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getdeviceinfo/${username}/`);
+        }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
         const { devices } = deviceInfoResponse.data;
 
         // Step 3: Fetch files for all devices
         const fileInfoResponse = await axios.get<{
           files: any[];
-        }>(`https://website2-v3xlkt54dq-uc.a.run.app/getfileinfo/${username}/`);
+        }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
         const { files } = fileInfoResponse.data;
 
         // Combine devices with their associated files

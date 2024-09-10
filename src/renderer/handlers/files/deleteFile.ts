@@ -71,7 +71,7 @@ export async function deleteFile(
   setDisableFetch(false);
 
   // Run update devices function after all deletions are complete
-  const update_result = await handlers.devices.updateDevices(username);
+  const update_result = await handlers.devices.updateDevice(username);
   console.log(update_result);
   setUpdates(updates + 1);
 }
