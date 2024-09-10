@@ -15,7 +15,7 @@ export async function addFile(
   try {
     const response = await axios.post<{
       result: string;
-    }>('https://website2-v3xlkt54dq-uc.a.run.app/add_file/' + username + '/', {
+    }>('https://website2-389236221119.us-central1.run.app/add_file/' + username + '/', {
       file_type: fileInfo.file_type,
       file_name: fileInfo.file_name,
       file_path: fileInfo.file_path,

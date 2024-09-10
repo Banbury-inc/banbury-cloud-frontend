@@ -21,7 +21,7 @@ export async function addTask(
     task_status: 'pending',
   };
   try {
-    const url = `https://website2-v3xlkt54dq-uc.a.run.app/add_task/${username}/`;
+    const url = `https://website2-389236221119.us-central1.run.app/add_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       user: user,
       task_name: task_description,

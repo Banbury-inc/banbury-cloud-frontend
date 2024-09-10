@@ -67,7 +67,7 @@ function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
-      <Link color="inherit" href="https://website2-v3xlkt54dq-uc.a.run.app/">
+      <Link color="inherit" href="https://website2-389236221119.us-central1.run.app">
         Banbury
       </Link>{' '}
       {new Date().getFullYear()}

@@ -304,7 +304,7 @@ export default function EnhancedTable() {
           devices: any[];
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        }>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const { first_name, last_name, devices } = response.data;
         setFirstname(first_name);
@@ -351,7 +351,7 @@ export default function EnhancedTable() {
           devices: any[];
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        }>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const { first_name, last_name, devices } = response.data;
         setFirstname(first_name);

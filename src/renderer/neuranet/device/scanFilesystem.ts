@@ -57,6 +57,8 @@ export async function scanFilesystem(username: string): Promise<string> {
       const filePath = path.join(currentPath, filename);
       const stats = fs.statSync(filePath);
 
+      console.log(`Processing file ${filePath}`);
+
       // Skip dot directories if configured to do so
       if (skipDotFiles && filename.startsWith('.')) continue;
 
