@@ -3,12 +3,13 @@ import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 
 export async function updateTask(
-  username: string,
+  username: string | null,
   taskInfo: any
 ) {
 
 
   let user = username;
+
 
   try {
     const url = `https://website2-v3xlkt54dq-uc.a.run.app/update_task/${username}/`;

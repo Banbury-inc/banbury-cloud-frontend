@@ -26,6 +26,7 @@ import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
+import { handlers } from '../../handlers';
 
 import { Email } from '@mui/icons-material';
 interface Device {
@@ -156,6 +157,15 @@ export default function Profile() {
     set_sync_entire_device_checked(event.target.checked);
   };
 
+  const handlesubmitClick = (event: React.MouseEvent<unknown>) => {
+    handlers.buttons.submitButton(username, sync_entire_device_checked);
+
+
+  };
+
+
+
+
 
   return (
     <Box sx={{ width: '100%', height: '100vh', pl: 2, pr: 2, mt: 0, pt: 5 }}>
@@ -217,7 +227,7 @@ export default function Profile() {
                   </Stack>
                   <Stack direction="row" justifyContent="center">
                     <Grid direction="row" justifyContent="center" item pt={8} pr={4}>
-                      <Button variant="outlined" size="small">
+                      <Button variant="outlined" size="small" onClick={handlesubmitClick}>
                         Submit
                       </Button>
                     </Grid>
