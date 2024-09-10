@@ -215,6 +215,13 @@ export default function Profile() {
                       </Grid>
                     </Stack>
                   </Stack>
+                  <Stack direction="row" justifyContent="center">
+                    <Grid direction="row" justifyContent="center" item pt={8} pr={4}>
+                      <Button variant="outlined" size="small">
+                        Submit
+                      </Button>
+                    </Grid>
+                  </Stack>
                 </Box>
               </CardContent>
             </Card>
