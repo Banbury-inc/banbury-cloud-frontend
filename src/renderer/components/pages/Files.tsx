@@ -744,8 +744,6 @@ export default function Files() {
                   </Stack>
                 </Box>
               </Grid>
-
-
             </Grid>
           </Stack>
         </CardContent>
@@ -753,7 +751,7 @@ export default function Files() {
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
         <Stack>
           <Box display="flex" flexDirection="column" height="100%">
-            <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'scroll', borderLeft: 0, borderRight: 0 }}>
+            <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}>
               <CardContent>
                 <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                   <Grid item>
