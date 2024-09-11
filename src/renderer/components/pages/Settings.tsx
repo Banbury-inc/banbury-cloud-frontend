@@ -27,6 +27,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import { handlers } from '../../handlers';
+import { neuranet } from '../../neuranet';
 
 import { Email } from '@mui/icons-material';
 interface Device {
@@ -78,7 +79,7 @@ export default function Profile() {
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const { username } = useAuth();
+  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
   const [deviceRows, setDeviceRows] = useState<Device[]>([]); // State for storing fetched file data
   const getSelectedDeviceNames = () => {
     return selected.map(device_number => {
@@ -157,9 +158,17 @@ export default function Profile() {
     set_sync_entire_device_checked(event.target.checked);
   };
 
-  const handlesubmitClick = (event: React.MouseEvent<unknown>) => {
-    handlers.buttons.submitButton(username, sync_entire_device_checked);
+  const handlesubmitClick = async (event: React.MouseEvent<unknown>) => {
 
+    let task_description = 'Updating device settings';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await handlers.buttons.submitButton(username, sync_entire_device_checked);
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
 
   };
 

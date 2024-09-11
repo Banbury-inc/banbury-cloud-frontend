@@ -29,7 +29,7 @@ export async function addDevice(username: string) {
 
 
   try {
-    const url = `https://website2-v3xlkt54dq-uc.a.run.app/add_device/${username}/${device_name}/`;
+    const url = `https://website2-389236221119.us-central1.run.app/add_device/${username}/${device_name}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       user: user,
       device_number: device_number,

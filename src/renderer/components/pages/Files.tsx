@@ -496,28 +496,39 @@ export default function Files() {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
     console.log("handling download click")
-    let result = handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
+
+    let task_description = 'Downloading ' + selectedFileNames.join(', ');
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
+
     console.log(result)
   };
+
   const handleAddDeviceClick = async () => {
     console.log("handling add device click")
 
     let device_name = neuranet.device.name();
-    let task_description = 'add device ' + device_name;
+    let task_description = 'Adding device ' + device_name;
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
-
 
     let result = await handlers.devices.addDevice(username ?? '');
 
     if (result === 'success') {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
     }
+
   };
   const handleSyncClick = async () => {
     console.log("handling sync click")
     // let result = handlers.files.addFile(username ?? '');
-    let task_description = 'scanning filesystem, this may take a while...';
+    let task_description = 'Scanning filesystem';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
 
