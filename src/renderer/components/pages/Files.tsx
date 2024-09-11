@@ -44,6 +44,8 @@ import * as utils from '../../utils';
 import CustomizedTreeView from '../TreeView';
 import { neuranet } from '../../neuranet';
 import TaskBox from '../TaskBox';
+import TaskBoxButton from '../TaskBoxButton';
+
 import SyncIcon from '@mui/icons-material/Sync';
 
 
@@ -737,6 +739,7 @@ export default function Files() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
+                    <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>
@@ -747,7 +750,7 @@ export default function Files() {
           </Stack>
         </CardContent>
       </Card>
-      <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 120px)', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
         <Stack>
           <Box display="flex" flexDirection="column" height="100%">
             <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'scroll', borderLeft: 0, borderRight: 0 }}>
