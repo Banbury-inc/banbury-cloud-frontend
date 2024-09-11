@@ -763,19 +763,6 @@ export default function Files() {
               </CardContent>
             </Card>
           </Box>
-          <Box mt="auto">
-            <Card variant="outlined" sx={{ overflow: 'auto', borderLeft: 0, borderRight: 0 }}>
-              <CardContent sx={{
-                width: '100%',
-                paddingLeft: '0px !important',
-                paddingRight: '0px !important',
-                paddingBottom: '0px !important',
-                paddingTop: '0px !important'
-              }}>
-                <TaskBox />
-              </CardContent>
-            </Card>
-          </Box>
         </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
