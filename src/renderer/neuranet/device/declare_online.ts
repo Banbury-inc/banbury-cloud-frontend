@@ -1,0 +1,47 @@
+import axios from 'axios';
+import { neuranet } from '../../neuranet'
+import * as DateUtils from '../../utils/dateUtils';
+import { useAuth } from '../../context/AuthContext';
+
+
+export async function declare_online(
+  username: string,
+) {
+
+
+  let user = username;
+
+  let device_name = neuranet.device.name();
+
+  try {
+    const url = `https://website2-389236221119.us-central1.run.app/declare_online/${username}/`;
+    const response = await axios.post<{ result: string; username: string; }>(url, {
+      device_name: device_name,
+    });
+    const result = response.data.result;
+
+    if (result === 'success') {
+
+      console.log("declare online success");
+
+      return result;
+    }
+    if (result === 'fail') {
+      console.log("declare online failed");
+      return 'failed';
+    }
+    if (result === 'task_already_exists') {
+      console.log("task already exists");
+      return 'exists';
+    }
+
+    else {
+      console.log("declare online failed");
+      console.log(result);
+      return 'task_add failed';
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+

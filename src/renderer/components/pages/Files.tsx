@@ -42,6 +42,8 @@ import TextField from '@mui/material/TextField';
 import { handlers } from '../../handlers';
 import * as utils from '../../utils';
 import CustomizedTreeView from '../TreeView';
+import path from 'path';
+import fs from 'fs';
 import { neuranet } from '../../neuranet';
 import TaskBox from '../TaskBox';
 import TaskBoxButton from '../TaskBoxButton';
@@ -407,35 +409,21 @@ export default function Files() {
         selected.slice(selectedIndex + 1),
       );
     }
-
     const fileName = fileRows.find(file => file.id === id)?.fileName;
     const newSelectedFileNames = newSelected
       .map(id => fileRows.find(file => file.id === id)?.fileName)
       .filter(name => name !== undefined) as string[];
-
     console.log(newSelectedFileNames);
-
     const newSelectedFilePaths = newSelected
       .map(id => fileRows.find(file => file.id === id)?.filePath)
       .filter(name => name !== undefined) as string[];
-
     console.log(newSelectedFilePaths[0]);
-
-
-
-
-    // Assuming the directory structure is based on `BCloud` in user's home directory
-    //
     const directoryName = "BCloud";
     const directoryPath = join(os.homedir(), directoryName);
-
-
     let fileFound = false;
     let folderFound = false;
     let filePath = '';
-
     try {
-
       const fileStat = await stat(newSelectedFilePaths[0]);
       if (fileStat.isFile()) {
         fileFound = true;
@@ -455,10 +443,45 @@ export default function Files() {
         console.log(`Opening folder '${fileName}'...`);
         // shell.openPath(newSelectedFilePaths[0]);
       } else {
-        console.error(`File '${fileName}' not found in directory.`);
+        console.error(`File '${fileName}' not found in directory, searhing other devices`);
+
+        let task_description = 'Opening ' + selectedFileNames.join(', ');
+        let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+        setTaskbox_expanded(true);
+        let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames);
+        if (response === 'No file selected') {
+          let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+        }
+        if (response === 'File not available') {
+          let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+        }
+        if (response === 'success') {
+          let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+          const directory_name: string = 'BCloud';
+          const directory_path: string = path.join(os.homedir(), directory_name);
+          const file_save_path: string = path.join(directory_path, fileName ?? '');
+          shell.openPath(file_save_path);
+
+          // Create a file watcher
+          const watcher = fs.watch(file_save_path, (eventType, filename) => {
+            if (eventType === 'rename' || eventType === 'change') {
+              // The file has been closed, so we can delete it
+              watcher.close(); // Stop watching the file
+
+              fs.unlink(file_save_path, (err) => {
+                if (err) {
+                  console.error('Error deleting file:', err);
+                } else {
+                  console.log(`File ${file_save_path} successfully deleted.`);
+                }
+              });
+            }
+          });
+        }
       }
     } catch (err) {
       console.error('Error searching for file:', err);
+
     }
   };
   const handleClick = (event: React.MouseEvent<unknown>, id: number) => {

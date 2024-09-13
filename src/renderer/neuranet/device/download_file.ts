@@ -3,46 +3,8 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { arrayBuffer } from 'stream/consumers';
+import { neuranet } from '../../neuranet'
 
-
-// Function to add a task
-export async function addTask(
-  username: string,
-  task_description: string,
-  tasks: any,
-  setTasks: any
-) {
-  let taskInfo = {
-    task_name: task_description,
-    task_status: 'pending',
-  };
-
-  try {
-    // Fetch data from the API using Axios
-    const url = `http://website2-389236221119.us-central1.run.app/ping/`;
-    const response = await axios.get<{ result: string }>(url);
-    const result = response.data.result;
-
-    if (result === 'pong') {
-      console.log("pong received successfully");
-
-
-      return taskInfo;
-    } else if (result === 'fail') {
-      console.log("Task add failed");
-      return 'failed';
-    } else if (result === 'task_already_exists') {
-      console.log("Task already exists");
-      return 'exists';
-    } else {
-      console.log("Task add failed");
-      console.log(result);
-      return 'task_add failed';
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-}
 
 // Buffer to accumulate all file chunks
 let accumulatedData: Buffer[] = [];
@@ -84,7 +46,8 @@ export function createWebSocketConnection(username: string, device_name: string,
 
 
   // Replace the URL with your WebSocket endpoint
-  const socket = new WebSocketClient('ws://0.0.0.0:8080/ws/live_data/');
+  // const socket = new WebSocketClient('ws://0.0.0.0:8080/ws/live_data/');
+  const socket = new WebSocketClient('wss://website2-389236221119.us-central1.run.app/ws/live_data/');
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
@@ -93,6 +56,8 @@ export function createWebSocketConnection(username: string, device_name: string,
   socket.onopen = function() {
     console.log('WebSocket connection established');
 
+
+
     const message = {
       message: `Initiate live data connection`,
       username: username,
@@ -100,6 +65,7 @@ export function createWebSocketConnection(username: string, device_name: string,
     };
     socket.send(JSON.stringify(message));
     console.log(`Sent: ${JSON.stringify(message)}`);
+
 
     // Call the callback function with the socket
     callback(socket);
@@ -185,6 +151,10 @@ export function createWebSocketConnection(username: string, device_name: string,
   // Close event: When the WebSocket connection is closed
   socket.onclose = function() {
     console.log('WebSocket connection closed');
+
+    // Declare the device offline
+    neuranet.device.declare_offline(username);
+    console.log('Device declared offline');
   };
 
   // Error event: When an error occurs with the WebSocket connection
@@ -213,5 +183,8 @@ const device_name = 'michael-ubuntu';
 
 // Create the WebSocket connection and pass the callback to call download_request once the connection is open
 createWebSocketConnection(username, device_name, (socket) => {
+  // Declare the device online
+  neuranet.device.declare_online(username);
+  console.log('Device declared online');
   download_request(username, file_name, socket);
 });
