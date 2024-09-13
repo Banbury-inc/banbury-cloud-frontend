@@ -2,13 +2,18 @@ import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 
+/**
+ *
+ * @param username
+ * @param taskInfo
+ */
 export async function updateTask(
   username: string | null,
   taskInfo: any
 ) {
 
 
-  let user = username;
+  const user = username;
 
 
   try {

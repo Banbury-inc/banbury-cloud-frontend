@@ -1,18 +1,18 @@
-
-
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
+import axios from 'axios'; // Adjusted import for axios
+import net from 'net';
+import { BrowserWindow, app, dialog, ipcMain } from "electron";
+import { exec } from "child_process";
+import { resolve } from 'path';
 import { shell } from "electron";
+import { useEffect } from 'react';
+
+import { useAuth } from '../renderer/context/AuthContext';
+
 const fs = require('fs').promises;
 
-import { exec } from "child_process";
 const { spawn } = require("child_process");
-import axios from 'axios'; // Adjusted import for axios
-import { resolve } from 'path';
-import net from 'net';
-import { useAuth } from '../renderer/context/AuthContext';
-import { useEffect } from 'react';
 
 let mainWindow: BrowserWindow | null;
 function createWindow(): void {

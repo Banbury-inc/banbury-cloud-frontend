@@ -5,6 +5,7 @@ interface DeviceInfo {
   user: string;
   device_number: number;
   device_name: string;
+
   files: FileInfo[];
   storage_capacity_GB: number;
   max_storage_capacity_GB: number;

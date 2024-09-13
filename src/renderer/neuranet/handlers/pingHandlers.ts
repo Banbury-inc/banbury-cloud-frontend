@@ -1,19 +1,19 @@
-import * as DeviceInfo from '../device/deviceInfo';
-import { neuranet } from '../../neuranet'
-import * as DateUtils from '../../utils/dateUtils';
 import * as net from 'net';
+
+import * as DateUtils from '../../utils/dateUtils';
 import { DeviceInfo as DeviceInfoType } from '../../types/deviceTypes'; // Assuming DeviceInfoType is defined in a types file
 import { SmallDeviceInfo as SmallDeviceInfoType } from '../../types/deviceTypes'; // Assuming DeviceInfoType is defined in a types file
+import { neuranet } from '../../neuranet'
 
 export async function small_ping_request(username: string, senderSocket: net.Socket): Promise<void> {
   console.log("received small ping request");
   // Handle ping request
-  let user = username;
+  const user = username;
   // let user = Object.keys(credentials)[0];
-  let device_number = 0;
-  let device_name = neuranet.device.name();
-  let files = await neuranet.device.directory_info(username);
-  let date_added = DateUtils.get_current_date_and_time();
+  const device_number = 0;
+  const device_name = neuranet.device.name();
+  const files = await neuranet.device.directory_info(username);
+  const date_added = DateUtils.get_current_date_and_time();
 
   const device_info_json: SmallDeviceInfoType = {
     user,
@@ -31,35 +31,35 @@ export async function small_ping_request(username: string, senderSocket: net.Soc
 export async function ping_request(username: string, senderSocket: net.Socket): Promise<void> {
   console.log("Received a ping request");
 
-  let user = username;
-  let device_number = 1;
-  let device_name = neuranet.device.name();
-  let files = await neuranet.device.directory_info(username);
-  let storage_capacity_GB = await neuranet.device.storage_capacity();
-  let max_storage_capacity_GB = 50;
-  let date_added = DateUtils.get_current_date_and_time();
-  let ip_address = await neuranet.device.ip_address();
-  let average_network_speed = 0;
-  let upload_network_speed = 0;
-  let download_network_speed = 0;
-  let gpu_usage = await neuranet.device.gpu_usage();
-  let cpu_usage = await neuranet.device.cpu_usage();
-  let ram_usage = await neuranet.device.ram_usage();
-  let ram_total = await neuranet.device.ram_total();
-  let ram_free = await neuranet.device.ram_free();
-  let predicted_upload_network_speed = 0;
-  let predicted_download_network_speed = 0;
-  let predicted_gpu_usage = 0;
-  let predicted_cpu_usage = 0;
-  let predicted_ram_usage = 0;
-  let predicted_performance_score = 0;
-  let network_reliability = 0;
-  let average_time_online = 0;
-  let tasks = 0;
-  let device_priority = 1;
-  let sync_status = true;
-  let optimization_status = true;
-  let online = true;
+  const user = username;
+  const device_number = 1;
+  const device_name = neuranet.device.name();
+  const files = await neuranet.device.directory_info(username);
+  const storage_capacity_GB = await neuranet.device.storage_capacity();
+  const max_storage_capacity_GB = 50;
+  const date_added = DateUtils.get_current_date_and_time();
+  const ip_address = await neuranet.device.ip_address();
+  const average_network_speed = 0;
+  const upload_network_speed = 0;
+  const download_network_speed = 0;
+  const gpu_usage = await neuranet.device.gpu_usage();
+  const cpu_usage = await neuranet.device.cpu_usage();
+  const ram_usage = await neuranet.device.ram_usage();
+  const ram_total = await neuranet.device.ram_total();
+  const ram_free = await neuranet.device.ram_free();
+  const predicted_upload_network_speed = 0;
+  const predicted_download_network_speed = 0;
+  const predicted_gpu_usage = 0;
+  const predicted_cpu_usage = 0;
+  const predicted_ram_usage = 0;
+  const predicted_performance_score = 0;
+  const network_reliability = 0;
+  const average_time_online = 0;
+  const tasks = 0;
+  const device_priority = 1;
+  const sync_status = true;
+  const optimization_status = true;
+  const online = true;
 
   const device_info_json: DeviceInfoType = {
     user,

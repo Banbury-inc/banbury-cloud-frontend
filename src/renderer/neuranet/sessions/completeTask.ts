@@ -2,6 +2,13 @@ import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 
+/**
+ *
+ * @param username
+ * @param taskInfo
+ * @param tasks
+ * @param setTasks
+ */
 export async function completeTask(
   username: string,
   taskInfo: any,
@@ -11,7 +18,7 @@ export async function completeTask(
 ) {
 
 
-  let user = username;
+  const user = username;
 
   try {
     const url = `https://website2-389236221119.us-central1.run.app/update_task/${username}/`;
