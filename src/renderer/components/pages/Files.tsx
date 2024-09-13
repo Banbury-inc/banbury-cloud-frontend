@@ -492,6 +492,7 @@ export default function Files() {
 
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
+
   const handleDownloadClick = async () => {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
@@ -501,14 +502,18 @@ export default function Files() {
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
 
-    let result = await handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
+    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames);
 
-    if (result === 'success') {
+    if (response === 'No file selected') {
+      let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+    }
+    if (response === 'success') {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
     }
 
-    console.log(result)
+    console.log(response)
   };
+
 
   const handleAddDeviceClick = async () => {
     console.log("handling add device click")
