@@ -8,7 +8,7 @@ import { DateTime } from 'luxon';
 import { handlers } from '../../handlers';
 import { CONFIG } from '../../config/config';
 
-export async function save_snapshot(username: string): Promise<string> {
+export async function save_snapshot(username: string) {
   const fullDeviceSync = CONFIG.full_device_sync;
   const skipDotFiles = CONFIG.skip_dot_files;
 

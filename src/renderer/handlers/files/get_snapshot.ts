@@ -85,9 +85,9 @@ export async function get_snapshot(username: any) {
 
   } catch (error) {
     console.error('Error fetching data:', error);
+    let result = 'error';
   } finally {
   }
-
 
   let result = 'success';
   return result

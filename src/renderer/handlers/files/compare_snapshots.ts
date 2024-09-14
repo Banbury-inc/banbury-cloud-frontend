@@ -87,7 +87,7 @@ function compareSnapshots(serverFiles: File[], clientFiles: File[]): Actions {
 }
 
 // Function to load both snapshots and compare them
-function compare_snapshots() {
+export async function compare_snapshots() {
   const bcloudDirectory = path.join(os.homedir(), 'BCloud'); // Path to the BCloud directory
   const serverSnapshotPath = path.join(bcloudDirectory, 'mmills_database_snapshot.json'); // Server snapshot file
   const clientSnapshotPath = path.join(bcloudDirectory, 'mmills_snapshot.json'); // Client snapshot file
@@ -97,7 +97,8 @@ function compare_snapshots() {
 
   if (!serverFiles || !clientFiles) {
     console.error('Failed to load snapshots.');
-    return;
+    let result = 'error';
+    return result;
   }
 
   // Log snapshots to check their contents
@@ -111,6 +112,10 @@ function compare_snapshots() {
   const comparisonFilePath = path.join(bcloudDirectory, 'comparison_result.json');
   fs.writeFileSync(comparisonFilePath, JSON.stringify(comparisonResult, null, 2));
   //
+  console.log(`Comparison result saved to ${comparisonFilePath}`);
+  let result = 'success';
+  return result;
+
 }
 
 // Run the comparison
