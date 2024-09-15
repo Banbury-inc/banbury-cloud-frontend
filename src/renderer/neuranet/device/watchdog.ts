@@ -6,7 +6,7 @@ import { handlers } from '../../handlers';
 import fs from 'fs';
 import si from '../../../../dependency/systeminformation'
 import { DateTime } from 'luxon';
-
+import { neuranet } from '../../neuranet'
 
 function getFileKind(filename: string) {
   const ext = path.extname(filename).toLowerCase();
@@ -70,33 +70,6 @@ function onFileAdded(filePath: string, username: string) {
   console.log(`New file added: ${filePath}`);
 
   const stats = fs.statSync(filePath);
-
-  const fileInfo = {
-    "file_type": stats.isDirectory() ? "directory" : "file",
-    "file_name": path.basename(filePath),
-    "file_path": filePath,
-    "date_uploaded": DateTime.fromMillis(stats.birthtimeMs).toFormat('yyyy-MM-dd HH:mm:ss'),
-    "date_modified": DateTime.fromMillis(stats.mtimeMs).toFormat('yyyy-MM-dd HH:mm:ss'),
-    "file_size": stats.isDirectory() ? 0 : stats.size,  // Size is 0 for directories
-    "file_priority": 1,
-    "file_parent": path.dirname(filePath),
-    "original_device": os.hostname(),  // Assuming the current device name as the original device
-    "kind": stats.isDirectory() ? 'Folder' : getFileKind(filePath),
-
-  };
-
-  console.log('File Info:', fileInfo);
-
-  // Call the handler to add files
-  handlers.files.addFile(username, fileInfo);
-}
-
-// Function that gets triggered when a new file is added
-function onFileDeleted(filePath: string, username: string) {
-  console.log(`New file added: ${filePath}`);
-
-  const stats = fs.statSync(filePath);
-
   let filesInfo: any[] = [];
   const fileInfo = {
     "file_type": stats.isDirectory() ? "directory" : "file",
@@ -117,7 +90,37 @@ function onFileDeleted(filePath: string, username: string) {
   console.log('File Info:', fileInfo);
 
   // Call the handler to add files
-  handlers.files.addFiles(username, fileInfo);
+  neuranet.files.addFiles(username, filesInfo);
+
+  filesInfo = [];
+}
+
+// Function that gets triggered when a new file is added
+function onFileDeleted(filePath: string, username: string) {
+  console.log(`File removed: ${filePath}`);
+
+
+  let filesInfo: any[] = [];
+  const fileInfo = {
+    "file_type": "",
+    "file_name": path.basename(filePath),
+    "file_path": filePath,
+    "date_uploaded": '',
+    "date_modified": '',
+    "file_size": '',  // Size is 0 for directories
+    "file_priority": 1,
+    "file_parent": '',
+    "original_device": '', // Assuming the current device name as the original device
+    "kind": '',
+
+  };
+
+  filesInfo.push(fileInfo);
+
+  console.log('File Info:', fileInfo);
+
+  // Call the handler to add files
+  neuranet.files.removeFiles(username, os.hostname(), filesInfo);
 
   filesInfo = [];
 }
@@ -129,7 +132,7 @@ export function detectFileChanges(directoryPath: string, username: string) {
   // Initialize the watcher
   const watcher = chokidar.watch(directoryPath, {
     persistent: true,
-    ignoreInitial: false, // Whether to ignore adding events when starting
+    ignoreInitial: true, // Whether to ignore adding events when starting
     depth: 10, // How deep to traverse directories
   });
 
@@ -139,8 +142,11 @@ export function detectFileChanges(directoryPath: string, username: string) {
       console.log(`File added: ${filePath}`);
       onFileAdded(filePath, username); // Call the onFileAdded function
     })
+    .on('unlink', (filePath) => {
+      console.log(`File removed: ${filePath}`);
+      onFileDeleted(filePath, username); // Call the onFileAdded function
+    })
     .on('change', (filePath) => console.log(`File changed: ${filePath}`))
-    .on('unlink', (filePath) => console.log(`File removed: ${filePath}`))
     .on('addDir', (filePath) => console.log(`Directory added: ${filePath}`))
     .on('unlinkDir', (filePath) => console.log(`Directory removed: ${filePath}`))
     .on('error', (error) => console.error('Error watching files:', error))

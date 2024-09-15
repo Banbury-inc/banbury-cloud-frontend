@@ -22,7 +22,10 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
+import { CONFIG } from '../config/config';
 import Tooltip from '@mui/material/Tooltip';
+import os from 'os';
+import path from 'path';
 import { neuranet } from '../neuranet';
 
 const { ipcRenderer } = window.require('electron');
@@ -111,7 +114,13 @@ export default function PermanentDrawerLeft() {
       try {
         console.log("connecting to relay server");
         console.log("Starting receiver");
+        const fullDeviceSync = CONFIG.full_device_sync;
+        const skipDotFiles = CONFIG.skip_dot_files;
+        // Determine the directory path based on the fullDeviceSync flag
+        const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
+
         neuranet.device.connect(username || "default");
+        neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
         console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);
