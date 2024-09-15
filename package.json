@@ -37,6 +37,7 @@
     "@mui/x-data-grid": "^6.19.11",
     "@mui/x-tree-view": "^6.17.0",
     "@types/luxon": "^3.4.2",
+    "chokidar": "^4.0.0",
     "configparser": "^0.3.10",
     "copy-webpack-plugin": "^12.0.2",
     "electron-notarize": "^1.2.2",

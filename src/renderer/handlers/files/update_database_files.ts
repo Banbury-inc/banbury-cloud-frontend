@@ -78,7 +78,7 @@ export async function update_database_files(username: string) {
     return 'success';
 
   } catch (error) {
-    console.error('Error updating database files:');
+    console.error('Error updating database files: ', error);
     return 'error';
   }
 }

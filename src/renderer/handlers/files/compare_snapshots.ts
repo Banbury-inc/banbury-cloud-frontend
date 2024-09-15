@@ -124,17 +124,17 @@ export async function compare_snapshots() {
   }
 
   // Log snapshots to check their contents
-  console.log('Server Snapshot:', JSON.stringify(serverFiles, null, 2));
-  console.log('Client Snapshot:', JSON.stringify(clientFiles, null, 2));
+  // console.log('Server Snapshot:', JSON.stringify(serverFiles, null, 2));
+  // console.log('Client Snapshot:', JSON.stringify(clientFiles, null, 2));
 
   const comparisonResult = compareSnapshots(serverFiles, clientFiles);
-  console.log('Comparison Result:', comparisonResult);
+  // console.log('Comparison Result:', comparisonResult);
 
   // Save the comparison result to a JSON file
   const comparisonFilePath = path.join(bcloudDirectory, 'comparison_result.json');
   fs.writeFileSync(comparisonFilePath, JSON.stringify(comparisonResult, null, 2));
   //
-  console.log(`Comparison result saved to ${comparisonFilePath}`);
+  // console.log(`Comparison result saved to ${comparisonFilePath}`);
   let result = 'success';
   return result;
 

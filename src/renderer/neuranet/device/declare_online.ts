@@ -15,7 +15,7 @@ export async function declare_online(
 
   try {
     const url = `https://website2-389236221119.us-central1.run.app/declare_online/${username}/`;
-    const response = await axios.post<{ result: string; username: string; }>(url, {
+    const response = await axios.post<{ result: string; user: string; }>(url, {
       device_name: device_name,
     });
     const result = response.data.result;
@@ -26,10 +26,14 @@ export async function declare_online(
 
       return result;
     }
-    if (result === 'fail') {
-      console.log("declare online failed");
-      return 'failed';
+    if (result === 'fail cant find user') {
+      return result;
     }
+    if (result === 'fail cant find device') {
+      console.log("fail cant find device");
+      return result;
+    }
+
     if (result === 'task_already_exists') {
       console.log("task already exists");
       return 'exists';

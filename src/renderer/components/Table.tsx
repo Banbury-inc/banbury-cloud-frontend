@@ -295,7 +295,7 @@ export default function EnhancedTable() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
-  console.log(username)
+
 
   useEffect(() => {
     const fetchData = async () => {
