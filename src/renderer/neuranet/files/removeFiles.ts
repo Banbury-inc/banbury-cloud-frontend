@@ -3,9 +3,9 @@ import { neuranet } from '../../neuranet'
 
 export async function removeFiles(
   username: string,
+  device_name: string,
   filesInfo: any) {
 
-  const device_name = filesInfo[0].original_device;
 
   try {
     const response = await axios.post<{

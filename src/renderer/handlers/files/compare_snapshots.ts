@@ -5,11 +5,15 @@ import os from 'os';
 
 interface File {
   id: number;
+  file_type: string;
   file_name: string;
-  kind: string;
   file_path: string;
   date_uploaded: string;
   date_modified: string;
+  file_size: number;
+  file_priority: number;
+  file_parent: string;
+  kind: string;
   deviceID: string;
   original_device: string;
 }
@@ -17,8 +21,17 @@ interface File {
 interface Actions {
   add: {
     files: {
+      file_type: string;
       file_name: string;
       file_path: string;
+      date_uploaded: string;
+      date_modified: string;
+      file_size: number;
+      file_priority: number;
+      file_parent: string;
+      kind: string;
+      original_device: string;
+
     }[];
   };
   remove: {
@@ -57,12 +70,21 @@ function compareSnapshots(serverFiles: File[], clientFiles: File[]): Actions {
       (serverFile: File) =>
         serverFile.file_name === clientFile.file_name &&
         serverFile.file_path === clientFile.file_path
+
     );
 
     if (!correspondingServerFile) {
       actions.add.files.push({
+        file_type: clientFile.file_type,
         file_name: clientFile.file_name,
-        file_path: clientFile.file_path
+        file_path: clientFile.file_path,
+        date_uploaded: clientFile.date_uploaded,
+        date_modified: clientFile.date_modified,
+        file_size: clientFile.file_size,
+        file_priority: clientFile.file_priority,
+        file_parent: clientFile.file_parent,
+        original_device: clientFile.original_device,
+        kind: clientFile.kind
       });
     }
   });

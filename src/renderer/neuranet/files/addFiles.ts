@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
+import os from 'os';
 
 export async function addFiles(
   username: string,
   filesInfo: any) {
 
-  const device_name = filesInfo[0].original_device;
+  const device_name = os.hostname();
 
   try {
     const response = await axios.post<{
