@@ -256,6 +256,11 @@ export default function Files() {
 
         const { files } = fileInfoResponse.data;
 
+        const file_name: string = 'mmills_snapshot.json';
+        const directory_name: string = 'BCloud';
+        const directory_path: string = path.join(os.homedir(), directory_name);
+        const snapshot_json: string = path.join(directory_path, file_name);
+
 
         // Combine devices with their associated files
         const allFilesData = devices.flatMap((device, index) => {
