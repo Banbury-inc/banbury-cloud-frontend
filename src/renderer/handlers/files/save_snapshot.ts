@@ -67,6 +67,7 @@ export async function save_snapshot(username: string) {
         const fileInfo = {
           file_type: stats.isDirectory() ? 'directory' : 'file',
           file_name: filename,
+          device_name: os.hostname(),
           file_path: filePath,
           date_uploaded: DateTime.fromMillis(stats.birthtimeMs).toFormat('yyyy-MM-dd HH:mm:ss'),
           date_modified: DateTime.fromMillis(stats.mtimeMs).toFormat('yyyy-MM-dd HH:mm:ss'),
