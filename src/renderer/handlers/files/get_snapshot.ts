@@ -48,6 +48,7 @@ export async function get_snapshot(username: any) {
         id: index * 1000 + fileIndex,
         file_name: file.file_name,
         kind: file.kind,
+        device_name: device.device_name,
         file_path: file.file_path,
         date_uploaded: file.date_uploaded,
         date_modified: file.date_modified,
@@ -79,6 +80,7 @@ export async function get_snapshot(username: any) {
     // Save snapshot to a JSON file
     const snapshotFilePath = path.join(bcloudDirectoryPath, `${username}_database_snapshot.json`);
     fs.writeFileSync(snapshotFilePath, JSON.stringify(allFilesData, null, 2));
+    console.log(`Snapshot saved to ${snapshotFilePath}`);
 
 
 

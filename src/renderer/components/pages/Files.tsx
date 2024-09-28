@@ -45,6 +45,7 @@ import CustomizedTreeView from '../TreeView';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';
+import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBox from '../TaskBox';
 import TaskBoxButton from '../TaskBoxButton';
 
@@ -52,25 +53,25 @@ import SyncIcon from '@mui/icons-material/Sync';
 
 
 // Simplified data interface to match your file structure
-interface FileData {
+interface DatabaseData {
   id: number;
-  fileName: string;
+  file_name: string;
   kind: string;
   dateUploaded: string;
-  fileSize: string;
-  filePath: string;
+  file_size: string;
+  file_path: string;
   deviceID: string;
-  deviceName: string;
+  device_name: string;
   helpers: number;
   available: string;
 }
 
 
 const headCells: HeadCell[] = [
-  { id: 'fileName', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'fileSize', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
+  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
+  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
-  { id: 'deviceName', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
+  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
   { id: 'available', numeric: true, label: 'Status', isVisibleOnSmallScreen: false },
   { id: 'dateUploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
@@ -79,7 +80,7 @@ type Order = 'asc' | 'desc';
 
 interface HeadCell {
   disablePadding?: boolean;
-  id: keyof FileData;
+  id: keyof DatabaseData;
   label: string;
   numeric: boolean;
   isVisibleOnSmallScreen: boolean;
@@ -87,17 +88,17 @@ interface HeadCell {
 
 interface EnhancedTableProps {
   numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof FileData) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   order: Order;
-  orderBy: keyof FileData;
+  orderBy: keyof DatabaseData;
   rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
-  const createSortHandler = (property: keyof FileData) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (property: keyof DatabaseData) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
 
@@ -197,11 +198,15 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 
+const file_name: string = 'mmills_database_snapshot.json';
+const directory_name: string = 'BCloud';
+const directory_path: string = path.join(os.homedir(), directory_name);
+const snapshot_json: string = path.join(directory_path, file_name);
 
 export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<keyof FileData>('fileName');
+  const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
@@ -210,26 +215,26 @@ export default function Files() {
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<FileData[]>([]); // State for storing fetched file data
-  const [allFiles, setAllFiles] = useState<FileData[]>([]);
+  const [fileRows, setFileRows] = useState<DatabaseData[]>([]); // State for storing fetched file data
+  const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
-
   const getSelectedFileNames = () => {
     return selected.map(id => {
       const file = fileRows.find(file => file.id === id);
-      return file ? file.fileName : null;
-    }).filter(fileName => fileName !== null); // Filter out any null values if a file wasn't found
+      return file ? file.file_name : null;
+    }).filter(file_name => file_name !== null); // Filter out any null values if a file wasn't found
   };
 
-  console.log(username)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+
+
         // Step 1: Fetch user information
         const userInfoResponse = await axios.get<{
           first_name: string;
@@ -249,31 +254,67 @@ export default function Files() {
 
         const { devices } = deviceInfoResponse.data;
 
+
+        let files: DatabaseData[] = [];
+
+        // set files to the value of snapshot_json if it exists
+        if (fs.existsSync(snapshot_json)) {
+          const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
+          files = JSON.parse(snapshot);
+          console.log('Loaded snapshot from file:', snapshot_json);
+          console.log('Snapshot:', files);
+        }
+
+        // Combine devices with their associated files
+        let allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
+            id: index * 1000 + fileIndex,
+            file_name: file.file_name,
+            file_size: file.file_size,
+            kind: file.kind,
+            file_path: file.file_path,
+            dateUploaded: file.dateUploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
+            device_name: device.device_name,
+            helpers: 0,
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
+
+        console.log(allFilesData);
+
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
+        }
+
+        console.log("Local file data loaded")
+
         // Step 3: Fetch files for all devices
         const fileInfoResponse = await axios.get<{
           files: any[];
         }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
 
-        const { files } = fileInfoResponse.data;
-
-        const file_name: string = 'mmills_snapshot.json';
-        const directory_name: string = 'BCloud';
-        const directory_path: string = path.join(os.homedir(), directory_name);
-        const snapshot_json: string = path.join(directory_path, file_name);
 
 
-        // Combine devices with their associated files
-        const allFilesData = devices.flatMap((device, index) => {
+        files = fileInfoResponse.data.files;
+
+        // initialize files as an empty array
+
+        // // save files as a json
+        fs.writeFileSync(snapshot_json, JSON.stringify(files, null, 2), 'utf-8');
+
+        allFilesData = devices.flatMap((device, index) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
           return deviceFiles.map((file, fileIndex) => ({
             id: index * 1000 + fileIndex,
-            fileName: file.file_name,
-            fileSize: utils.formatBytes(file.file_size),
+            file_name: file.file_name,
+            file_size: file.file_size,
             kind: file.kind,
-            filePath: file.file_path,
-            dateUploaded: file.date_uploaded,
+            file_path: file.file_path,
+            dateUploaded: file.dateUploaded,
             deviceID: (index + 1).toString(), // Convert deviceID to string
-            deviceName: device.device_name,
+            device_name: device.device_name,
             helpers: 0,
             available: device.online ? "Available" : "Unavailable",
           }));
@@ -282,6 +323,8 @@ export default function Files() {
         setAllFiles(allFilesData); if (!disableFetch) {
           setAllFiles(allFilesData);
         }
+
+        console.log("API file data loaded")
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -292,67 +335,148 @@ export default function Files() {
     fetchData();
   }, [username, disableFetch]);
 
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    const fetchData = async () => {
-      try {
-        // Step 1: Fetch user information
-        const userInfoResponse = await axios.get<{
-          first_name: string;
-          last_name: string;
-          phone_number: string;
-          email: string;
 
-        }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+  const fetchData = async (username: string | null, disableFetch: boolean, setFirstname: any, setLastname: any, setAllFiles: any, setIsLoading: any) => {
+    try {
+      // Step 1: Fetch user information
+      const userInfoResponse = await axios.get<{
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
 
-        const { first_name, last_name } = userInfoResponse.data;
-        setFirstname(first_name);
-        setLastname(last_name);
+      const { first_name, last_name } = userInfoResponse.data;
+      setFirstname(first_name);
+      setLastname(last_name);
 
-        // Step 2: Fetch device information
-        const deviceInfoResponse = await axios.get<{
-          devices: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
-        const { devices } = deviceInfoResponse.data;
+      // Step 2: Fetch device information
+      const deviceInfoResponse = await axios.get<{
+        devices: any[];
+      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
 
-        // Step 3: Fetch files for all devices
-        const fileInfoResponse = await axios.get<{
-          files: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
-        const { files } = fileInfoResponse.data;
+      const { devices } = deviceInfoResponse.data;
 
-        // Combine devices with their associated files
-        const allFilesData = devices.flatMap((device, index) => {
-          const deviceFiles = files.filter(file => file.device_name === device.device_name);
-          return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
-            fileName: file.file_name,
-            fileSize: utils.formatBytes(file.file_size),
-            kind: file.kind,
-            filePath: file.file_path,
-            dateUploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
-            deviceName: device.device_name,
-            helpers: 0,
-            available: device.online ? "Available" : "Unavailable",
-          }));
-        });
+      let files: DatabaseData[] = [];
 
-        setAllFiles(allFilesData); if (!disableFetch) {
-          setAllFiles(allFilesData);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
+      // Load snapshot from the JSON file if it exists
+      if (fs.existsSync(snapshot_json)) {
+        const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
+        files = JSON.parse(snapshot);
+        console.log('Loaded snapshot from file:', snapshot_json);
+        console.log('Snapshot:', files);
       }
+
+      // Combine devices with their associated files
+      let allFilesData = devices.flatMap((device, index) => {
+        const deviceFiles = files.filter(file => file.device_name === device.device_name);
+        return deviceFiles.map((file, fileIndex) => ({
+          id: index * 1000 + fileIndex,
+          file_name: file.file_name,
+          fileSize: file.file_size,
+          kind: file.kind,
+          file_path: file.file_path,
+          dateUploaded: file.dateUploaded,
+          deviceID: (index + 1).toString(), // Convert deviceID to string
+          device_name: device.device_name,
+          helpers: 0,
+          available: device.online ? "Available" : "Unavailable",
+        }));
+      });
+
+      if (!disableFetch) {
+        setAllFiles(allFilesData);
+      }
+
+      console.log("Local file data loaded");
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFileChange = () => {
+      console.log('File changed, fetching data...');
+      fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
     };
 
+    fileWatcherEmitter.on('fileChanged', handleFileChange);
 
-    fetchData();
-    intervalId = setInterval(fetchData, 50000);
-    return () => clearInterval(intervalId);
-  }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
+    return () => {
+      fileWatcherEmitter.off('fileChanged', handleFileChange);
+    };
+  }, [username, disableFetch]);
+
+
+  // useEffect(() => {
+  //   let intervalId: NodeJS.Timeout;
+  //   const fetchData = async () => {
+  //     try {
+  //       // Step 1: Fetch user information
+  //       const userInfoResponse = await axios.get<{
+  //         first_name: string;
+  //         last_name: string;
+  //         phone_number: string;
+  //         email: string;
+
+  //       }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+
+  //       const { first_name, last_name } = userInfoResponse.data;
+  //       setFirstname(first_name);
+  //       setLastname(last_name);
+
+  //       // Step 2: Fetch device information
+  //       const deviceInfoResponse = await axios.get<{
+  //         devices: any[];
+  //       }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+  //       const { devices } = deviceInfoResponse.data;
+
+  //       // Step 3: Fetch files for all devices
+  //       const fileInfoResponse = await axios.get<{
+  //         files: any[];
+  //       }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
+
+
+  //       let files: DatabaseData[] = [];
+
+  //       let newFiles = fileInfoResponse.data.files;
+
+
+  //       // Combine devices with their associated files
+  //       const allFilesData = devices.flatMap((device, index) => {
+  //         const deviceFiles = files.filter(file => file.device_name === device.device_name);
+  //         return deviceFiles.map((file, fileIndex) => ({
+  //           id: index * 1000 + fileIndex,
+  //           file_name: file.file_name,
+  //           fileSize: file.fileSize,
+  //           kind: file.kind,
+  //           filePath: file.filePath,
+  //           dateUploaded: file.dateUploaded,
+  //           deviceID: (index + 1).toString(), // Convert deviceID to string
+  //           device_name: device.device_name,
+  //           helpers: 0,
+  //           available: device.online ? "Available" : "Unavailable",
+  //         }));
+  //       });
+
+  //       setAllFiles(allFilesData); if (!disableFetch) {
+  //         setAllFiles(allFilesData);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+
+  //   fetchData();
+  //   intervalId = setInterval(fetchData, 50000);
+  //   return () => clearInterval(intervalId);
+  // }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
 
 
   useEffect(() => {
@@ -365,12 +489,17 @@ export default function Files() {
       }
 
       if (!global_file_path && global_file_path_device) {
-        return file.deviceName === global_file_path_device; // Show all files for the specified device
+        return file.device_name === global_file_path_device; // Show all files for the specified device
       }
 
-      const fileSegments = file.filePath.split('/').filter(Boolean).length;
-      const isInSameDirectory = file.filePath.startsWith(pathToShow) && fileSegments === pathSegments + 1;
-      const isFile = file.filePath === pathToShow && file.kind !== 'Folder';
+      // Add a check to ensure filePath is defined
+      if (!file.file_path) {
+        return false; // Skip files with undefined filePath
+      }
+
+      const fileSegments = file.file_path.split('/').filter(Boolean).length;
+      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
+      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
 
       return isInSameDirectory || isFile;
     });
@@ -382,7 +511,7 @@ export default function Files() {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof FileData,
+    property: keyof DatabaseData,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -414,13 +543,13 @@ export default function Files() {
         selected.slice(selectedIndex + 1),
       );
     }
-    const fileName = fileRows.find(file => file.id === id)?.fileName;
+    const file_name = fileRows.find(file => file.id === id)?.file_name;
     const newSelectedFileNames = newSelected
-      .map(id => fileRows.find(file => file.id === id)?.fileName)
+      .map(id => fileRows.find(file => file.id === id)?.file_name)
       .filter(name => name !== undefined) as string[];
     console.log(newSelectedFileNames);
     const newSelectedFilePaths = newSelected
-      .map(id => fileRows.find(file => file.id === id)?.filePath)
+      .map(id => fileRows.find(file => file.id === id)?.file_path)
       .filter(name => name !== undefined) as string[];
     console.log(newSelectedFilePaths[0]);
     const directoryName = "BCloud";
@@ -432,7 +561,7 @@ export default function Files() {
       const fileStat = await stat(newSelectedFilePaths[0]);
       if (fileStat.isFile()) {
         fileFound = true;
-        console.log(`File '${fileName}' found in directory.`);
+        console.log(`File '${file_name}' found in directory.`);
       }
       if (fileStat.isDirectory()) {
         folderFound = true;
@@ -440,15 +569,15 @@ export default function Files() {
       }
       if (fileFound) {
         // Send an IPC message to the main process to handle opening the file
-        console.log(`Opening file '${fileName}'...`);
+        console.log(`Opening file '${file_name}'...`);
         shell.openPath(newSelectedFilePaths[0]);
       }
       if (folderFound) {
         // Send an IPC message to the main process to handle opening the file
-        console.log(`Opening folder '${fileName}'...`);
+        console.log(`Opening folder '${file_name}'...`);
         // shell.openPath(newSelectedFilePaths[0]);
       } else {
-        console.error(`File '${fileName}' not found in directory, searhing other devices`);
+        console.error(`File '${file_name}' not found in directory, searhing other devices`);
 
         let task_description = 'Opening ' + selectedFileNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
@@ -464,7 +593,7 @@ export default function Files() {
           let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
           const directory_name: string = 'BCloud';
           const directory_path: string = path.join(os.homedir(), directory_name);
-          const file_save_path: string = path.join(directory_path, fileName ?? '');
+          const file_save_path: string = path.join(directory_path, file_name ?? '');
           shell.openPath(file_save_path);
 
           // Create a file watcher
@@ -507,10 +636,10 @@ export default function Files() {
     }
     setSelected(newSelected);
 
-    const fileName = fileRows.find(file => file.id === id)?.fileName;
-    const deviceName = fileRows.find(file => file.id === id)?.deviceName;
-    const newSelectedFileNames = newSelected.map(id => fileRows.find(file => file.id === id)?.fileName).filter(name => name !== undefined) as string[];
-    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(file => file.id === id)?.deviceName).filter(name => name !== undefined) as string[];
+    const file_name = fileRows.find(file => file.id === id)?.file_name;
+    const device_name = fileRows.find(file => file.id === id)?.device_name;
+    const newSelectedFileNames = newSelected.map(id => fileRows.find(file => file.id === id)?.file_name).filter(name => name !== undefined) as string[];
+    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(file => file.id === id)?.device_name).filter(name => name !== undefined) as string[];
     setSelectedFileNames(newSelectedFileNames);
     setSelectedDeviceNames(newSelectedDeviceNames);
     console.log(newSelectedFileNames)
@@ -893,7 +1022,7 @@ export default function Files() {
                                   scope="row"
                                   padding="normal"
                                 >
-                                  {row.kind === "Folder" && isAddingFolder && row.fileName === "" ? (
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
                                     <TextField
                                       value={newFolderName}
                                       size="small"
@@ -922,7 +1051,7 @@ export default function Files() {
                                       }}
                                       style={{ textDecoration: 'none' }}
                                     >
-                                      {row.fileName}
+                                      {row.file_name}
                                     </ButtonBase>
                                   )}
                                 </TableCell>
@@ -937,7 +1066,7 @@ export default function Files() {
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                  }}>{row.fileSize}</TableCell>
+                                  }}>{row.file_size}</TableCell>
 
                                 <TableCell align="left" sx={{
                                   borderBottomColor: "#424242",
@@ -948,7 +1077,7 @@ export default function Files() {
 
                                 }} >{row.kind}</TableCell>
 
-                                {(!isSmallScreen || headCells.find(cell => cell.id === 'deviceName')?.isVisibleOnSmallScreen) && (
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
                                   <TableCell align="left" sx={{
                                     borderBottomColor: "#424242",
                                     whiteSpace: 'nowrap',
@@ -956,7 +1085,7 @@ export default function Files() {
                                     textOverflow: 'ellipsis',
 
 
-                                  }} >{row.deviceName}
+                                  }} >{row.device_name}
                                   </TableCell>
                                 )}
 
