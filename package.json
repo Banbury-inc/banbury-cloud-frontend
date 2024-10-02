@@ -20,7 +20,8 @@
     "deploy": "npm-run-all build package:dist2",
     "package:dist": "electron-builder --dir",
     "package:dist2": "electron-builder",
-    "docs": "typedoc --out docs --entryPointStrategy expand src/renderer/neuranet"
+    "docs": "typedoc --out docs --entryPointStrategy expand src/renderer/neuranet",
+    "test": "jest"
   },
   "keywords": [],
   "author": "Banbury <mmills6060@gmail.com>",
