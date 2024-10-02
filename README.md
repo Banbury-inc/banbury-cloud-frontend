@@ -81,7 +81,7 @@ Thats it!
 
 ## Run tests
    ```
-   npx jest
+   npm test
    ```
 
 ## Packaging
