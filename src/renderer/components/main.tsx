@@ -154,7 +154,7 @@ export default function PermanentDrawerLeft() {
         sx={{
           '& .MuiDrawer-paper': {
             marginTop: '42px',
-            paddingLeft: '2px',
+            paddingLeft: '4px',
             backgroundColor: theme.palette.background.default,
           },
         }}
