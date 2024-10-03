@@ -11,6 +11,9 @@ import ImageIcon from '@mui/icons-material/Image';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import DescriptionIcon from '@mui/icons-material/Description';
+
+import { fileWatcherEmitter } from '../neuranet/device/watchdog';
+
 import axios from 'axios';
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -55,7 +58,6 @@ interface DatabaseData {
 
 
 const EventEmitter = require('events');
-export const fileWatcherEmitter = new EventEmitter();
 
 
 
@@ -388,7 +390,7 @@ export default function CustomizedTreeView() {
 
   useEffect(() => {
     const handleFileChange = () => {
-      console.log('File changed, fetching data...');
+      console.log('File changed, fetching data from file tree...');
       setIsLoading(true);
       fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
     };
