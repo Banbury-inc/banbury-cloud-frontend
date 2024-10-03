@@ -886,6 +886,7 @@ export default function Files() {
                 <Tooltip title="Delete">
                   <Button
                     onClick={() => handlers.files.deleteFile(
+                      setSelectedFileNames,
                       selectedFileNames,
                       global_file_path,
                       setdeleteLoading,

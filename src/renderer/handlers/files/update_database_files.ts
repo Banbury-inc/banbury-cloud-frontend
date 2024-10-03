@@ -47,8 +47,8 @@ export async function update_database_files(username: string) {
       file_path: file.file_path,
     })) || [];
 
-    // console.log('Files to add:', files_to_add);
-    // console.log('Files to remove:', files_to_remove);
+    console.log('Files to add:', files_to_add);
+    console.log('Files to remove:', files_to_remove);
 
     // Add files to the database if available
     if (files_to_add.length > 0) {

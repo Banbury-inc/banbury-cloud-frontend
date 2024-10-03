@@ -69,7 +69,8 @@ function compareSnapshots(serverFiles: File[], clientFiles: File[]): Actions {
     const correspondingServerFile = serverFiles.find(
       (serverFile: File) =>
         serverFile.file_name === clientFile.file_name &&
-        serverFile.file_path === clientFile.file_path
+        serverFile.file_path === clientFile.file_path &&
+        serverFile.deviceID === clientFile.deviceID
 
     );
 
@@ -94,13 +95,17 @@ function compareSnapshots(serverFiles: File[], clientFiles: File[]): Actions {
     const correspondingClientFile = clientFiles.find(
       (clientFile: File) =>
         clientFile.file_name === serverFile.file_name &&
-        clientFile.file_path === serverFile.file_path
+        clientFile.file_path === serverFile.file_path &&
+        clientFile.deviceID === serverFile.deviceID
+
     );
 
     if (!correspondingClientFile) {
       actions.remove.files.push({
         file_name: serverFile.file_name,
         file_path: serverFile.file_path
+
+
       });
     }
   });

@@ -318,7 +318,7 @@ export async function directory_info(username: any) {
 
         console.log(filename);
 
-        await handlers.files.addFile(username, fileInfo);
+        // await handlers.files.addFile(username, fileInfo);
 
         // If it's a directory, recurse into it
         if (stats.isDirectory()) {

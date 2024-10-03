@@ -4,6 +4,7 @@ import path from 'path';
 import { handlers } from '../index'; // Adjust the path according to your project structure
 
 export async function deleteFile(
+  setSelectedFileNames: (selectedFileNames: string[]) => void,
   selectedFileNames: string[],
   global_file_path: string | null,
   setdeleteLoading: (loading: boolean) => void,
@@ -69,6 +70,7 @@ export async function deleteFile(
   setIsAddingFolder(false);
   setNewFolderName("");
   setDisableFetch(false);
+  setSelectedFileNames([]);
 
   // Run update devices function after all deletions are complete
   const update_result = await handlers.devices.updateDevice(username);
