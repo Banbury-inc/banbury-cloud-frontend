@@ -161,7 +161,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
-            color="secondary"
+            color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
@@ -994,14 +994,9 @@ export default function Files() {
                                 selected={isItemSelected}
                                 onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
                                 onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                                sx={{
-                                  '&:hover .checkbox': {
-                                    opacity: 1, // Show the checkbox on hover
-                                  }
-                                }}
                               >
                                 <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
-                                  {hoveredRowId === row.id ? ( // Only render Checkbox if row is hovered
+                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
                                     <Checkbox
                                       color="primary"
                                       checked={isItemSelected}
