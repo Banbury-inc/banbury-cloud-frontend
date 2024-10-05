@@ -161,7 +161,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
-            color="secondary"
+            color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
@@ -669,6 +669,10 @@ export default function Files() {
     }
 
     console.log(response)
+
+
+
+    setSelected([]);
   };
 
 
@@ -885,18 +889,22 @@ export default function Files() {
               <Grid item paddingRight={1}>
                 <Tooltip title="Delete">
                   <Button
-                    onClick={() => handlers.files.deleteFile(
-                      setSelectedFileNames,
-                      selectedFileNames,
-                      global_file_path,
-                      setdeleteLoading,
-                      setIsAddingFolder,
-                      setNewFolderName,
-                      setDisableFetch,
-                      username,
-                      updates,
-                      setUpdates,
-                    )}
+                    onClick={() => {
+                      handlers.files.deleteFile(
+                        setSelectedFileNames,
+                        selectedFileNames,
+                        global_file_path,
+                        setdeleteLoading,
+                        setIsAddingFolder,
+                        setNewFolderName,
+                        setDisableFetch,
+                        username,
+                        updates,
+                        setUpdates,
+                      );
+                      setSelected([]);
+                    }
+                    }
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
                     <DeleteIcon
@@ -994,14 +1002,9 @@ export default function Files() {
                                 selected={isItemSelected}
                                 onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
                                 onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                                sx={{
-                                  '&:hover .checkbox': {
-                                    opacity: 1, // Show the checkbox on hover
-                                  }
-                                }}
                               >
                                 <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
-                                  {hoveredRowId === row.id ? ( // Only render Checkbox if row is hovered
+                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
                                     <Checkbox
                                       color="primary"
                                       checked={isItemSelected}
