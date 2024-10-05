@@ -669,6 +669,10 @@ export default function Files() {
     }
 
     console.log(response)
+
+
+
+    setSelected([]);
   };
 
 
@@ -885,18 +889,22 @@ export default function Files() {
               <Grid item paddingRight={1}>
                 <Tooltip title="Delete">
                   <Button
-                    onClick={() => handlers.files.deleteFile(
-                      setSelectedFileNames,
-                      selectedFileNames,
-                      global_file_path,
-                      setdeleteLoading,
-                      setIsAddingFolder,
-                      setNewFolderName,
-                      setDisableFetch,
-                      username,
-                      updates,
-                      setUpdates,
-                    )}
+                    onClick={() => {
+                      handlers.files.deleteFile(
+                        setSelectedFileNames,
+                        selectedFileNames,
+                        global_file_path,
+                        setdeleteLoading,
+                        setIsAddingFolder,
+                        setNewFolderName,
+                        setDisableFetch,
+                        username,
+                        updates,
+                        setUpdates,
+                      );
+                      setSelected([]);
+                    }
+                    }
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
                     <DeleteIcon
