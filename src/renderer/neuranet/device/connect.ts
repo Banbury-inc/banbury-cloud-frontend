@@ -169,7 +169,7 @@ export function download_request(username: string, file_name: string, socket: We
     message: `Download Request`,
     username: username,
     file_name: file_name,
-    requesting_device_name: 'michael-ubuntu',
+    requesting_device_name: os.hostname(),
   };
   socket.send(JSON.stringify(message));
   console.log(`Sent: ${JSON.stringify(message)}`);
