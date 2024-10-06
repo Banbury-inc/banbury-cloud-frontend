@@ -8,8 +8,7 @@ import GrainIcon from '@mui/icons-material/Grain';
 import DevicesIcon from '@mui/icons-material/Devices';
 import FolderIcon from '@mui/icons-material/Folder';
 import ImageIcon from '@mui/icons-material/Image';
-import VideocamIcon from '@mui/icons-material/Videocam';
-import AudiotrackIcon from '@mui/icons-material/Audiotrack';
+import VideocamIcon from '@mui/icons-material/Videocam'; import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import DescriptionIcon from '@mui/icons-material/Description';
 
 import { fileWatcherEmitter } from '../neuranet/device/watchdog';
@@ -269,7 +268,7 @@ export default function CustomizedTreeView() {
           files: any[];
         }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
 
-        // files = fileInfoResponse.data.files;
+        files = fileInfoResponse.data.files;
 
         allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
@@ -311,7 +310,7 @@ export default function CustomizedTreeView() {
 
 
 
-  }, [username, disableFetch]); // Include allFiles in the dependency array
+  }, [username, disableFetch, updates]); // Include allFiles in the dependency array
 
 
   const fetchData = async (username: string | null, disableFetch: boolean, setFirstname: any, setLastname: any, setAllFiles: any, setIsLoading: any) => {
@@ -393,6 +392,7 @@ export default function CustomizedTreeView() {
       console.log('File changed, fetching data from file tree...');
       setIsLoading(true);
       fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
+
     };
 
     fileWatcherEmitter.on('fileChanged', handleFileChange);

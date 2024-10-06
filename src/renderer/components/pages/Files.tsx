@@ -231,7 +231,7 @@ export default function Files() {
 
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData_with_api = async () => {
       try {
 
 
@@ -332,8 +332,8 @@ export default function Files() {
       }
     };
 
-    fetchData();
-  }, [username, disableFetch]);
+    fetchData_with_api();
+  }, [username, disableFetch, updates]);
 
 
   const fetchData = async (username: string | null, disableFetch: boolean, setFirstname: any, setLastname: any, setAllFiles: any, setIsLoading: any) => {
@@ -702,6 +702,7 @@ export default function Files() {
 
     if (result === 'success') {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
     }
     console.log(result)
   };
