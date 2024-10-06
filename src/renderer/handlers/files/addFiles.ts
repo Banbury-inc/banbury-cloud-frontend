@@ -10,7 +10,8 @@ export async function addFiles(
   try {
     const response = await axios.post<{
       result: string;
-    }>('https://website2-389236221119.us-central1.run.app/add_files/' + username + '/', {
+      // }>('https://website2-389236221119.us-central1.run.app/add_files/' + username + '/', {
+    }>('https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/add_files/' + username + '/', {
       // }>('http://localhost:8080/add_files/' + username + '/', {
       files: filesInfo,
       device_name: device,

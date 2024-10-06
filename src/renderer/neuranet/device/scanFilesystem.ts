@@ -77,6 +77,7 @@ export async function scanFilesystem(username: string): Promise<string> {
         };
 
         filesInfo.push(fileInfo);
+        console.log('Added file to filesInfo:', fileInfo);
 
         // Send files to the server in batches of 1000
         if (filesInfo.length >= 1000) {
