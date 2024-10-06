@@ -57,7 +57,7 @@ interface DatabaseData {
   id: number;
   file_name: string;
   kind: string;
-  dateUploaded: string;
+  date_uploaded: string;
   file_size: string;
   file_path: string;
   deviceID: string;
@@ -72,8 +72,8 @@ const headCells: HeadCell[] = [
   { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
   { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
-  { id: 'available', numeric: true, label: 'Status', isVisibleOnSmallScreen: false },
-  { id: 'dateUploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
 
 type Order = 'asc' | 'desc';
@@ -274,7 +274,7 @@ export default function Files() {
             file_size: file.file_size,
             kind: file.kind,
             file_path: file.file_path,
-            dateUploaded: file.dateUploaded,
+            date_uploaded: file.date_uploaded,
             deviceID: (index + 1).toString(), // Convert deviceID to string
             device_name: device.device_name,
             helpers: 0,
@@ -312,7 +312,7 @@ export default function Files() {
             file_size: file.file_size,
             kind: file.kind,
             file_path: file.file_path,
-            dateUploaded: file.dateUploaded,
+            date_uploaded: file.date_uploaded,
             deviceID: (index + 1).toString(), // Convert deviceID to string
             device_name: device.device_name,
             helpers: 0,
@@ -376,7 +376,7 @@ export default function Files() {
           fileSize: file.file_size,
           kind: file.kind,
           file_path: file.file_path,
-          dateUploaded: file.dateUploaded,
+          date_uploaded: file.date_uploaded,
           deviceID: (index + 1).toString(), // Convert deviceID to string
           device_name: device.device_name,
           helpers: 0,
@@ -1097,7 +1097,7 @@ export default function Files() {
 
                                 {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
                                   <TableCell
-                                    align="right"
+                                    align="left"
                                     padding="normal"
                                     sx={{
                                       borderBottomColor: "#424242",
@@ -1111,7 +1111,7 @@ export default function Files() {
                                   </TableCell>
                                 )}
 
-                                {(!isSmallScreen || headCells.find(cell => cell.id === 'dateUploaded')?.isVisibleOnSmallScreen) && (
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
                                   <TableCell
                                     padding="normal"
                                     align="right" sx={{
@@ -1120,7 +1120,7 @@ export default function Files() {
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
-                                    }} >{row.dateUploaded}</TableCell>
+                                    }} >{row.date_uploaded}</TableCell>
                                 )}
 
 
