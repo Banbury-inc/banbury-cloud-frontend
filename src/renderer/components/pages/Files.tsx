@@ -829,23 +829,23 @@ export default function Files() {
                 </Tooltip>
               </Grid>
 
-              <Grid item paddingRight={1}>
-                <Tooltip title="New folder">
-                  <Button
-                    onClick={() => handlers.buttons.addfolderButton(
-                      setDisableFetch,
-                      setIsAddingFolder,
-                      setNewFolderName,
-                      setFileRows
-                    )}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <CreateNewFolderOutlinedIcon
-                      fontSize="inherit"
-                    />
-                  </Button>
-                </Tooltip>
-              </Grid>
+              {/* <Grid item paddingRight={1}> */}
+              {/*   <Tooltip title="New folder"> */}
+              {/*     <Button */}
+              {/*       onClick={() => handlers.buttons.addfolderButton( */}
+              {/*         setDisableFetch, */}
+              {/*         setIsAddingFolder, */}
+              {/*         setNewFolderName, */}
+              {/*         setFileRows */}
+              {/*       )} */}
+              {/*       sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed */}
+              {/*     > */}
+              {/*       <CreateNewFolderOutlinedIcon */}
+              {/*         fontSize="inherit" */}
+              {/*       /> */}
+              {/*     </Button> */}
+              {/*   </Tooltip> */}
+              {/* </Grid> */}
               <Grid item paddingRight={1}>
                 <Tooltip title="Sync">
                   <Button
