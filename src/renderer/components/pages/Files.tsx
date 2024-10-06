@@ -677,14 +677,18 @@ export default function Files() {
 
 
   const handleAddDeviceClick = async () => {
+    // Here, we are specifically adding the task after the device has been created
+    // Because the database will not know what device to add it to, as the device does not 
+    // exist yet
+
+
     console.log("handling add device click")
 
     let device_name = neuranet.device.name();
     let task_description = 'Adding device ' + device_name;
+    let result = await handlers.devices.addDevice(username ?? '');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
-
-    let result = await handlers.devices.addDevice(username ?? '');
 
     if (result === 'success') {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);

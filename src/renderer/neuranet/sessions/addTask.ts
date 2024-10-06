@@ -2,6 +2,7 @@ import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
+import os from 'os';
 
 
 export async function addTask(
@@ -14,7 +15,8 @@ export async function addTask(
 
   let user = username;
 
-  let device_name = neuranet.device.name();
+  // let device_name = neuranet.device.name();
+  let device_name = os.hostname();
   let taskInfo = {
     task_name: task_description,
     task_device: device_name,
