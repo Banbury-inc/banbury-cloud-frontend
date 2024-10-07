@@ -14,7 +14,7 @@ export async function declare_online(
   let device_name = neuranet.device.name();
 
   try {
-    const url = `https://website2-389236221119.us-central1.run.app/declare_online/${username}/`;
+    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/declare_online/${username}/`;
     const response = await axios.post<{ result: string; user: string; }>(url, {
       device_name: device_name,
     });

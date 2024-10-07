@@ -14,7 +14,7 @@ export async function declare_offline(
   let device_name = neuranet.device.name();
 
   try {
-    const url = `https://website2-389236221119.us-central1.run.app/declare_offline/${username}/`;
+    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/declare_offline/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       device_name: device_name,
     });
