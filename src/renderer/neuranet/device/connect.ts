@@ -179,7 +179,7 @@ export function download_request(username: string, file_name: string, socket: We
 // Usage of the functions
 const username = 'mmills';
 const file_name = 'Logo.png';
-const device_name = 'michael-ubuntu';
+const device_name = os.hostname();
 
 export function connect(username: string) {
 
