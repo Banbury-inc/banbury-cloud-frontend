@@ -544,8 +544,6 @@ export default function EnhancedTable() {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
     console.log("handling download click")
-    let result = handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames);
-    console.log(result)
   };
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);

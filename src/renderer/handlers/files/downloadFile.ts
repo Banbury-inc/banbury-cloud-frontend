@@ -1,6 +1,6 @@
 import { neuranet } from '../../neuranet'
 
-export function downloadFile(username: string, files: string[], devices: string[]) {
+export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any) {
 
     // Usage of the functions
     // const username = 'mmills';
@@ -14,15 +14,11 @@ export function downloadFile(username: string, files: string[], devices: string[
     devices.forEach((device_name) => {
       // Create the WebSocket connection and pass the callback to call download_request once the connection is open
       neuranet.device.createWebSocketConnection(username, device_name, (socket) => {
-        neuranet.device.download_request(username, file_name, socket);
+        neuranet.device.download_request(username, file_name, socket, taskInfo);
       });
     });
   }); 
   }
-
-    let result = 'success';
-
-    return result;
 
   }
 

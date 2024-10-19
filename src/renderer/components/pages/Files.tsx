@@ -576,13 +576,15 @@ export default function Files() {
         // Send an IPC message to the main process to handle opening the file
         console.log(`Opening folder '${file_name}'...`);
         // shell.openPath(newSelectedFilePaths[0]);
-      } else {
+      }
+      if (!fileFound && !folderFound) {
+
         console.error(`File '${file_name}' not found in directory, searhing other devices`);
 
         let task_description = 'Opening ' + selectedFileNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames);
+        let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }
@@ -659,7 +661,7 @@ export default function Files() {
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
 
-    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames);
+    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
 
     if (response === 'No file selected') {
       let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);

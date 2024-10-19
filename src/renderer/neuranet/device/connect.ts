@@ -30,11 +30,15 @@ function saveFile(fileName: string) {
       console.error('Error saving file:', err);
     } else {
       console.log(`File successfully saved as ${fileName}, total size: ${completeBuffer.length} bytes`);
+      return 'success';
+
     }
   });
 
   // Clear accumulated data after saving
   accumulatedData = [];
+
+  return 'success';
 }
 
 
@@ -78,9 +82,8 @@ export function createWebSocketConnection(username: string, device_name: string,
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      console.log('Received binary data from server');
       // Handle binary data (e.g., save it to a file)
-      handleReceivedFileChunk(event.data);
+      const result =  handleReceivedFileChunk(event.data);
     } else {
 
       const data = JSON.parse(event.data);
@@ -105,7 +108,7 @@ export function createWebSocketConnection(username: string, device_name: string,
         };
         socket.send(JSON.stringify(final_message));
         console.log(`Sent: ${JSON.stringify(final_message)}`);
-
+        return 'success';
       }
 
       if (request_type === 'file_request') {
@@ -131,6 +134,19 @@ export function createWebSocketConnection(username: string, device_name: string,
             sending_device_name: sending_device_name,
           };
           socket.send(JSON.stringify(message));
+
+          console.log('taskInfo', taskInfo)
+
+          const newTaskInfo = {
+            name: 'Downloading ' + file_name,
+            device: sending_device_name,
+            status: 'complete',
+          }
+
+          console.log('newTaskInfo', newTaskInfo)
+
+          neuranet.sessions.updateTask(username, newTaskInfo);
+
           let result = 'success';
           return result;
         });
@@ -166,7 +182,7 @@ export function createWebSocketConnection(username: string, device_name: string,
 }
 
 // Function to send a download request using the provided socket
-export function download_request(username: string, file_name: string, socket: WebSocket) {
+export function download_request(username: string, file_name: string, socket: WebSocket, taskInfo: any) {
   const message = {
     message: `Download Request`,
     username: username,
@@ -175,6 +191,7 @@ export function download_request(username: string, file_name: string, socket: We
   };
   socket.send(JSON.stringify(message));
   console.log(`Sent: ${JSON.stringify(message)}`);
+
 }
 
 
@@ -182,6 +199,11 @@ export function download_request(username: string, file_name: string, socket: We
 const username = 'mmills';
 const file_name = 'Logo.png';
 const device_name = os.hostname();
+const taskInfo = {
+  task_name: 'download_file',
+  task_device: device_name,
+  task_status: 'in_progress',
+};
 
 export function connect(username: string) {
 
