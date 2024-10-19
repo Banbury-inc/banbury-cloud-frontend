@@ -46,8 +46,8 @@ export function createWebSocketConnection(username: string, device_name: string,
 
 
   // Replace the URL with your WebSocket endpoint
-  // const socket = new WebSocketClient('ws://0.0.0.0:8080/ws/live_data/');
-  const socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
+  const socket = new WebSocketClient('ws://0.0.0.0:8080/ws/live_data/');
+  // const socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
@@ -96,7 +96,7 @@ export function createWebSocketConnection(username: string, device_name: string,
 
       // When the server indicates that the file transfer is complete, save the file
       if (data.message === 'File transfer complete') {
-        saveFile(message.file_name || 'received_file.png'); // Save file with correct name
+        saveFile(data.file_name || 'received_file.png'); // Save file with correct name
         const final_message = {
           message: `File transaction complete`,
           username: username,
@@ -125,6 +125,7 @@ export function createWebSocketConnection(username: string, device_name: string,
         fileStream.on('end', () => {
           const message = {
             message: `File sent successfully`,
+            file_name: file_name,
             username: username,
             requesting_device_name: requesting_device_name,
             sending_device_name: sending_device_name,
