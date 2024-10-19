@@ -154,7 +154,8 @@ export function createWebSocketConnection(username: string, device_name: string,
     console.log('WebSocket connection closed');
 
     // Declare the device offline
-    neuranet.device.declare_offline(username);
+    //commenting out as url doesnt exist I don't think
+    //neuranet.device.declare_offline(username);
     console.log('Device declared offline');
   };
 
@@ -187,7 +188,8 @@ export function connect(username: string) {
   // Create the WebSocket connection and pass the callback to call download_request once the connection is open
   createWebSocketConnection(username, device_name, (socket) => {
     // Declare the device online
-    neuranet.device.declare_online(username);
+    //commenting out as url doesnt exist I don't think
+    //neuranet.device.declare_online(username);
     console.log('Device declared online');
     // download_request(username, file_name, socket);
   });
