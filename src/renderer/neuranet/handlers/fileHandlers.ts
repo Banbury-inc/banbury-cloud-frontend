@@ -6,19 +6,19 @@ import * as os from 'os';
 export async function file_request(senderSocket: net.Socket, file_name: string, file_size: string): Promise<void> {
   console.log(`Device is requesting file: ${file_name}`);
 
-  const directory_name: string = "BCloud";
+  const directory_name = "BCloud";
   const directory_path: string = path.join(os.homedir(), directory_name);
   const file_save_path: string = path.join(directory_path, file_name);
-  let request_file_name = path.basename(file_save_path);
+  const request_file_name = path.basename(file_save_path);
 
   try {
     // Attempt to open the file
     const file: fs.ReadStream = fs.createReadStream(file_save_path);
-    const null_string: string = "";
-    const file_header: string = `FILE_REQUEST_RESPONSE:${request_file_name}:${file_size}:${null_string}:END_OF_HEADER`;
+    const null_string = "";
+    const file_header = `FILE_REQUEST_RESPONSE:${request_file_name}:${file_size}:${null_string}:END_OF_HEADER`;
     senderSocket.write(file_header);
 
-    let total_bytes_sent: number = 0;
+    let total_bytes_sent = 0;
     file.on('data', (bytes_read: Buffer) => {
       console.log("sending file...");
       senderSocket.write(bytes_read);

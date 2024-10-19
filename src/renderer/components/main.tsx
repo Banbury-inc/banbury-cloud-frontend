@@ -3,23 +3,13 @@ import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import MuiDrawer from '@mui/material/Drawer';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Icon from '@mui/material/Icon';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import Files from './pages/Files';
 import Devices from './pages/Devices';
@@ -29,17 +19,13 @@ import Settings from './pages/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import FolderIcon from '@mui/icons-material/Folder';
-import EnhancedTable from "./Table";
-import { Stack, Chip, Grid } from '@mui/material';
-import axios from 'axios';
-import DevicesTable from './DeviceTable';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
+import { CONFIG } from '../config/config';
 import Tooltip from '@mui/material/Tooltip';
-import net from 'net';
+import os from 'os';
+import path from 'path';
 import { neuranet } from '../neuranet';
 
 const { ipcRenderer } = window.require('electron');
@@ -127,9 +113,14 @@ export default function PermanentDrawerLeft() {
     async function setupConnection() {
       try {
         console.log("connecting to relay server");
-        let senderSocket = neuranet.networking.connect();
         console.log("Starting receiver");
-        neuranet.device.connect(username, senderSocket);
+        const fullDeviceSync = CONFIG.full_device_sync;
+        const skipDotFiles = CONFIG.skip_dot_files;
+        // Determine the directory path based on the fullDeviceSync flag
+        const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
+
+        neuranet.device.connect(username || "default");
+        neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
         console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);
@@ -163,7 +154,7 @@ export default function PermanentDrawerLeft() {
         sx={{
           '& .MuiDrawer-paper': {
             marginTop: '42px',
-            paddingLeft: '2px',
+            paddingLeft: '4px',
             backgroundColor: theme.palette.background.default,
           },
         }}
@@ -186,7 +177,7 @@ export default function PermanentDrawerLeft() {
         {/* </DrawerHeader> */}
 
         <List>
-          {['Files', 'Devices', 'Profile'].map((text, index) => (
+          {['Files', 'Profile'].map((text, index) => (
             <Tooltip title={text} key={text} placement="right">
               <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
                 <Button
@@ -208,11 +199,11 @@ export default function PermanentDrawerLeft() {
                         // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
                         case 0:
                           return <FolderOutlinedIcon fontSize='inherit' />;
-                        case 1:
-                          return <DevicesIcon fontSize='inherit' />;
+                        // case 1:
+                        // return <DevicesIcon fontSize='inherit' />;
                         // case 3:
                         // return <AutoAwesomeIcon fontSize='inherit' />;
-                        case 2:
+                        case 1:
                           return <AccountBoxIcon fontSize='inherit' />;
                         default:
                           return null;

@@ -295,7 +295,7 @@ export default function EnhancedTable() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
-  console.log(username)
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -304,7 +304,7 @@ export default function EnhancedTable() {
           devices: any[];
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        }>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const { first_name, last_name, devices } = response.data;
         setFirstname(first_name);
@@ -351,7 +351,7 @@ export default function EnhancedTable() {
           devices: any[];
           first_name: string;
           last_name: string;
-        }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
+        }>('https://website2-389236221119.us-central1.run.app/getuserinfo2/' + username + '/');
 
         const { first_name, last_name, devices } = response.data;
         setFirstname(first_name);
@@ -544,8 +544,6 @@ export default function EnhancedTable() {
     setSelectedFiles(selected);
     console.log(selectedFileNames)
     console.log("handling download click")
-    let result = handlers.files.downloadFile(selectedFileNames, selectedDeviceNames);
-    console.log(result)
   };
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -608,7 +606,7 @@ export default function EnhancedTable() {
     setDisableFetch(false);
 
     // Run update devices function after all deletions are complete
-    const update_result = await handlers.devices.updateDevices(username);
+    const update_result = await handlers.devices.updateDevice(username);
     console.log(update_result);
     setUpdates(updates + 1);
   };
@@ -693,7 +691,7 @@ export default function EnhancedTable() {
     setNewFolderName("");
     setDisableFetch(false);
 
-    const update_result = await handlers.devices.updateDevices(username);
+    const update_result = await handlers.devices.updateDevice(username);
     console.log(update_result)
     setUpdates(updates + 1);
   };

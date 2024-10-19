@@ -211,7 +211,7 @@ export default function App(): JSX.Element {
     // https://mui.com/customization/theming/
     //
     <ThemeProvider theme={theme}>
-      <div style={{ position: 'fixed', width: '100%', zIndex: 1000 }}>
+      <div style={{ position: 'fixed', width: '100%' }}>
         <TitleBar
           theme={customTheme}
           onClose={handleClose}

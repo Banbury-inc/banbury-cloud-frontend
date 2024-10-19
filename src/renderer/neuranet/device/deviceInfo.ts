@@ -5,7 +5,8 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import { DateTime } from 'luxon';
-
+import { handlers } from '../../handlers';
+import { CONFIG } from '../../config/config';
 
 interface CPUPerformance {
   manufacturer: string;
@@ -166,14 +167,62 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
-export function directory_info() {
+
+async function countFilesAndFolders(directoryPath: string): Promise<number> {
+  let totalCount = 0;
+  const startTime = Date.now();
+
+  // Set up an interval to log the count every 3 seconds
+  const intervalId = setInterval(() => {
+    console.log(`Total number of files and folders: ${totalCount}`);
+  }, 3);
+
+  async function traverseAndCount(currentPath: string): Promise<void> {
+    const files = fs.readdirSync(currentPath);
+    for (const filename of files) {
+      try {
+        const filePath = path.join(currentPath, filename);
+        const stats = fs.statSync(filePath);
+
+        totalCount++; // Count the current file or directory
+
+        if (stats.isDirectory()) {
+          await traverseAndCount(filePath); // Recurse into the directory
+        }
+      } catch (error) {
+        console.error('Error reading file:', error);
+
+        // Skip to the next file
+        continue;
+      }
+    }
+  }
+
+  await traverseAndCount(directoryPath);
+
+  // Clear the interval once done
+  clearInterval(intervalId);
+
+  // Log the final count
+  console.log(`Final total number of files and folders: ${totalCount}`);
+  return totalCount;
+}
+
+
+
+
+export async function directory_info(username: any) {
+
+  const full_device_sync = CONFIG.full_device_sync; // Change this to your actual server IP
+
+  // Determine the directory path based on the fullDeviceSync flag
+  const directoryPath = full_device_sync ? os.homedir() : os.homedir() + "/BCloud";
+
   const bclouddirectoryName = "BCloud";
   const bclouddirectoryPath = os.homedir() + `/${bclouddirectoryName}`;
 
-  const directoryName = "BCloud";
-  const directoryPath = os.homedir() + `/${directoryName}`;
-
-
+  // const directoryName = "BCloud";
+  // const directoryPath = os.homedir() + `/${directoryName}`;
 
 
   const filesInfo: any[] = [];
@@ -243,8 +292,9 @@ export function directory_info() {
     };
     return fileTypes[ext] || 'unknown';
   }
+
   // Recursive function to get file info
-  function traverseDirectory(currentPath: any) {
+  async function traverseDirectory(currentPath: any) {
     const files = fs.readdirSync(currentPath);
     for (const filename of files) {
       const filePath = path.join(currentPath, filename);
@@ -265,22 +315,32 @@ export function directory_info() {
           "kind": stats.isDirectory() ? 'Folder' : getFileKind(filename),
 
         };
-        filesInfo.push(fileInfo);
+
+        console.log(filename);
+
+        // await handlers.files.addFile(username, fileInfo);
 
         // If it's a directory, recurse into it
         if (stats.isDirectory()) {
-          traverseDirectory(filePath);
+          await traverseDirectory(filePath);
         }
+        filesInfo.push(fileInfo);
       }
       catch (error) {
         console.error('Error reading file:', error);
+
+        // Skip to the next file
+        continue
       }
     }
+
   }
 
-  // Start traversing from the root directory
-  traverseDirectory(directoryPath);
-  console.log(filesInfo);
+  // Start processing the files and directories
+  await traverseDirectory(directoryPath);
+  console.log(`Total files and directories processed: ${filesInfo.length}`);
+
   return filesInfo;
+
 }
 
