@@ -134,6 +134,11 @@
       "icon": "static/NeuraNet_Icons/web/icon-512.png"
     },
     "mac": {
+      "entitlements": "/build/entitlements.mac.plist",
+      "entitlementsInherit": "/build/entitlements.mac.plist",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "identity": "Developer ID Application: Michael Mills (5Q7W7ZFVLS)",
       "target": [
         "dmg",
         "pkg"
@@ -153,7 +158,8 @@
       "dist/**",
       "dist/renderer/**"
     ],
-    "extraResources": []
+    "extraResources": [],
+    "afterSign": "scripts/notarize.js"
   },
   "engines": {
     "npm": ">=7.0.0",
