@@ -42,43 +42,35 @@ import TaskBoxButton from '../TaskBoxButton';
 
 
 
-// Simplified data interface to match your file structure
-interface DatabaseData {
+// Update the interface to match device data
+interface DeviceData {
   id: number;
-  file_name: string;
-  kind: string;
-  date_uploaded: string;
-  file_size: string;
-  file_path: string;
-  deviceID: string;
   device_name: string;
-  helpers: number;
-  available: string;
-  upload_speed: string;
-  download_speed: string;
   make: string;
   model: string;
   available_storage: string;
   total_storage: string;
+  upload_speed: string;
+  download_speed: string;
+  available: string;
 }
 
-
 const headCells: HeadCell[] = [
-  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
+  { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
   { id: 'make', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
   { id: 'model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
   { id: 'available_storage', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
   { id: 'total_storage', numeric: false, label: 'Total Storage', isVisibleOnSmallScreen: true },
   { id: 'upload_speed', numeric: false, label: 'Upload Speed', isVisibleOnSmallScreen: true },
   { id: 'download_speed', numeric: false, label: 'Download Speed', isVisibleOnSmallScreen: true },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
 ];
 
 type Order = 'asc' | 'desc';
 
 interface HeadCell {
   disablePadding?: boolean;
-  id: keyof DatabaseData;
+  id: keyof DeviceData;
   label: string;
   numeric: boolean;
   isVisibleOnSmallScreen: boolean;
@@ -86,28 +78,23 @@ interface HeadCell {
 
 interface EnhancedTableProps {
   numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DeviceData) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   order: Order;
-  orderBy: keyof DatabaseData;
+  orderBy: keyof DeviceData;
   rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
-  const createSortHandler = (property: keyof DatabaseData) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (property: keyof DeviceData) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
 
   const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
   const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
 
-  // Function to handle breadcrumb click, might need more logic to actually navigate
-  const handleBreadcrumbClick = (path: string) => {
-    console.info(`Navigate to: ${path}`);
-    // Set global_file_path or navigate logic here
-  };
 
   return (
     <TableHead>
@@ -159,38 +146,36 @@ const snapshot_json: string = path.join(directory_path, file_name);
 export default function Devices() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
+  const [orderBy, setOrderBy] = useState<keyof DeviceData>('device_name');
   const [selected, setSelected] = useState<readonly number[]>([]);
-  const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<DatabaseData[]>([]); // State for storing fetched file data
-  const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
+  const [fileRows, setFileRows] = useState<DeviceData[]>([]); // State for storing fetched file data
+  const [allDevices, setAllDevices] = useState<DeviceData[]>([]);
   const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
-  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
+  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
 
 
-  const getSelectedFileNames = () => {
+  const getSelectedDeviceNames = () => {
     return selected.map(id => {
-      const file = fileRows.find(file => file.id === id);
-      return file ? file.file_name : null;
-    }).filter(file_name => file_name !== null); // Filter out any null values if a file wasn't found
+      const device = fileRows.find(device => device.id === id);
+      return device ? device.device_name : null;
+    }).filter(device_name => device_name !== null); // Filter out any null values if a file wasn't found
   };
 
 
   useEffect(() => {
-    const fetchData_with_api = async () => {
+    const fetchDevices = async () => {
       try {
-
-
-        // Step 1: Fetch user information
+        setIsLoading(true);
+        // Fetch user information
         const userInfoResponse = await axios.get<{
           first_name: string;
           last_name: string;
@@ -202,69 +187,27 @@ export default function Devices() {
         setFirstname(first_name);
         setLastname(last_name);
 
-        // Step 2: Fetch device information
+        // Fetch device information
         const deviceInfoResponse = await axios.get<{
           devices: any[];
         }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
 
         const { devices } = deviceInfoResponse.data;
 
+        // Transform device data
+        const transformedDevices: DeviceData[] = devices.map((device, index) => ({
+          id: index + 1,
+          device_name: device.device_name,
+          make: device.make,
+          model: device.model,
+          available_storage: device.available_storage,
+          total_storage: device.total_storage,
+          upload_speed: device.upload_speed || 'N/A',
+          download_speed: device.download_speed || 'N/A',
+          available: device.online ? "Available" : "Unavailable",
+        }));
 
-        let files: DatabaseData[] = [];
-
-        // set files to the value of snapshot_json if it exists
-        if (fs.existsSync(snapshot_json)) {
-          const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
-          files = JSON.parse(snapshot);
-          console.log('Loaded snapshot from file:', snapshot_json);
-          console.log('Snapshot:', files);
-        }
-
-        // Combine devices with their associated files
-        let allFilesData = devices.flatMap((device, index) => {
-          const deviceFiles = files.filter(file => file.device_name === device.device_name);
-          return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
-            file_name: file.file_name,
-            file_size: file.file_size,
-            kind: file.kind,
-            file_path: file.file_path,
-            date_uploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
-            device_name: device.device_name,
-            helpers: 0,
-            available: device.online ? "Available" : "Unavailable",
-            upload_speed: file.upload_speed,
-            download_speed: file.download_speed,
-            make: device.make,
-            model: device.model,
-            available_storage: device.available_storage,
-            total_storage: device.total_storage,
-          }));
-        });
-
-        console.log(allFilesData);
-
-        setAllFiles(allFilesData); if (!disableFetch) {
-          setAllFiles(allFilesData);
-        }
-
-        console.log("Local file data loaded")
-
-        // Step 3: Fetch files for all devices
-        const fileInfoResponse = await axios.get<{
-          files: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
-
-
-
-        files = fileInfoResponse.data.files;
-
-
-        setAllFiles(allFilesData); if (!disableFetch) {
-          setAllFiles(allFilesData);
-        }
-
+        setAllDevices(transformedDevices);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -272,8 +215,8 @@ export default function Devices() {
       }
     };
 
-    fetchData_with_api();
-  }, [username, disableFetch, updates]);
+    fetchDevices();
+  }, [username, updates]);
 
 
 
@@ -283,35 +226,35 @@ export default function Devices() {
     const pathToShow = global_file_path || '/';
     const pathSegments = pathToShow.split('/').filter(Boolean).length;
 
-    const filteredFiles = allFiles.filter(file => {
+    const filteredDevices = allDevices.filter(device => {
       if (!global_file_path && !global_file_path_device) {
         return true; // Show all files
       }
 
       if (!global_file_path && global_file_path_device) {
-        return file.device_name === global_file_path_device; // Show all files for the specified device
+        return device.device_name === global_file_path_device; // Show all files for the specified device
       }
 
       // Add a check to ensure filePath is defined
-      if (!file.file_path) {
+      if (!device.device_name) {
         return false; // Skip files with undefined filePath
       }
 
-      const fileSegments = file.file_path.split('/').filter(Boolean).length;
-      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
-      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
+      const deviceSegments = device.device_name.split('/').filter(Boolean).length;
+      const isInSameDirectory = device.device_name.startsWith(pathToShow) && deviceSegments === pathSegments + 1;
+      const isFile = device.device_name === pathToShow;
 
       return isInSameDirectory || isFile;
     });
 
-    setFileRows(filteredFiles);
+    setFileRows(filteredDevices);
 
-  }, [global_file_path, global_file_path_device, allFiles]);
+  }, [global_file_path, global_file_path_device, allDevices]);
 
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof DatabaseData,
+    property: keyof DeviceData,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -343,48 +286,44 @@ export default function Devices() {
         selected.slice(selectedIndex + 1),
       );
     }
-    const file_name = fileRows.find(file => file.id === id)?.file_name;
-    const newSelectedFileNames = newSelected
-      .map(id => fileRows.find(file => file.id === id)?.file_name)
+    const device_name = fileRows.find(device => device.id === id)?.device_name;
+    const newSelectedDeviceNames = newSelected
+      .map(id => fileRows.find(device => device.id === id)?.device_name)
       .filter(name => name !== undefined) as string[];
-    console.log(newSelectedFileNames);
-    const newSelectedFilePaths = newSelected
-      .map(id => fileRows.find(file => file.id === id)?.file_path)
-      .filter(name => name !== undefined) as string[];
-    console.log(newSelectedFilePaths[0]);
+    console.log(newSelectedDeviceNames[0]);
     const directoryName = "BCloud";
     const directoryPath = join(os.homedir(), directoryName);
     let fileFound = false;
     let folderFound = false;
     let filePath = '';
     try {
-      const fileStat = await stat(newSelectedFilePaths[0]);
-      if (fileStat.isFile()) {
+      const deviceStat = await stat(newSelectedDeviceNames[0]);
+      if (deviceStat.isFile()) {
         fileFound = true;
         console.log(`File '${file_name}' found in directory.`);
       }
-      if (fileStat.isDirectory()) {
+      if (deviceStat.isDirectory()) {
         folderFound = true;
-        setGlobal_file_path(newSelectedFilePaths[0]);
+        setGlobal_file_path(newSelectedDeviceNames[0]);
       }
       if (fileFound) {
         // Send an IPC message to the main process to handle opening the file
         console.log(`Opening file '${file_name}'...`);
-        shell.openPath(newSelectedFilePaths[0]);
+        shell.openPath(newSelectedDeviceNames[0]);
       }
       if (folderFound) {
         // Send an IPC message to the main process to handle opening the file
         console.log(`Opening folder '${file_name}'...`);
-        // shell.openPath(newSelectedFilePaths[0]);
+        // shell.openPath(newSelectedDeviceNames[0]);
       }
       if (!fileFound && !folderFound) {
 
         console.error(`File '${file_name}' not found in directory, searhing other devices`);
 
-        let task_description = 'Opening ' + selectedFileNames.join(', ');
+        let task_description = 'Opening ' + selectedDeviceNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
+        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo);
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }
@@ -438,19 +377,16 @@ export default function Devices() {
     }
     setSelected(newSelected);
 
-    const file_name = fileRows.find(file => file.id === id)?.file_name;
-    const device_name = fileRows.find(file => file.id === id)?.device_name;
-    const newSelectedFileNames = newSelected.map(id => fileRows.find(file => file.id === id)?.file_name).filter(name => name !== undefined) as string[];
-    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(file => file.id === id)?.device_name).filter(name => name !== undefined) as string[];
-    setSelectedFileNames(newSelectedFileNames);
+    const device_name = fileRows.find(device => device.id === id)?.device_name;
+    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
     setSelectedDeviceNames(newSelectedDeviceNames);
-    console.log(newSelectedFileNames)
-    console.log(selectedFileNames)
+    console.log(newSelectedDeviceNames)
+    console.log(selectedDeviceNames)
 
   };
 
 
-  const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
+  const [selectedDevices, setSelectedDevices] = useState<readonly number[]>([]);
 
 
 
@@ -568,21 +504,8 @@ export default function Devices() {
                 <Tooltip title="Delete">
                   <Button
                     onClick={() => {
-                      handlers.files.deleteFile(
-                        setSelectedFileNames,
-                        selectedFileNames,
-                        global_file_path,
-                        setdeleteLoading,
-                        setIsAddingFolder,
-                        setNewFolderName,
-                        setDisableFetch,
-                        username,
-                        updates,
-                        setUpdates,
-                      );
-                      setSelected([]);
-                    }
-                    }
+                      setSelectedDevices([]);
+                    }}
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
                     <DeleteIcon
@@ -614,436 +537,92 @@ export default function Devices() {
             <Box my={0}>
               <TableContainer sx={{ maxHeight: '96%', overflowY: 'auto', overflowX: 'auto' }}>
                 <Table aria-labelledby="tableTitle" size="small">
-                  <EnhancedTableHead numSelected={selected.length}
+                  <EnhancedTableHead
+                    numSelected={selected.length}
                     order={order}
                     orderBy={orderBy}
                     onSelectAllClick={handleSelectAllClick}
                     onRequestSort={handleRequestSort}
-                    rowCount={fileRows.length}
+                    rowCount={allDevices.length}
                   />
                   <TableBody>
-                    {
-                      isLoading ? (
-                        Array.from(new Array(rowsPerPage)).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell padding="checkbox">
-                              <Skeleton variant="rectangular" width={24} height={24} />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton variant="text" width="100%" />
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        stableSort(fileRows, getComparator(order, orderBy))
-                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                          .map((row, index) => {
-                            const isItemSelected = isSelected(row.id);
-                            const labelId = `enhanced-table-checkbox-${index}`;
+                    {isLoading ? (
+                      Array.from(new Array(rowsPerPage)).map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell padding="checkbox">
+                            <Skeleton variant="rectangular" width={24} height={24} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      stableSort(allDevices, getComparator(order, orderBy))
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((row, index) => {
+                          const isItemSelected = isSelected(row.id);
+                          const labelId = `enhanced-table-checkbox-${index}`;
 
-                            return (
-                              <TableRow
-                                hover
-                                onClick={(event) => handleClick(event, row.id)}
-                                role="checkbox"
-                                aria-checked={isItemSelected}
-                                tabIndex={-1}
-                                key={row.id}
-                                selected={isItemSelected}
-                                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
+                          return (
+                            <TableRow
+                              hover
+                              onClick={(event) => handleClick(event, row.id)}
+                              role="checkbox"
+                              aria-checked={isItemSelected}
+                              tabIndex={-1}
+                              key={row.id}
+                              selected={isItemSelected}
+                            >
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  color="primary"
+                                  checked={isItemSelected}
+                                  inputProps={{ 'aria-labelledby': labelId }}
+                                />
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {row.device_name}
+                              </TableCell>
+                              <TableCell>{row.make}</TableCell>
+                              <TableCell>{row.model}</TableCell>
+                              <TableCell>{row.available_storage}</TableCell>
+                              <TableCell>{row.total_storage}</TableCell>
+                              <TableCell>{row.upload_speed}</TableCell>
+                              <TableCell>{row.download_speed}</TableCell>
+                              <TableCell
+                                sx={{
+                                  color: row.available === "Available" ? '#1DB954' : 'red',
+                                }}
                               >
-                                {/* checkbox */}
-                                <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
-                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
-                                    <Checkbox
-                                      color="primary"
-                                      checked={isItemSelected}
-                                      inputProps={{ 'aria-labelledby': labelId }}
-                                    />
-                                  ) : null}
-                                </TableCell>
-
-                                {/* device name */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* make */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* model */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* available storage */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* total storage */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* upload speed */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* download speed */}
-                                <TableCell
-                                  sx={{
-                                    borderBottomColor: "#424242",
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-
-                                  }}
-                                  component="th"
-                                  id={labelId}
-                                  scope="row"
-                                  padding="normal"
-                                >
-                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                    <TextField
-                                      value={newFolderName}
-                                      size="small"
-                                      onChange={(e) => setNewFolderName(e.target.value)}
-                                      onBlur={() => handlers.keybinds.foldernameSave(
-                                        newFolderName,
-                                        setIsAddingFolder,
-                                        setUpdates,
-                                        updates,
-                                        global_file_path ?? '',
-                                        setFileRows,
-                                        setNewFolderName,
-                                        setDisableFetch,
-                                        username
-                                      )}
-                                      onKeyPress={handleKeyPress}
-                                      placeholder="Enter folder name"
-                                      fullWidth
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleFileNameClick(row.id);
-                                      }}
-                                      style={{ textDecoration: 'none' }}
-                                    >
-                                      {row.file_name}
-                                    </ButtonBase>
-                                  )}
-                                </TableCell>
-
-                                {/* available */}
-                                {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
-                                  <TableCell
-                                    align="left"
-                                    padding="normal"
-                                    sx={{
-                                      borderBottomColor: "#424242",
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      color: row.available === "Available" ? '#1DB954' : row.available === "Unavailable" ? 'red' : 'inherit',  // Default color is 'inherit'
-                                    }}
-                                  >
-                                    {row.available}
-                                  </TableCell>
-                                )}
-
-
-                              </TableRow>
-                            );
-                          })
-                      )}
+                                {row.available}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 component="div"
-                count={fileRows.length}
+                count={allDevices.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -1057,4 +636,3 @@ export default function Devices() {
 
   );
 }
-
