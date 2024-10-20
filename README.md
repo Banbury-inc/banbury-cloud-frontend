@@ -71,12 +71,12 @@ Thats it!
 
 ## Packaging
 
-To build and package your electron app.
+To build and package your electron app:
 ```
 npm run package
 ```
 
-To build and package your electron app, along with creating the necessary installers.
+To build and package your electron app, along with creating the necessary installers:
 ```
 `npm run deploy`
 ```
