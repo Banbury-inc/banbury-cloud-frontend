@@ -178,7 +178,6 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
-            'Devices',
            'Profile'].map((text, index) => (
             <Tooltip title={text} key={text} placement="right">
               <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
@@ -201,11 +200,11 @@ export default function PermanentDrawerLeft() {
                         // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
                         case 0:
                           return <FolderOutlinedIcon fontSize='inherit' />;
-                        case 1:
-                        return <DevicesIcon fontSize='inherit' />;
+                        //case 1:
+                        //return <DevicesIcon fontSize='inherit' />;
                         // case 3:
                         // return <AutoAwesomeIcon fontSize='inherit' />;
-                        case 2:
+                        case 1:
                           return <AccountBoxIcon fontSize='inherit' />;
                         default:
                           return null;
