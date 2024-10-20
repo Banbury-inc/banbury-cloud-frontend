@@ -77,7 +77,7 @@ export function createWebSocketConnection(username: string, device_name: string,
   };
 
   // Message event: When a message or file is received from the server
-  socket.onmessage = function(event: any) {
+  socket.onmessage = async function(event: any) {
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
       // Handle binary data (e.g., save it to a file)
@@ -160,7 +160,7 @@ export function createWebSocketConnection(username: string, device_name: string,
       }
       if (request_type === 'device_info') {
         console.log(`Received device info request for device: ${device_name}`);
-        const device_info = neuranet.device.get_device_info();
+        let device_info = await neuranet.device.getDeviceInfo();
         const message = {
           message: `device_info_response`,
           username: username,
