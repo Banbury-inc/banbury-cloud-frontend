@@ -3,19 +3,16 @@ import os from 'os';
 import Stack from '@mui/material/Stack';
 import { join } from 'path';
 import { shell } from 'electron';
-import isEqual from 'lodash/isEqual';
 import axios from 'axios';
 import { useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
 import Table from '@mui/material/Table';
-import DownloadIcon from '@mui/icons-material/Download';
 import TableBody from '@mui/material/TableBody';
 import DevicesIcon from '@mui/icons-material/Devices';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 import { Skeleton } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
@@ -31,25 +28,18 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
-import NewInputFileUploadButton from '../newuploadfilebutton';
 import AccountMenuIcon from '../common/AccountMenuIcon';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
-import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
-import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import TextField from '@mui/material/TextField';
 import { handlers } from '../../handlers';
-import * as utils from '../../utils';
-import CustomizedTreeView from '../TreeView';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
-import TaskBox from '../TaskBox';
 import TaskBoxButton from '../TaskBoxButton';
 
-import SyncIcon from '@mui/icons-material/Sync';
 
 
 // Simplified data interface to match your file structure
@@ -64,16 +54,24 @@ interface DatabaseData {
   device_name: string;
   helpers: number;
   available: string;
+  upload_speed: string;
+  download_speed: string;
+  make: string;
+  model: string;
+  available_storage: string;
+  total_storage: string;
 }
 
 
 const headCells: HeadCell[] = [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
-  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
-  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
+  { id: 'make', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
+  { id: 'model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
+  { id: 'available_storage', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
+  { id: 'total_storage', numeric: false, label: 'Total Storage', isVisibleOnSmallScreen: true },
+  { id: 'upload_speed', numeric: false, label: 'Upload Speed', isVisibleOnSmallScreen: true },
+  { id: 'download_speed', numeric: false, label: 'Download Speed', isVisibleOnSmallScreen: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
-  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
 
 type Order = 'asc' | 'desc';
@@ -113,51 +111,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
   return (
     <TableHead>
-      <TableRow>
-        <TableCell colSpan={headCells.length + 1} style={{ padding: 0 }}>
-          <div style={{ display: 'flex', width: '100%' }}>
-            <Breadcrumbs aria-label="breadcrumb" style={{ flexGrow: 1 }}>
-              <Link
-                underline="hover"
-                color="inherit"
-                href="#"
-                onClick={() => handleBreadcrumbClick('/')}
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
-                <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
-                Core
-              </Link>
-              {global_file_path_device && (  // Only render if global_file_path_device has a value
-                <Link
-                  underline="hover"
-                  color="inherit"
-                  href="#"
-                  onClick={() => handleBreadcrumbClick(global_file_path_device)}  // Pass the device path to the handler
-                  style={{ display: 'flex', alignItems: 'center' }}
-                >
-                  <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
-                  {global_file_path_device}
-                </Link>
-              )}
-              {pathSegments.map((segment, index) => {
-                const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
-                return (
-                  <Link
-                    key={index}
-                    underline="hover"
-                    color="inherit"
-                    href="#"
-                    onClick={() => handleBreadcrumbClick(pathUpToSegment)}
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    {segment}
-                  </Link>
-                );
-              })}
-            </Breadcrumbs>
-          </div>
-        </TableCell>
-      </TableRow>
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
@@ -203,7 +156,7 @@ const directory_name: string = 'BCloud';
 const directory_path: string = path.join(os.homedir(), directory_name);
 const snapshot_json: string = path.join(directory_path, file_name);
 
-export default function Files() {
+export default function Devices() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
@@ -222,6 +175,8 @@ export default function Files() {
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
+
+
   const getSelectedFileNames = () => {
     return selected.map(id => {
       const file = fileRows.find(file => file.id === id);
@@ -279,6 +234,12 @@ export default function Files() {
             device_name: device.device_name,
             helpers: 0,
             available: device.online ? "Available" : "Unavailable",
+            upload_speed: file.upload_speed,
+            download_speed: file.download_speed,
+            make: device.make,
+            model: device.model,
+            available_storage: device.available_storage,
+            total_storage: device.total_storage,
           }));
         });
 
@@ -299,32 +260,11 @@ export default function Files() {
 
         files = fileInfoResponse.data.files;
 
-        // initialize files as an empty array
-
-        // // save files as a json
-        fs.writeFileSync(snapshot_json, JSON.stringify(files, null, 2), 'utf-8');
-
-        allFilesData = devices.flatMap((device, index) => {
-          const deviceFiles = files.filter(file => file.device_name === device.device_name);
-          return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
-            file_name: file.file_name,
-            file_size: file.file_size,
-            kind: file.kind,
-            file_path: file.file_path,
-            date_uploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
-            device_name: device.device_name,
-            helpers: 0,
-            available: device.online ? "Available" : "Unavailable",
-          }));
-        });
 
         setAllFiles(allFilesData); if (!disableFetch) {
           setAllFiles(allFilesData);
         }
 
-        console.log("API file data loaded")
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -336,147 +276,7 @@ export default function Files() {
   }, [username, disableFetch, updates]);
 
 
-  const fetchData = async (username: string | null, disableFetch: boolean, setFirstname: any, setLastname: any, setAllFiles: any, setIsLoading: any) => {
-    try {
-      // Step 1: Fetch user information
-      const userInfoResponse = await axios.get<{
-        first_name: string;
-        last_name: string;
-        phone_number: string;
-        email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
 
-      const { first_name, last_name } = userInfoResponse.data;
-      setFirstname(first_name);
-      setLastname(last_name);
-
-      // Step 2: Fetch device information
-      const deviceInfoResponse = await axios.get<{
-        devices: any[];
-      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
-
-      const { devices } = deviceInfoResponse.data;
-
-      let files: DatabaseData[] = [];
-
-      // Load snapshot from the JSON file if it exists
-      if (fs.existsSync(snapshot_json)) {
-        const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
-        files = JSON.parse(snapshot);
-        console.log('Loaded snapshot from file:', snapshot_json);
-        console.log('Snapshot:', files);
-      }
-
-      // Combine devices with their associated files
-      let allFilesData = devices.flatMap((device, index) => {
-        const deviceFiles = files.filter(file => file.device_name === device.device_name);
-        return deviceFiles.map((file, fileIndex) => ({
-          id: index * 1000 + fileIndex,
-          file_name: file.file_name,
-          fileSize: file.file_size,
-          kind: file.kind,
-          file_path: file.file_path,
-          date_uploaded: file.date_uploaded,
-          deviceID: (index + 1).toString(), // Convert deviceID to string
-          device_name: device.device_name,
-          helpers: 0,
-          available: device.online ? "Available" : "Unavailable",
-        }));
-      });
-
-      if (!disableFetch) {
-        setAllFiles(allFilesData);
-      }
-
-      console.log("Local file data loaded");
-
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleFileChange = () => {
-      console.log('File changed, fetching data...');
-      fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
-    };
-
-    fileWatcherEmitter.on('fileChanged', handleFileChange);
-
-    return () => {
-      fileWatcherEmitter.off('fileChanged', handleFileChange);
-    };
-  }, [username, disableFetch]);
-
-
-  // useEffect(() => {
-  //   let intervalId: NodeJS.Timeout;
-  //   const fetchData = async () => {
-  //     try {
-  //       // Step 1: Fetch user information
-  //       const userInfoResponse = await axios.get<{
-  //         first_name: string;
-  //         last_name: string;
-  //         phone_number: string;
-  //         email: string;
-
-  //       }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
-
-  //       const { first_name, last_name } = userInfoResponse.data;
-  //       setFirstname(first_name);
-  //       setLastname(last_name);
-
-  //       // Step 2: Fetch device information
-  //       const deviceInfoResponse = await axios.get<{
-  //         devices: any[];
-  //       }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
-  //       const { devices } = deviceInfoResponse.data;
-
-  //       // Step 3: Fetch files for all devices
-  //       const fileInfoResponse = await axios.get<{
-  //         files: any[];
-  //       }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
-
-
-  //       let files: DatabaseData[] = [];
-
-  //       let newFiles = fileInfoResponse.data.files;
-
-
-  //       // Combine devices with their associated files
-  //       const allFilesData = devices.flatMap((device, index) => {
-  //         const deviceFiles = files.filter(file => file.device_name === device.device_name);
-  //         return deviceFiles.map((file, fileIndex) => ({
-  //           id: index * 1000 + fileIndex,
-  //           file_name: file.file_name,
-  //           fileSize: file.fileSize,
-  //           kind: file.kind,
-  //           filePath: file.filePath,
-  //           dateUploaded: file.dateUploaded,
-  //           deviceID: (index + 1).toString(), // Convert deviceID to string
-  //           device_name: device.device_name,
-  //           helpers: 0,
-  //           available: device.online ? "Available" : "Unavailable",
-  //         }));
-  //       });
-
-  //       setAllFiles(allFilesData); if (!disableFetch) {
-  //         setAllFiles(allFilesData);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-
-  //   fetchData();
-  //   intervalId = setInterval(fetchData, 50000);
-  //   return () => clearInterval(intervalId);
-  // }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
 
 
   useEffect(() => {
@@ -652,30 +452,6 @@ export default function Files() {
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
-  const handleDownloadClick = async () => {
-    setSelectedFiles(selected);
-    console.log(selectedFileNames)
-    console.log("handling download click")
-
-    let task_description = 'Downloading ' + selectedFileNames.join(', ');
-    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-    setTaskbox_expanded(true);
-
-    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
-
-    if (response === 'No file selected') {
-      let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
-    }
-    if (response === 'success') {
-      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-    }
-
-    console.log(response)
-
-
-
-    setSelected([]);
-  };
 
 
   const handleAddDeviceClick = async () => {
@@ -697,22 +473,6 @@ export default function Files() {
     }
 
   };
-  const handleSyncClick = async () => {
-    console.log("handling sync click")
-    // let result = handlers.files.addFile(username ?? '');
-    let task_description = 'Scanning filesystem';
-    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-    setTaskbox_expanded(true);
-
-    let result = await neuranet.device.scanFilesystem(username ?? '')
-
-    if (result === 'success') {
-      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-      setUpdates(updates + 1);
-    }
-    console.log(result)
-  };
-
 
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -791,37 +551,6 @@ export default function Files() {
             <Grid container spacing={0} sx={{ display: 'flex', flexWrap: 'nowrap', pt: 0 }}>
 
               <Grid item paddingRight={1}>
-                <Tooltip title="Sync">
-                  <Button
-                    onClick={handleSyncClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <SyncIcon
-                      fontSize="inherit"
-                    />
-                  </Button>
-                </Tooltip>
-              </Grid>
-
-
-              <Grid item paddingRight={1}>
-                <Tooltip title="Upload">
-                  <NewInputFileUploadButton />
-                </Tooltip>
-              </Grid>
-              <Grid item paddingRight={1}>
-                <Tooltip title="Download">
-                  <Button
-                    onClick={handleDownloadClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <DownloadIcon
-                      fontSize="inherit"
-                    />
-                  </Button>
-                </Tooltip>
-              </Grid>
-              <Grid item paddingRight={1}>
                 <Tooltip title="Add Device">
                   <Button
                     onClick={handleAddDeviceClick}
@@ -880,19 +609,6 @@ export default function Files() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
-        <Stack>
-          <Box display="flex" flexDirection="column" height="100%">
-            <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}>
-              <CardContent>
-                <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
-                  <Grid item>
-                    <CustomizedTreeView />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Box>
-        </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
             <Box my={0}>
@@ -952,6 +668,7 @@ export default function Files() {
                                 onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
                                 onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
                               >
+                                {/* checkbox */}
                                 <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
                                   {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
                                     <Checkbox
@@ -962,6 +679,7 @@ export default function Files() {
                                   ) : null}
                                 </TableCell>
 
+                                {/* device name */}
                                 <TableCell
                                   sx={{
                                     borderBottomColor: "#424242",
@@ -1009,41 +727,295 @@ export default function Files() {
                                   )}
                                 </TableCell>
 
-
+                                {/* make */}
                                 <TableCell
-                                  align="left"
-                                  padding="normal"
-
                                   sx={{
                                     borderBottomColor: "#424242",
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                  }}>{row.file_size}</TableCell>
 
-                                <TableCell align="left" sx={{
-                                  borderBottomColor: "#424242",
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
 
-
-                                }} >{row.kind}</TableCell>
-
-                                {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
-                                  <TableCell align="left" sx={{
+                                {/* model */}
+                                <TableCell
+                                  sx={{
                                     borderBottomColor: "#424242",
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
 
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
 
-                                  }} >{row.device_name}
-                                  </TableCell>
-                                )}
+                                {/* available storage */}
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
 
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
 
+                                {/* total storage */}
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
 
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
+
+                                {/* upload speed */}
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
+
+                                {/* download speed */}
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
+
+                                {/* available */}
                                 {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
                                   <TableCell
                                     align="left"
@@ -1059,20 +1031,6 @@ export default function Files() {
                                     {row.available}
                                   </TableCell>
                                 )}
-
-                                {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
-                                  <TableCell
-                                    padding="normal"
-                                    align="right" sx={{
-
-                                      borderBottomColor: "#424242",
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }} >{row.date_uploaded}</TableCell>
-                                )}
-
-
 
 
                               </TableRow>
