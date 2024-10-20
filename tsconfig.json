@@ -20,6 +20,8 @@
   },
   "include": [
     "src/renderer/neuranet/**/*.ts",
+    "src/**/**/test/**/*.ts",
+    "src/**/**/test/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx"
   ],
