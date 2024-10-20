@@ -4,6 +4,7 @@ import os from 'os';
 import fs from 'fs';
 import { arrayBuffer } from 'stream/consumers';
 import { neuranet } from '../../neuranet'
+import { CONFIG } from '../../config/config';
 
 
 // Buffer to accumulate all file chunks
@@ -44,23 +45,24 @@ function saveFile(fileName: string) {
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
 export function createWebSocketConnection(username: string, device_name: string, callback: (socket: WebSocket) => void) {
-
   // Check if the native WebSocket is available (i.e., in browser)
   const WebSocketClient = typeof window !== 'undefined' ? WebSocket : require('ws');
 
+  let socket: WebSocket;
 
   // Replace the URL with your WebSocket endpoint
-  //const socket = new WebSocketClient('ws://0.0.0.0:8080/ws/live_data/');
-  const socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
+  if (CONFIG.prod) {  
+    socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
+  } else {
+    socket = new WebSocketClient('ws://0.0.0.0:8082/ws/live_data/');
+  }
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
-  //
+
   // Open event: When the connection is established
   socket.onopen = function() {
     console.log('WebSocket connection established');
-
-
 
     const message = {
       message: `Initiate live data connection`,
@@ -70,29 +72,23 @@ export function createWebSocketConnection(username: string, device_name: string,
     socket.send(JSON.stringify(message));
     console.log(`Sent: ${JSON.stringify(message)}`);
 
-
     // Call the callback function with the socket
     callback(socket);
   };
 
   // Message event: When a message or file is received from the server
   socket.onmessage = function(event: any) {
-
-
-
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
       // Handle binary data (e.g., save it to a file)
       const result =  handleReceivedFileChunk(event.data);
     } else {
-
       const data = JSON.parse(event.data);
       const message = data.message;
       const request_type = data.request_type;
       const file_name = data.file_name;
       const requesting_device_name = data.requesting_device_name;
       const sending_device_name = data.sending_device_name;
-
 
       // Handle text-based messages (e.g., JSON data)
       console.log('Message from server: ', event.data);
@@ -161,6 +157,19 @@ export function createWebSocketConnection(username: string, device_name: string,
           };
           socket.send(JSON.stringify(message));
         });
+      }
+      if (request_type === 'device_info') {
+        console.log(`Received device info request for device: ${device_name}`);
+        const device_info = neuranet.device.get_device_info();
+        const message = {
+          message: `device_info_response`,
+          username: username,
+          sending_device_name: device_name,
+          requesting_device_name: device_name,
+          device_info: device_info,
+        };
+        socket.send(JSON.stringify(message));
+        console.log(`Sent: ${JSON.stringify(message)}`);
       }
     }
   };
