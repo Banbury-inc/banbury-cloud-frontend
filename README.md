@@ -40,7 +40,7 @@ Next generation file explorer
 - **Seamlesss Access to Files**: Have the ability to quickly access files from any device. Download and view them from anywhere in the world.
 
 
-## 🛠️ Quick start for contributors
+## 🛠️ Quick start
 
 Setting up local environment is extremely easy and straight forward. Follow the below steps and you will be ready to contribute - 
 
