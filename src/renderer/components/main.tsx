@@ -104,7 +104,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function PermanentDrawerLeft() {
   const location = useLocation();
   const theme = useTheme();
-  const initialActiveTab = location.state?.activeTab || 'Files';
+  const initialActiveTab = location.state?.activeTab || 'Devices';
   const [activeTab, setActiveTab] = React.useState(initialActiveTab);
   const { username, redirect_to_login } = useAuth();
   const [open, setOpen] = React.useState(false);
@@ -177,7 +177,9 @@ export default function PermanentDrawerLeft() {
         {/* </DrawerHeader> */}
 
         <List>
-          {['Files', 'Profile'].map((text, index) => (
+          {['Files',
+            'Devices',
+           'Profile'].map((text, index) => (
             <Tooltip title={text} key={text} placement="right">
               <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
                 <Button
@@ -199,11 +201,11 @@ export default function PermanentDrawerLeft() {
                         // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
                         case 0:
                           return <FolderOutlinedIcon fontSize='inherit' />;
-                        // case 1:
-                        // return <DevicesIcon fontSize='inherit' />;
+                        case 1:
+                        return <DevicesIcon fontSize='inherit' />;
                         // case 3:
                         // return <AutoAwesomeIcon fontSize='inherit' />;
-                        case 1:
+                        case 2:
                           return <AccountBoxIcon fontSize='inherit' />;
                         default:
                           return null;
