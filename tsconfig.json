@@ -20,8 +20,11 @@
   },
   "include": [
     "src/renderer/neuranet/**/*.ts",
+    "src/**/**/test/**/*.ts",
+    "src/**/**/test/**/*.tsx",
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx",
+    "src/renderer/neuranet/device/**/*.ts"
   ],
   "exclude": [
     "node_modules",

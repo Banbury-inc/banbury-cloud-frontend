@@ -30,6 +30,34 @@ interface memUsage {
 export function name(): string {
   return os.hostname();
 }
+export async function system_info(): Promise<string> {
+  return JSON.stringify(await si.system());
+} 
+
+export async function services(name?: string): Promise<string> {
+  return JSON.stringify(await si.services(name || ''));
+} 
+
+export async function block_devices(): Promise<string> {
+  return JSON.stringify(await si.blockDevices());
+} 
+
+export async function disk_layout(): Promise<string> {
+  return JSON.stringify(await si.diskLayout());
+} 
+
+export async function fs_size(): Promise<string> {
+  return JSON.stringify(await si.fsSize());
+} 
+
+export async function usb_devices(): Promise<string> {
+  if ('usbDevices' in si) {
+    return JSON.stringify(await (si as any).usbDevices());
+  } else {
+    console.warn('USB devices information not available');
+    return JSON.stringify([]);
+  }
+}
 
 export async function storage_capacity(): Promise<number> {
   try {
@@ -150,7 +178,6 @@ export async function ram_free(): Promise<number> {
   }
 }
 
-
 export async function ip_address(): Promise<string> {
   let ip_address: string | null = null;
 
@@ -165,6 +192,65 @@ export async function ip_address(): Promise<string> {
   }
 
   return ip_address || 'Unknown';
+}
+
+
+export async function battery_status(): Promise<number> {
+  try {
+    const batteryData = await si.battery();
+    const batteryStatus = batteryData.percent || 0;
+    return batteryStatus;
+  } catch (error) {
+    console.error('Error retrieving battery status:', error);
+    throw error; // Rethrow error to handle externally
+  } 
+}
+
+export async function battery_time_remaining(): Promise<number> {
+  try {
+    const batteryData = await si.battery();
+    return batteryData.timeRemaining || 0;
+  } catch (error) {
+    console.error('Error retrieving battery time remaining:', error);
+    throw error;
+  }
+} 
+
+export async function network_interfaces(): Promise<string> {
+  try {
+    const networkData = await si.networkInterfaces();
+    return JSON.stringify(networkData);
+  } catch (error) {
+    console.error('Error retrieving network interfaces:', error);
+    throw error; // Rethrow error to handle externally
+  }
+} 
+
+export async function network_speed(): Promise<number> {
+  try {
+    const networkData = await si.networkStats();
+    return networkData[0].rx_sec || 0;
+  } catch (error) {
+    console.error('Error retrieving network speed:', error);
+    throw error; // Rethrow error to handle externally
+  }
+} 
+
+export async function bluetooth_status(): Promise<boolean> {
+  try {
+    // @ts-ignore
+    if (typeof si.bluetooth === 'function') {
+      // @ts-ignore
+      const bluetoothData = await si.bluetooth();
+      return bluetoothData.connected || false;
+    } else {
+      console.warn('Bluetooth status check not supported on this system');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error retrieving bluetooth status:', error);
+    return false;
+  }
 }
 
 
@@ -343,4 +429,6 @@ export async function directory_info(username: any) {
   return filesInfo;
 
 }
+
+
 
