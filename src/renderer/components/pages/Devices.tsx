@@ -625,10 +625,7 @@ export default function Devices() {
                         return (
                           <TableRow
                             hover
-                            onClick={(event) => {
-                              handleClick(event, row.id);
-                              handleDeviceClick(row);
-                            }}
+                            onClick={() => handleDeviceClick(row)}
                             role="checkbox"
                             aria-checked={isItemSelected}
                             tabIndex={-1}
@@ -639,6 +636,10 @@ export default function Devices() {
                               <Checkbox
                                 color="primary"
                                 checked={isItemSelected}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleClick(event, row.id);
+                                }}
                                 inputProps={{ 'aria-labelledby': labelId }}
                               />
                             </TableCell>
