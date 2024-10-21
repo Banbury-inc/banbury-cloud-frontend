@@ -879,18 +879,6 @@ export default function Files() {
                   </Button>
                 </Tooltip>
               </Grid>
-              <Grid item paddingRight={1}>
-                <Tooltip title="Add Device">
-                  <Button
-                    onClick={handleAddDeviceClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <AddToQueueIcon
-                      fontSize="inherit"
-                    />
-                  </Button>
-                </Tooltip>
-              </Grid>
 
 
               <Grid item paddingRight={1}>
