@@ -40,27 +40,29 @@ import { neuranet } from '../../neuranet';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBoxButton from '../TaskBoxButton';
 
+import { CONFIG } from '../../config/config';
 
 
 // Update the interface to match device data
 interface DeviceData {
   id: number;
   device_name: string;
-  make: string;
-  model: string;
-  available_storage: string;
+  device_manufacturer: string;
+  device_model: string;
+  storage_capacity_gb: string;
   total_storage: string;
-  upload_speed: string;
-  download_speed: string;
+  upload_speed: number | string;  // Changed to allow both number and string
+  download_speed: number | string;  // Changed to allow both number and string
+  battery_status: string;
   available: string;
 }
 
 const headCells: HeadCell[] = [
   { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'make', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
-  { id: 'model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
-  { id: 'available_storage', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
-  { id: 'total_storage', numeric: false, label: 'Total Storage', isVisibleOnSmallScreen: true },
+  { id: 'device_manufacturer', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
+  { id: 'device_model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
+  { id: 'storage_capacity_gb', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
+  { id: 'battery_status', numeric: false, label: 'Battery', isVisibleOnSmallScreen: true },
   { id: 'upload_speed', numeric: false, label: 'Upload Speed', isVisibleOnSmallScreen: true },
   { id: 'download_speed', numeric: false, label: 'Download Speed', isVisibleOnSmallScreen: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
@@ -143,6 +145,32 @@ const directory_name: string = 'BCloud';
 const directory_path: string = path.join(os.homedir(), directory_name);
 const snapshot_json: string = path.join(directory_path, file_name);
 
+// Add this utility function at the top of the file, outside of any component
+function formatSpeed(speed: number | string): string {
+  if (typeof speed === 'number') {
+    const speedInMbps = speed / 1000000; // Convert bits to megabits
+    return `${speedInMbps.toFixed(2)} Mbps`;
+  }
+  return speed as string; // If it's not a number, return as is (e.g., 'N/A')
+}
+
+// Add this utility function at the top of the file, outside of any component
+function formatBatteryStatus(status: string): string {
+  return status === 'N/A' ? status : `${status}%`;
+}
+
+// Add this utility function at the top of the file, outside of any component
+function formatStorageCapacity(capacity: string | number): string {
+  if (typeof capacity === 'number') {
+    const capacityInGB = capacity; // Convert MB to GB
+    return `${capacityInGB.toFixed(2)} GB`;
+  } else if (typeof capacity === 'string' && !isNaN(parseFloat(capacity))) {
+    const capacityInGB = parseFloat(capacity); // Convert MB to GB
+    return `${capacityInGB.toFixed(2)} GB`;
+  }
+  return capacity as string; // If it's not a number or valid numeric string, return as is (e.g., 'N/A')
+}
+
 export default function Devices() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
@@ -162,6 +190,12 @@ export default function Devices() {
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
 
+  let url: string;
+  if (CONFIG.prod) {
+    url = 'https://website2-389236221119.us-central1.run.app';
+  } else {
+    url = 'http://localhost:8080';
+  }
 
   const getSelectedDeviceNames = () => {
     return selected.map(id => {
@@ -181,7 +215,7 @@ export default function Devices() {
           last_name: string;
           phone_number: string;
           email: string;
-        }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+        }>(`${url}/getuserinfo/${username}/`);
 
         const { first_name, last_name } = userInfoResponse.data;
         setFirstname(first_name);
@@ -190,7 +224,7 @@ export default function Devices() {
         // Fetch device information
         const deviceInfoResponse = await axios.get<{
           devices: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+        }>(`${url}/getdeviceinfo/${username}/`);
 
         const { devices } = deviceInfoResponse.data;
 
@@ -198,12 +232,19 @@ export default function Devices() {
         const transformedDevices: DeviceData[] = devices.map((device, index) => ({
           id: index + 1,
           device_name: device.device_name,
-          make: device.make,
-          model: device.model,
-          available_storage: device.available_storage,
+          device_manufacturer: device.device_manufacturer,
+          device_model: device.device_model,
+          storage_capacity_gb: device.storage_capacity_gb,
           total_storage: device.total_storage,
-          upload_speed: device.upload_speed || 'N/A',
-          download_speed: device.download_speed || 'N/A',
+          upload_speed: Array.isArray(device.upload_speed) 
+            ? device.upload_speed[0] || 'N/A' 
+            : device.upload_speed || 'N/A',
+          download_speed: Array.isArray(device.download_speed) 
+            ? device.download_speed[0] || 'N/A' 
+            : device.download_speed || 'N/A',
+          battery_status: Array.isArray(device.battery_status) 
+            ? device.battery_status[0] || 'N/A' 
+            : device.battery_status || 'N/A',
           available: device.online ? "Available" : "Unavailable",
         }));
 
@@ -599,12 +640,24 @@ export default function Devices() {
                               <TableCell component="th" id={labelId} scope="row" padding="normal">
                                 {row.device_name}
                               </TableCell>
-                              <TableCell>{row.make}</TableCell>
-                              <TableCell>{row.model}</TableCell>
-                              <TableCell>{row.available_storage}</TableCell>
-                              <TableCell>{row.total_storage}</TableCell>
-                              <TableCell>{row.upload_speed}</TableCell>
-                              <TableCell>{row.download_speed}</TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {row.device_manufacturer}
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {row.device_model}
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {formatStorageCapacity(row.storage_capacity_gb)}
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {formatBatteryStatus(row.battery_status)}
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {formatSpeed(row.upload_speed)}
+                              </TableCell>
+                              <TableCell component="th" id={labelId} scope="row" padding="normal">
+                                {formatSpeed(row.download_speed)}
+                              </TableCell>
                               <TableCell
                                 sx={{
                                   color: row.available === "Available" ? '#1DB954' : 'red',

@@ -24,12 +24,10 @@ export async function small_ping_request(username: string, senderSocket: net.Soc
   };
 
   await neuranet.networking.send_small_device_info(senderSocket, device_info_json);
-  console.log("completed small ping request");
 
 }
 
 export async function ping_request(username: string, senderSocket: net.Socket): Promise<void> {
-  console.log("Received a ping request");
 
   const user = username;
   const device_number = 1;

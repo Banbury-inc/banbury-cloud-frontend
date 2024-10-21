@@ -20,13 +20,11 @@ export async function file_request(senderSocket: net.Socket, file_name: string, 
 
     let total_bytes_sent = 0;
     file.on('data', (bytes_read: Buffer) => {
-      console.log("sending file...");
       senderSocket.write(bytes_read);
       total_bytes_sent += bytes_read.length;
     });
 
     file.on('end', () => {
-      console.log(`${file_name} has been sent successfully.`);
       senderSocket.end();
     });
 
