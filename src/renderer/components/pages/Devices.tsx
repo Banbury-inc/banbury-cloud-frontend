@@ -603,21 +603,6 @@ export default function Devices() {
                         <TableCell>
                           <Skeleton variant="text" width="100%" />
                         </TableCell>
-                        <TableCell>
-                          <Skeleton variant="text" width="100%" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton variant="text" width="100%" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton variant="text" width="100%" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton variant="text" width="100%" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton variant="text" width="100%" />
-                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
@@ -680,12 +665,14 @@ export default function Devices() {
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography><strong>Name:</strong> {selectedDevice.device_name}</Typography>
+                <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
+                <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
                 <Typography><strong>Status:</strong> {selectedDevice.available}</Typography>
                 <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
                 <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
                 <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
                 <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
-                <Typography><strong>Total Storage:</strong> {selectedDevice.total_storage}</Typography>
+
 
               </>
             ) : (
