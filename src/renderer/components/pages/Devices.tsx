@@ -39,6 +39,8 @@ import fs from 'fs';
 import { neuranet } from '../../neuranet';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBoxButton from '../TaskBoxButton';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 import { CONFIG } from '../../config/config';
 
@@ -59,13 +61,6 @@ interface DeviceData {
 
 const headCells: HeadCell[] = [
   { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'device_manufacturer', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
-  { id: 'device_model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
-  { id: 'storage_capacity_gb', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
-  { id: 'battery_status', numeric: false, label: 'Battery', isVisibleOnSmallScreen: true },
-  { id: 'upload_speed', numeric: false, label: 'Upload Speed', isVisibleOnSmallScreen: true },
-  { id: 'download_speed', numeric: false, label: 'Download Speed', isVisibleOnSmallScreen: true },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
 ];
 
 type Order = 'asc' | 'desc';
@@ -189,6 +184,7 @@ export default function Devices() {
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
+  const [selectedDevice, setSelectedDevice] = useState<DeviceData | null>(null);
 
   let url: string;
   if (CONFIG.prod) {
@@ -526,6 +522,10 @@ export default function Devices() {
     return 0;
   }
 
+  const handleDeviceClick = (device: DeviceData) => {
+    setSelectedDevice(device);
+  };
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -575,115 +575,109 @@ export default function Devices() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
-        <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
+        {/* Left panel: Device table */}
+        <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '30%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
-            <Box my={0}>
-              <TableContainer sx={{ maxHeight: '96%', overflowY: 'auto', overflowX: 'auto' }}>
-                <Table aria-labelledby="tableTitle" size="small">
-                  <EnhancedTableHead
-                    numSelected={selected.length}
-                    order={order}
-                    orderBy={orderBy}
-                    onSelectAllClick={handleSelectAllClick}
-                    onRequestSort={handleRequestSort}
-                    rowCount={allDevices.length}
-                  />
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from(new Array(rowsPerPage)).map((_, index) => (
-                        <TableRow key={index}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      stableSort(allDevices, getComparator(order, orderBy))
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((row, index) => {
-                          const isItemSelected = isSelected(row.id);
-                          const labelId = `enhanced-table-checkbox-${index}`;
+            <TableContainer sx={{ maxHeight: '96%', overflowY: 'auto', overflowX: 'auto' }}>
+              <Table aria-labelledby="tableTitle" size="small">
+                <EnhancedTableHead
+                  numSelected={selected.length}
+                  order={order}
+                  orderBy={orderBy}
+                  onSelectAllClick={handleSelectAllClick}
+                  onRequestSort={handleRequestSort}
+                  rowCount={allDevices.length}
+                />
+                <TableBody>
+                  {isLoading ? (
+                    Array.from(new Array(rowsPerPage)).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell padding="checkbox">
+                          <Skeleton variant="rectangular" width={24} height={24} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    stableSort(allDevices, getComparator(order, orderBy))
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row, index) => {
+                        const isItemSelected = isSelected(row.id);
+                        const labelId = `enhanced-table-checkbox-${index}`;
 
-                          return (
-                            <TableRow
-                              hover
-                              onClick={(event) => handleClick(event, row.id)}
-                              role="checkbox"
-                              aria-checked={isItemSelected}
-                              tabIndex={-1}
-                              key={row.id}
-                              selected={isItemSelected}
-                            >
-                              <TableCell padding="checkbox">
-                                <Checkbox
-                                  color="primary"
-                                  checked={isItemSelected}
-                                  inputProps={{ 'aria-labelledby': labelId }}
-                                />
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {row.device_name}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {row.device_manufacturer}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {row.device_model}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {formatStorageCapacity(row.storage_capacity_gb)}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {formatBatteryStatus(row.battery_status)}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {formatSpeed(row.upload_speed)}
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {formatSpeed(row.download_speed)}
-                              </TableCell>
-                              <TableCell
-                                sx={{
-                                  color: row.available === "Available" ? '#1DB954' : 'red',
-                                }}
-                              >
-                                {row.available}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                component="div"
-                count={allDevices.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </Box>
+                        return (
+                          <TableRow
+                            hover
+                            onClick={(event) => {
+                              handleClick(event, row.id);
+                              handleDeviceClick(row);
+                            }}
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={row.id}
+                            selected={isItemSelected}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{ 'aria-labelledby': labelId }}
+                              />
+                            </TableCell>
+                            <TableCell component="th" id={labelId} scope="row" padding="normal">
+                              {row.device_name}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              component="div"
+              count={allDevices.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Right panel: Device details */}
+        <Card variant="outlined" sx={{ height: '100%', width: '70%', overflow: 'auto' }}>
+          <CardContent>
+            {selectedDevice ? (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  Device Details
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+                <Typography><strong>Name:</strong> {selectedDevice.device_name}</Typography>
+              </>
+            ) : (
+              <Typography variant="body1">Select a device to view details</Typography>
+            )}
           </CardContent>
         </Card>
       </Stack>
