@@ -205,57 +205,57 @@ export default function Devices() {
   };
 
 
+  const fetchDevices = async () => {
+    try {
+      setIsLoading(true);
+      // Fetch user information
+      const userInfoResponse = await axios.get<{
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+      }>(`${url}/getuserinfo/${username}/`);
+
+      const { first_name, last_name } = userInfoResponse.data;
+      setFirstname(first_name);
+      setLastname(last_name);
+
+      // Fetch device information
+      const deviceInfoResponse = await axios.get<{
+        devices: any[];
+      }>(`${url}/getdeviceinfo/${username}/`);
+
+      const { devices } = deviceInfoResponse.data;
+
+      // Transform device data
+      const transformedDevices: DeviceData[] = devices.map((device, index) => ({
+        id: index + 1,
+        device_name: device.device_name,
+        device_manufacturer: device.device_manufacturer,
+        device_model: device.device_model,
+        storage_capacity_gb: device.storage_capacity_gb,
+        total_storage: device.total_storage,
+        upload_speed: Array.isArray(device.upload_speed) 
+          ? device.upload_speed[0] || 'N/A' 
+          : device.upload_speed || 'N/A',
+        download_speed: Array.isArray(device.download_speed) 
+          ? device.download_speed[0] || 'N/A' 
+          : device.download_speed || 'N/A',
+        battery_status: Array.isArray(device.battery_status) 
+          ? device.battery_status[0] || 'N/A' 
+          : device.battery_status || 'N/A',
+        available: device.online ? "Available" : "Unavailable",
+      }));
+
+      setAllDevices(transformedDevices);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch user information
-        const userInfoResponse = await axios.get<{
-          first_name: string;
-          last_name: string;
-          phone_number: string;
-          email: string;
-        }>(`${url}/getuserinfo/${username}/`);
-
-        const { first_name, last_name } = userInfoResponse.data;
-        setFirstname(first_name);
-        setLastname(last_name);
-
-        // Fetch device information
-        const deviceInfoResponse = await axios.get<{
-          devices: any[];
-        }>(`${url}/getdeviceinfo/${username}/`);
-
-        const { devices } = deviceInfoResponse.data;
-
-        // Transform device data
-        const transformedDevices: DeviceData[] = devices.map((device, index) => ({
-          id: index + 1,
-          device_name: device.device_name,
-          device_manufacturer: device.device_manufacturer,
-          device_model: device.device_model,
-          storage_capacity_gb: device.storage_capacity_gb,
-          total_storage: device.total_storage,
-          upload_speed: Array.isArray(device.upload_speed) 
-            ? device.upload_speed[0] || 'N/A' 
-            : device.upload_speed || 'N/A',
-          download_speed: Array.isArray(device.download_speed) 
-            ? device.download_speed[0] || 'N/A' 
-            : device.download_speed || 'N/A',
-          battery_status: Array.isArray(device.battery_status) 
-            ? device.battery_status[0] || 'N/A' 
-            : device.battery_status || 'N/A',
-          available: device.online ? "Available" : "Unavailable",
-        }));
-
-        setAllDevices(transformedDevices);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchDevices();
   }, [username, updates]);
 
@@ -432,13 +432,7 @@ export default function Devices() {
 
 
   const handleAddDeviceClick = async () => {
-    // Here, we are specifically adding the task after the device has been created
-    // Because the database will not know what device to add it to, as the device does not 
-    // exist yet
-
-
     console.log("handling add device click")
-
     let device_name = neuranet.device.name();
     let task_description = 'Adding device ' + device_name;
     let result = await handlers.devices.addDevice(username ?? '');
@@ -447,8 +441,22 @@ export default function Devices() {
 
     if (result === 'success') {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      // Refresh the device list after adding a device
+      await fetchDevices();
     }
+  };
 
+  const handleDeleteDevice = async () => {
+    let task_description = 'Deleting device ' + selectedDeviceNames.join(', ');
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+    let result = await neuranet.device.delete_device(username ?? '');
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      // Refresh the device list after deleting a device
+      await fetchDevices();
+    }
+    setSelectedDevices([]);
   };
 
 
@@ -531,27 +539,21 @@ export default function Devices() {
                 <Tooltip title="Add Device">
                   <Button
                     onClick={handleAddDeviceClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
                   >
-                    <AddToQueueIcon
-                      fontSize="inherit"
-                    />
+                    <AddToQueueIcon fontSize="inherit" />
                   </Button>
                 </Tooltip>
               </Grid>
 
 
               <Grid item paddingRight={1}>
-                <Tooltip title="Delete">
+                <Tooltip title="Delete Device">
                   <Button
-                    onClick={() => {
-                      setSelectedDevices([]);
-                    }}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                    onClick={handleDeleteDevice}
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
                   >
-                    <DeleteIcon
-                      fontSize="inherit"
-                    />
+                    <DeleteIcon fontSize="inherit" />
                   </Button>
                 </Tooltip>
               </Grid>
