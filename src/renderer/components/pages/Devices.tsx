@@ -244,6 +244,11 @@ export default function Devices() {
       }));
 
       setAllDevices(transformedDevices);
+
+      // Select the first device if the list is not empty
+      if (transformedDevices.length > 0) {
+        setSelectedDevice(transformedDevices[0]);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -630,7 +635,7 @@ export default function Devices() {
                             aria-checked={isItemSelected}
                             tabIndex={-1}
                             key={row.id}
-                            selected={isItemSelected}
+                            selected={!!selectedDevice && selectedDevice.id === row.id}
                           >
                             <TableCell padding="checkbox">
                               <Checkbox
@@ -675,6 +680,13 @@ export default function Devices() {
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography><strong>Name:</strong> {selectedDevice.device_name}</Typography>
+                <Typography><strong>Status:</strong> {selectedDevice.available}</Typography>
+                <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
+                <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
+                <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                <Typography><strong>Total Storage:</strong> {selectedDevice.total_storage}</Typography>
+
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>
