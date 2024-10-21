@@ -3,16 +3,19 @@ import os from 'os';
 import Stack from '@mui/material/Stack';
 import { join } from 'path';
 import { shell } from 'electron';
+import isEqual from 'lodash/isEqual';
 import axios from 'axios';
 import { useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
 import Table from '@mui/material/Table';
+import DownloadIcon from '@mui/icons-material/Download';
 import TableBody from '@mui/material/TableBody';
 import DevicesIcon from '@mui/icons-material/Devices';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
+import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 import { Skeleton } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
@@ -28,49 +31,56 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
+import NewInputFileUploadButton from '../newuploadfilebutton';
 import AccountMenuIcon from '../common/AccountMenuIcon';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
+import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
+import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import TextField from '@mui/material/TextField';
 import { handlers } from '../../handlers';
+import * as utils from '../../utils';
+import CustomizedTreeView from '../TreeView';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
+import TaskBox from '../TaskBox';
 import TaskBoxButton from '../TaskBoxButton';
 
+import SyncIcon from '@mui/icons-material/Sync';
 
 
-// Update the interface to match device data
-interface DeviceData {
+// Simplified data interface to match your file structure
+interface DatabaseData {
   id: number;
+  file_name: string;
+  kind: string;
+  date_uploaded: string;
+  file_size: string;
+  file_path: string;
+  deviceID: string;
   device_name: string;
-  make: string;
-  model: string;
-  available_storage: string;
-  total_storage: string;
-  upload_speed: string;
-  download_speed: string;
+  helpers: number;
   available: string;
 }
 
+
 const headCells: HeadCell[] = [
-  { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'make', numeric: false, label: 'Make', isVisibleOnSmallScreen: true },
-  { id: 'model', numeric: false, label: 'Model', isVisibleOnSmallScreen: true },
-  { id: 'available_storage', numeric: false, label: 'Available Storage', isVisibleOnSmallScreen: true },
-  { id: 'total_storage', numeric: false, label: 'Total Storage', isVisibleOnSmallScreen: true },
-  { id: 'upload_speed', numeric: false, label: 'Upload Speed', isVisibleOnSmallScreen: true },
-  { id: 'download_speed', numeric: false, label: 'Download Speed', isVisibleOnSmallScreen: true },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
+  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
+  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
+  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
+  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
 
 type Order = 'asc' | 'desc';
 
 interface HeadCell {
   disablePadding?: boolean;
-  id: keyof DeviceData;
+  id: keyof DatabaseData;
   label: string;
   numeric: boolean;
   isVisibleOnSmallScreen: boolean;
@@ -78,26 +88,76 @@ interface HeadCell {
 
 interface EnhancedTableProps {
   numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DeviceData) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
   order: Order;
-  orderBy: keyof DeviceData;
+  orderBy: keyof DatabaseData;
   rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
-  const createSortHandler = (property: keyof DeviceData) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (property: keyof DatabaseData) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
 
   const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
   const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
 
+  // Function to handle breadcrumb click, might need more logic to actually navigate
+  const handleBreadcrumbClick = (path: string) => {
+    console.info(`Navigate to: ${path}`);
+    // Set global_file_path or navigate logic here
+  };
 
   return (
     <TableHead>
+      <TableRow>
+        <TableCell colSpan={headCells.length + 1} style={{ padding: 0 }}>
+          <div style={{ display: 'flex', width: '100%' }}>
+            <Breadcrumbs aria-label="breadcrumb" style={{ flexGrow: 1 }}>
+              <Link
+                underline="hover"
+                color="inherit"
+                href="#"
+                onClick={() => handleBreadcrumbClick('/')}
+                style={{ display: 'flex', alignItems: 'center' }}
+              >
+                <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
+                Core
+              </Link>
+              {global_file_path_device && (  // Only render if global_file_path_device has a value
+                <Link
+                  underline="hover"
+                  color="inherit"
+                  href="#"
+                  onClick={() => handleBreadcrumbClick(global_file_path_device)}  // Pass the device path to the handler
+                  style={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
+                  {global_file_path_device}
+                </Link>
+              )}
+              {pathSegments.map((segment, index) => {
+                const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
+                return (
+                  <Link
+                    key={index}
+                    underline="hover"
+                    color="inherit"
+                    href="#"
+                    onClick={() => handleBreadcrumbClick(pathUpToSegment)}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                  >
+                    {segment}
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+          </div>
+        </TableCell>
+      </TableRow>
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
@@ -143,39 +203,39 @@ const directory_name: string = 'BCloud';
 const directory_path: string = path.join(os.homedir(), directory_name);
 const snapshot_json: string = path.join(directory_path, file_name);
 
-export default function Devices() {
+export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<keyof DeviceData>('device_name');
+  const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
   const [selected, setSelected] = useState<readonly number[]>([]);
+  const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<DeviceData[]>([]); // State for storing fetched file data
-  const [allDevices, setAllDevices] = useState<DeviceData[]>([]);
+  const [fileRows, setFileRows] = useState<DatabaseData[]>([]); // State for storing fetched file data
+  const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
-  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
-
-
-  const getSelectedDeviceNames = () => {
+  const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, devices, setFirstname, setLastname, setDevices, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
+  const getSelectedFileNames = () => {
     return selected.map(id => {
-      const device = fileRows.find(device => device.id === id);
-      return device ? device.device_name : null;
-    }).filter(device_name => device_name !== null); // Filter out any null values if a file wasn't found
+      const file = fileRows.find(file => file.id === id);
+      return file ? file.file_name : null;
+    }).filter(file_name => file_name !== null); // Filter out any null values if a file wasn't found
   };
 
 
   useEffect(() => {
-    const fetchDevices = async () => {
+    const fetchData_with_api = async () => {
       try {
-        setIsLoading(true);
-        // Fetch user information
+
+
+        // Step 1: Fetch user information
         const userInfoResponse = await axios.get<{
           first_name: string;
           last_name: string;
@@ -187,27 +247,84 @@ export default function Devices() {
         setFirstname(first_name);
         setLastname(last_name);
 
-        // Fetch device information
+        // Step 2: Fetch device information
         const deviceInfoResponse = await axios.get<{
           devices: any[];
         }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
 
         const { devices } = deviceInfoResponse.data;
 
-        // Transform device data
-        const transformedDevices: DeviceData[] = devices.map((device, index) => ({
-          id: index + 1,
-          device_name: device.device_name,
-          make: device.make,
-          model: device.model,
-          available_storage: device.available_storage,
-          total_storage: device.total_storage,
-          upload_speed: device.upload_speed || 'N/A',
-          download_speed: device.download_speed || 'N/A',
-          available: device.online ? "Available" : "Unavailable",
-        }));
 
-        setAllDevices(transformedDevices);
+        let files: DatabaseData[] = [];
+
+        // set files to the value of snapshot_json if it exists
+        if (fs.existsSync(snapshot_json)) {
+          const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
+          files = JSON.parse(snapshot);
+          console.log('Loaded snapshot from file:', snapshot_json);
+          console.log('Snapshot:', files);
+        }
+
+        // Combine devices with their associated files
+        let allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
+            id: index * 1000 + fileIndex,
+            file_name: file.file_name,
+            file_size: file.file_size,
+            kind: file.kind,
+            file_path: file.file_path,
+            date_uploaded: file.date_uploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
+            device_name: device.device_name,
+            helpers: 0,
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
+
+        console.log(allFilesData);
+
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
+        }
+
+        console.log("Local file data loaded")
+
+        // Step 3: Fetch files for all devices
+        const fileInfoResponse = await axios.get<{
+          files: any[];
+        }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
+
+
+
+        files = fileInfoResponse.data.files;
+
+        // initialize files as an empty array
+
+        // // save files as a json
+        fs.writeFileSync(snapshot_json, JSON.stringify(files, null, 2), 'utf-8');
+
+        allFilesData = devices.flatMap((device, index) => {
+          const deviceFiles = files.filter(file => file.device_name === device.device_name);
+          return deviceFiles.map((file, fileIndex) => ({
+            id: index * 1000 + fileIndex,
+            file_name: file.file_name,
+            file_size: file.file_size,
+            kind: file.kind,
+            file_path: file.file_path,
+            date_uploaded: file.date_uploaded,
+            deviceID: (index + 1).toString(), // Convert deviceID to string
+            device_name: device.device_name,
+            helpers: 0,
+            available: device.online ? "Available" : "Unavailable",
+          }));
+        });
+
+        setAllFiles(allFilesData); if (!disableFetch) {
+          setAllFiles(allFilesData);
+        }
+
+        console.log("API file data loaded")
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -215,46 +332,186 @@ export default function Devices() {
       }
     };
 
-    fetchDevices();
-  }, [username, updates]);
+    fetchData_with_api();
+  }, [username, disableFetch, updates]);
 
 
+  const fetchData = async (username: string | null, disableFetch: boolean, setFirstname: any, setLastname: any, setAllFiles: any, setIsLoading: any) => {
+    try {
+      // Step 1: Fetch user information
+      const userInfoResponse = await axios.get<{
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
 
+      const { first_name, last_name } = userInfoResponse.data;
+      setFirstname(first_name);
+      setLastname(last_name);
+
+      // Step 2: Fetch device information
+      const deviceInfoResponse = await axios.get<{
+        devices: any[];
+      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+
+      const { devices } = deviceInfoResponse.data;
+
+      let files: DatabaseData[] = [];
+
+      // Load snapshot from the JSON file if it exists
+      if (fs.existsSync(snapshot_json)) {
+        const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
+        files = JSON.parse(snapshot);
+        console.log('Loaded snapshot from file:', snapshot_json);
+        console.log('Snapshot:', files);
+      }
+
+      // Combine devices with their associated files
+      let allFilesData = devices.flatMap((device, index) => {
+        const deviceFiles = files.filter(file => file.device_name === device.device_name);
+        return deviceFiles.map((file, fileIndex) => ({
+          id: index * 1000 + fileIndex,
+          file_name: file.file_name,
+          fileSize: file.file_size,
+          kind: file.kind,
+          file_path: file.file_path,
+          date_uploaded: file.date_uploaded,
+          deviceID: (index + 1).toString(), // Convert deviceID to string
+          device_name: device.device_name,
+          helpers: 0,
+          available: device.online ? "Available" : "Unavailable",
+        }));
+      });
+
+      if (!disableFetch) {
+        setAllFiles(allFilesData);
+      }
+
+      console.log("Local file data loaded");
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFileChange = () => {
+      console.log('File changed, fetching data...');
+      fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
+    };
+
+    fileWatcherEmitter.on('fileChanged', handleFileChange);
+
+    return () => {
+      fileWatcherEmitter.off('fileChanged', handleFileChange);
+    };
+  }, [username, disableFetch]);
+
+
+  // useEffect(() => {
+  //   let intervalId: NodeJS.Timeout;
+  //   const fetchData = async () => {
+  //     try {
+  //       // Step 1: Fetch user information
+  //       const userInfoResponse = await axios.get<{
+  //         first_name: string;
+  //         last_name: string;
+  //         phone_number: string;
+  //         email: string;
+
+  //       }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+
+  //       const { first_name, last_name } = userInfoResponse.data;
+  //       setFirstname(first_name);
+  //       setLastname(last_name);
+
+  //       // Step 2: Fetch device information
+  //       const deviceInfoResponse = await axios.get<{
+  //         devices: any[];
+  //       }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+  //       const { devices } = deviceInfoResponse.data;
+
+  //       // Step 3: Fetch files for all devices
+  //       const fileInfoResponse = await axios.get<{
+  //         files: any[];
+  //       }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
+
+
+  //       let files: DatabaseData[] = [];
+
+  //       let newFiles = fileInfoResponse.data.files;
+
+
+  //       // Combine devices with their associated files
+  //       const allFilesData = devices.flatMap((device, index) => {
+  //         const deviceFiles = files.filter(file => file.device_name === device.device_name);
+  //         return deviceFiles.map((file, fileIndex) => ({
+  //           id: index * 1000 + fileIndex,
+  //           file_name: file.file_name,
+  //           fileSize: file.fileSize,
+  //           kind: file.kind,
+  //           filePath: file.filePath,
+  //           dateUploaded: file.dateUploaded,
+  //           deviceID: (index + 1).toString(), // Convert deviceID to string
+  //           device_name: device.device_name,
+  //           helpers: 0,
+  //           available: device.online ? "Available" : "Unavailable",
+  //         }));
+  //       });
+
+  //       setAllFiles(allFilesData); if (!disableFetch) {
+  //         setAllFiles(allFilesData);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+
+  //   fetchData();
+  //   intervalId = setInterval(fetchData, 50000);
+  //   return () => clearInterval(intervalId);
+  // }, [username, disableFetch, allFiles]); // Include allFiles in the dependency array
 
 
   useEffect(() => {
     const pathToShow = global_file_path || '/';
     const pathSegments = pathToShow.split('/').filter(Boolean).length;
 
-    const filteredDevices = allDevices.filter(device => {
+    const filteredFiles = allFiles.filter(file => {
       if (!global_file_path && !global_file_path_device) {
         return true; // Show all files
       }
 
       if (!global_file_path && global_file_path_device) {
-        return device.device_name === global_file_path_device; // Show all files for the specified device
+        return file.device_name === global_file_path_device; // Show all files for the specified device
       }
 
       // Add a check to ensure filePath is defined
-      if (!device.device_name) {
+      if (!file.file_path) {
         return false; // Skip files with undefined filePath
       }
 
-      const deviceSegments = device.device_name.split('/').filter(Boolean).length;
-      const isInSameDirectory = device.device_name.startsWith(pathToShow) && deviceSegments === pathSegments + 1;
-      const isFile = device.device_name === pathToShow;
+      const fileSegments = file.file_path.split('/').filter(Boolean).length;
+      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
+      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
 
       return isInSameDirectory || isFile;
     });
 
-    setFileRows(filteredDevices);
+    setFileRows(filteredFiles);
 
-  }, [global_file_path, global_file_path_device, allDevices]);
+  }, [global_file_path, global_file_path_device, allFiles]);
 
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof DeviceData,
+    property: keyof DatabaseData,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -286,44 +543,48 @@ export default function Devices() {
         selected.slice(selectedIndex + 1),
       );
     }
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
-    const newSelectedDeviceNames = newSelected
-      .map(id => fileRows.find(device => device.id === id)?.device_name)
+    const file_name = fileRows.find(file => file.id === id)?.file_name;
+    const newSelectedFileNames = newSelected
+      .map(id => fileRows.find(file => file.id === id)?.file_name)
       .filter(name => name !== undefined) as string[];
-    console.log(newSelectedDeviceNames[0]);
+    console.log(newSelectedFileNames);
+    const newSelectedFilePaths = newSelected
+      .map(id => fileRows.find(file => file.id === id)?.file_path)
+      .filter(name => name !== undefined) as string[];
+    console.log(newSelectedFilePaths[0]);
     const directoryName = "BCloud";
     const directoryPath = join(os.homedir(), directoryName);
     let fileFound = false;
     let folderFound = false;
     let filePath = '';
     try {
-      const deviceStat = await stat(newSelectedDeviceNames[0]);
-      if (deviceStat.isFile()) {
+      const fileStat = await stat(newSelectedFilePaths[0]);
+      if (fileStat.isFile()) {
         fileFound = true;
         console.log(`File '${file_name}' found in directory.`);
       }
-      if (deviceStat.isDirectory()) {
+      if (fileStat.isDirectory()) {
         folderFound = true;
-        setGlobal_file_path(newSelectedDeviceNames[0]);
+        setGlobal_file_path(newSelectedFilePaths[0]);
       }
       if (fileFound) {
         // Send an IPC message to the main process to handle opening the file
         console.log(`Opening file '${file_name}'...`);
-        shell.openPath(newSelectedDeviceNames[0]);
+        shell.openPath(newSelectedFilePaths[0]);
       }
       if (folderFound) {
         // Send an IPC message to the main process to handle opening the file
         console.log(`Opening folder '${file_name}'...`);
-        // shell.openPath(newSelectedDeviceNames[0]);
+        // shell.openPath(newSelectedFilePaths[0]);
       }
       if (!fileFound && !folderFound) {
 
         console.error(`File '${file_name}' not found in directory, searhing other devices`);
 
-        let task_description = 'Opening ' + selectedDeviceNames.join(', ');
+        let task_description = 'Opening ' + selectedFileNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo);
+        let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }
@@ -377,17 +638,44 @@ export default function Devices() {
     }
     setSelected(newSelected);
 
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
-    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
+    const file_name = fileRows.find(file => file.id === id)?.file_name;
+    const device_name = fileRows.find(file => file.id === id)?.device_name;
+    const newSelectedFileNames = newSelected.map(id => fileRows.find(file => file.id === id)?.file_name).filter(name => name !== undefined) as string[];
+    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(file => file.id === id)?.device_name).filter(name => name !== undefined) as string[];
+    setSelectedFileNames(newSelectedFileNames);
     setSelectedDeviceNames(newSelectedDeviceNames);
-    console.log(newSelectedDeviceNames)
-    console.log(selectedDeviceNames)
+    console.log(newSelectedFileNames)
+    console.log(selectedFileNames)
 
   };
 
 
-  const [selectedDevices, setSelectedDevices] = useState<readonly number[]>([]);
+  const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
+  const handleDownloadClick = async () => {
+    setSelectedFiles(selected);
+    console.log(selectedFileNames)
+    console.log("handling download click")
+
+    let task_description = 'Downloading ' + selectedFileNames.join(', ');
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
+
+    if (response === 'No file selected') {
+      let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+    }
+    if (response === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
+
+    console.log(response)
+
+
+
+    setSelected([]);
+  };
 
 
   const handleAddDeviceClick = async () => {
@@ -409,6 +697,22 @@ export default function Devices() {
     }
 
   };
+  const handleSyncClick = async () => {
+    console.log("handling sync click")
+    // let result = handlers.files.addFile(username ?? '');
+    let task_description = 'Scanning filesystem';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await neuranet.device.scanFilesystem(username ?? '')
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+    }
+    console.log(result)
+  };
+
 
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -487,6 +791,37 @@ export default function Devices() {
             <Grid container spacing={0} sx={{ display: 'flex', flexWrap: 'nowrap', pt: 0 }}>
 
               <Grid item paddingRight={1}>
+                <Tooltip title="Sync">
+                  <Button
+                    onClick={handleSyncClick}
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                  >
+                    <SyncIcon
+                      fontSize="inherit"
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+
+
+              <Grid item paddingRight={1}>
+                <Tooltip title="Upload">
+                  <NewInputFileUploadButton />
+                </Tooltip>
+              </Grid>
+              <Grid item paddingRight={1}>
+                <Tooltip title="Download">
+                  <Button
+                    onClick={handleDownloadClick}
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
+                  >
+                    <DownloadIcon
+                      fontSize="inherit"
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+              <Grid item paddingRight={1}>
                 <Tooltip title="Add Device">
                   <Button
                     onClick={handleAddDeviceClick}
@@ -504,8 +839,21 @@ export default function Devices() {
                 <Tooltip title="Delete">
                   <Button
                     onClick={() => {
-                      setSelectedDevices([]);
-                    }}
+                      handlers.files.deleteFile(
+                        setSelectedFileNames,
+                        selectedFileNames,
+                        global_file_path,
+                        setdeleteLoading,
+                        setIsAddingFolder,
+                        setNewFolderName,
+                        setDisableFetch,
+                        username,
+                        updates,
+                        setUpdates,
+                      );
+                      setSelected([]);
+                    }
+                    }
                     sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
                   >
                     <DeleteIcon
@@ -532,97 +880,212 @@ export default function Devices() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+        <Stack>
+          <Box display="flex" flexDirection="column" height="100%">
+            <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}>
+              <CardContent>
+                <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
+                  <Grid item>
+                    <CustomizedTreeView />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
+        </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
             <Box my={0}>
               <TableContainer sx={{ maxHeight: '96%', overflowY: 'auto', overflowX: 'auto' }}>
                 <Table aria-labelledby="tableTitle" size="small">
-                  <EnhancedTableHead
-                    numSelected={selected.length}
+                  <EnhancedTableHead numSelected={selected.length}
                     order={order}
                     orderBy={orderBy}
                     onSelectAllClick={handleSelectAllClick}
                     onRequestSort={handleRequestSort}
-                    rowCount={allDevices.length}
+                    rowCount={fileRows.length}
                   />
                   <TableBody>
-                    {isLoading ? (
-                      Array.from(new Array(rowsPerPage)).map((_, index) => (
-                        <TableRow key={index}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      stableSort(allDevices, getComparator(order, orderBy))
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((row, index) => {
-                          const isItemSelected = isSelected(row.id);
-                          const labelId = `enhanced-table-checkbox-${index}`;
+                    {
+                      isLoading ? (
+                        Array.from(new Array(rowsPerPage)).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell padding="checkbox">
+                              <Skeleton variant="rectangular" width={24} height={24} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        stableSort(fileRows, getComparator(order, orderBy))
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((row, index) => {
+                            const isItemSelected = isSelected(row.id);
+                            const labelId = `enhanced-table-checkbox-${index}`;
 
-                          return (
-                            <TableRow
-                              hover
-                              onClick={(event) => handleClick(event, row.id)}
-                              role="checkbox"
-                              aria-checked={isItemSelected}
-                              tabIndex={-1}
-                              key={row.id}
-                              selected={isItemSelected}
-                            >
-                              <TableCell padding="checkbox">
-                                <Checkbox
-                                  color="primary"
-                                  checked={isItemSelected}
-                                  inputProps={{ 'aria-labelledby': labelId }}
-                                />
-                              </TableCell>
-                              <TableCell component="th" id={labelId} scope="row" padding="normal">
-                                {row.device_name}
-                              </TableCell>
-                              <TableCell>{row.make}</TableCell>
-                              <TableCell>{row.model}</TableCell>
-                              <TableCell>{row.available_storage}</TableCell>
-                              <TableCell>{row.total_storage}</TableCell>
-                              <TableCell>{row.upload_speed}</TableCell>
-                              <TableCell>{row.download_speed}</TableCell>
-                              <TableCell
-                                sx={{
-                                  color: row.available === "Available" ? '#1DB954' : 'red',
-                                }}
+                            return (
+                              <TableRow
+                                hover
+                                onClick={(event) => handleClick(event, row.id)}
+                                role="checkbox"
+                                aria-checked={isItemSelected}
+                                tabIndex={-1}
+                                key={row.id}
+                                selected={isItemSelected}
+                                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
+                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
                               >
-                                {row.available}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                    )}
+                                <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
+                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
+                                    <Checkbox
+                                      color="primary"
+                                      checked={isItemSelected}
+                                      inputProps={{ 'aria-labelledby': labelId }}
+                                    />
+                                  ) : null}
+                                </TableCell>
+
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
+
+
+                                <TableCell
+                                  align="left"
+                                  padding="normal"
+
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}>{row.file_size}</TableCell>
+
+                                <TableCell align="left" sx={{
+                                  borderBottomColor: "#424242",
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+
+
+                                }} >{row.kind}</TableCell>
+
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
+                                  <TableCell align="left" sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+
+
+                                  }} >{row.device_name}
+                                  </TableCell>
+                                )}
+
+
+
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
+                                  <TableCell
+                                    align="left"
+                                    padding="normal"
+                                    sx={{
+                                      borderBottomColor: "#424242",
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      color: row.available === "Available" ? '#1DB954' : row.available === "Unavailable" ? 'red' : 'inherit',  // Default color is 'inherit'
+                                    }}
+                                  >
+                                    {row.available}
+                                  </TableCell>
+                                )}
+
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
+                                  <TableCell
+                                    padding="normal"
+                                    align="right" sx={{
+
+                                      borderBottomColor: "#424242",
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }} >{row.date_uploaded}</TableCell>
+                                )}
+
+
+
+
+                              </TableRow>
+                            );
+                          })
+                      )}
                   </TableBody>
                 </Table>
               </TableContainer>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 component="div"
-                count={allDevices.length}
+                count={fileRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -636,3 +1099,4 @@ export default function Devices() {
 
   );
 }
+
