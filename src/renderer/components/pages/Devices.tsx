@@ -231,14 +231,14 @@ export default function Devices() {
         device_model: device.device_model,
         storage_capacity_gb: device.storage_capacity_gb,
         total_storage: device.total_storage,
-        upload_speed: Array.isArray(device.upload_speed) 
-          ? device.upload_speed[0] || 'N/A' 
+        upload_speed: Array.isArray(device.upload_speed)
+          ? device.upload_speed[0] || 'N/A'
           : device.upload_speed || 'N/A',
-        download_speed: Array.isArray(device.download_speed) 
-          ? device.download_speed[0] || 'N/A' 
+        download_speed: Array.isArray(device.download_speed)
+          ? device.download_speed[0] || 'N/A'
           : device.download_speed || 'N/A',
-        battery_status: Array.isArray(device.battery_status) 
-          ? device.battery_status[0] || 'N/A' 
+        battery_status: Array.isArray(device.battery_status)
+          ? device.battery_status[0] || 'N/A'
           : device.battery_status || 'N/A',
         available: device.online ? "Available" : "Unavailable",
       }));
@@ -660,11 +660,10 @@ export default function Devices() {
           <CardContent>
             {selectedDevice ? (
               <>
-                <Typography variant="h6" gutterBottom>
-                  Device Details
+                <Typography variant="h4" gutterBottom>
+                  {selectedDevice.device_name}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Typography><strong>Name:</strong> {selectedDevice.device_name}</Typography>
                 <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
                 <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
                 <Typography><strong>Status:</strong> {selectedDevice.available}</Typography>
@@ -672,6 +671,18 @@ export default function Devices() {
                 <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
                 <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
                 <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Folders
+                </Typography>
+                <Button
+                  onClick={() => setIsAddingFolder(true)}
+                  variant="outlined"
+                  sx={{ mb: 2, size: 'inherit' }}
+                >
+                  Add Folder
+                </Button>
 
 
               </>
