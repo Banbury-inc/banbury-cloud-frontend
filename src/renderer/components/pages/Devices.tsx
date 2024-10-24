@@ -658,31 +658,51 @@ export default function Devices() {
         {/* Right panel: Device details */}
         <Card variant="outlined" sx={{ height: '100%', width: '70%', overflow: 'auto' }}>
           <CardContent>
+
             {selectedDevice ? (
               <>
                 <Typography variant="h4" gutterBottom>
                   {selectedDevice.device_name}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
-                <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
-                <Typography><strong>Status:</strong> {selectedDevice.available}</Typography>
-                <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
-                <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
-                <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
-                <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
 
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Folders
-                </Typography>
-                <Button
-                  onClick={() => setIsAddingFolder(true)}
-                  variant="outlined"
-                  sx={{ mb: 2, size: 'inherit' }}
-                >
-                  Add Folder
-                </Button>
+                <Stack direction="row" spacing={2}>
+                  <Stack direction="column" spacing={2}>
+                    <Typography variant="h5" gutterBottom>
+                      Device Information
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
+                    <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
+                    <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
+                    <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                    <Typography>
+                      <strong style={{ color: "white" }}>Status:</strong>{" "}
+                      <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
+                        {selectedDevice.available}
+                      </span>
+                    </Typography>
+                  </Stack>
+
+                  <Stack direction="column" spacing={2}>
+                    <Typography variant="h5" gutterBottom>
+                      Network Details
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                    <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
+                  </Stack>
+
+
+                  <Stack direction="column" spacing={2}>
+                    <Typography variant="h5" gutterBottom>
+                      Performance Metrics
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+                  </Stack>
+                </Stack>
+
+
 
 
               </>
