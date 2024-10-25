@@ -730,7 +730,11 @@ export default function Devices() {
                       Performance Metrics
                     </Typography>
                     <Divider sx={{ my: 2 }} />
-                    <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand} {selectedDevice.cpu_info_speed} {selectedDevice.cpu_info_cores} {selectedDevice.cpu_info_physical_cores} {selectedDevice.cpu_info_processors} {selectedDevice.cpu_info_socket} {selectedDevice.cpu_info_vendor} {selectedDevice.cpu_info_family}</Typography>
+                    <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
+                    <Typography><strong>CPU Speed: </strong>{selectedDevice.cpu_info_speed}</Typography>
+                    <Typography><strong>CPU Cores: </strong>{selectedDevice.cpu_info_cores}</Typography>
+                    <Typography><strong>CPU Physical Cores: </strong>{selectedDevice.cpu_info_physical_cores}</Typography>
+                    <Typography><strong>CPU Processors: </strong>{selectedDevice.cpu_info_processors}</Typography>
                     <Typography>
                       <strong>CPU Usage:</strong> {`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
                     </Typography>
@@ -738,8 +742,6 @@ export default function Devices() {
                     <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
                     <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
                     <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
-                    <Typography><strong>Battery Info:</strong> {selectedDevice.battery_status} {selectedDevice.battery_time_remaining}</Typography>
-                    <Typography><strong>Network Info:</strong> {selectedDevice.upload_speed} {selectedDevice.download_speed}</Typography>
 
                   </Stack>
                 </Stack>
