@@ -697,22 +697,22 @@ export default function Devices() {
                 </Typography>
                 <Divider sx={{ my: 2 }} />
 
-                <Stack direction="row" spacing={2}>
+                <Stack justifyContent="space-evenly" direction="row" spacing={2}>
                   <Stack direction="column" spacing={2}>
                     <Typography variant="h5" gutterBottom>
                       Device Information
                     </Typography>
                     <Divider sx={{ my: 2 }} />
-                    <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
-                    <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
-                    <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
-                    <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
                     <Typography>
                       <strong style={{ color: "white" }}>Status:</strong>{" "}
                       <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
                         {selectedDevice.available}
                       </span>
                     </Typography>
+                    <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
+                    <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
+                    <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
+                    <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
                   </Stack>
 
                   <Stack direction="column" spacing={2}>
