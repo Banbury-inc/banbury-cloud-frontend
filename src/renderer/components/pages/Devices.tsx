@@ -343,6 +343,11 @@ export default function Devices() {
     setSelected([]);
   };
 
+  const handle_add_scanned_folder = async (scanned_folder: string, username: string) => {
+    const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
+    console.log(result);
+  }
+
   const handleFileNameClick = async (id: number) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected: readonly number[] = [];
@@ -756,7 +761,7 @@ export default function Devices() {
                   Add Folders to your library
                 </Typography>
                 <Button
-                  onClick={() => setIsAddingFolder(true)}
+                  onClick={() => handle_add_scanned_folder("this/is/a/newly/added/folder/to/scan", username ?? '')}
                   variant="outlined"
                   color="primary"
                   sx={{ mt: 2 }}
