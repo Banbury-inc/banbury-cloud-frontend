@@ -744,7 +744,25 @@ export default function Devices() {
                     <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
 
                   </Stack>
+
                 </Stack>
+
+                <Typography variant="h5" gutterBottom>
+                  Files
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="body1" gutterBottom>
+                  Add Folders to your library
+                </Typography>
+                <Button
+                  onClick={() => setIsAddingFolder(true)}
+                  variant="outlined"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                >
+                  Browse For Media Folder
+                </Button>
 
 
 
