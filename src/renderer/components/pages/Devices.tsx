@@ -56,7 +56,22 @@ interface DeviceData {
   upload_speed: number | string;  // Changed to allow both number and string
   download_speed: number | string;  // Changed to allow both number and string
   battery_status: string;
+  battery_time_remaining: string;
   available: string;
+  cpu_info_manufacturer: string;
+  cpu_info_brand: string;
+  cpu_info_speed: string;
+  cpu_info_cores: string;
+  cpu_info_physical_cores: string;
+  cpu_info_processors: string;
+  cpu_info_socket: string;
+  cpu_info_vendor: string;
+  cpu_info_family: string;
+  cpu_usage: string;
+  gpu_usage: string;
+  ram_usage: string;
+  ram_total: string;
+  ram_free: string;
 }
 
 const headCells: HeadCell[] = [
@@ -240,7 +255,23 @@ export default function Devices() {
         battery_status: Array.isArray(device.battery_status)
           ? device.battery_status[0] || 'N/A'
           : device.battery_status || 'N/A',
+        battery_time_remaining: device.battery_time_remaining,
         available: device.online ? "Available" : "Unavailable",
+        cpu_info_manufacturer: device.cpu_info_manufacturer,
+        cpu_info_brand: device.cpu_info_brand,
+        cpu_info_speed: device.cpu_info_speed,
+        cpu_info_cores: device.cpu_info_cores,
+        cpu_info_physical_cores: device.cpu_info_physical_cores,
+        cpu_info_processors: device.cpu_info_processors,
+        cpu_info_socket: device.cpu_info_socket,
+        cpu_info_vendor: device.cpu_info_vendor,
+        cpu_info_family: device.cpu_info_family,
+        cpu_usage: device.cpu_usage,
+        gpu_usage: device.gpu_usage,
+        ram_usage: device.ram_usage,
+        ram_total: device.ram_total,
+        ram_free: device.ram_free,
+
       }));
 
       setAllDevices(transformedDevices);
@@ -699,6 +730,17 @@ export default function Devices() {
                       Performance Metrics
                     </Typography>
                     <Divider sx={{ my: 2 }} />
+                    <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand} {selectedDevice.cpu_info_speed} {selectedDevice.cpu_info_cores} {selectedDevice.cpu_info_physical_cores} {selectedDevice.cpu_info_processors} {selectedDevice.cpu_info_socket} {selectedDevice.cpu_info_vendor} {selectedDevice.cpu_info_family}</Typography>
+                    <Typography>
+                      <strong>CPU Usage:</strong> {`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
+                    </Typography>
+                    <Typography><strong>GPU Usage:</strong> {selectedDevice.gpu_usage[0]}</Typography>
+                    <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
+                    <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
+                    <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
+                    <Typography><strong>Battery Info:</strong> {selectedDevice.battery_status} {selectedDevice.battery_time_remaining}</Typography>
+                    <Typography><strong>Network Info:</strong> {selectedDevice.upload_speed} {selectedDevice.download_speed}</Typography>
+
                   </Stack>
                 </Stack>
 
