@@ -574,6 +574,10 @@ export default function Devices() {
     setSelectedDevice(device);
   };
 
+  const handleFoldersUpdate = () => {
+    fetchDevices(); // Refetch devices when folders are updated
+  };
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -750,9 +754,11 @@ export default function Devices() {
                 </Button>
                 <NewScannedFolderButton />
 
-
-
-                <ScannedFoldersChips scanned_folders={selectedDevice.scanned_folders} username={username ?? ''} />
+                <ScannedFoldersChips 
+                  scanned_folders={selectedDevice.scanned_folders} 
+                  username={username ?? ''} 
+                  onFoldersUpdate={handleFoldersUpdate}
+                />
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>

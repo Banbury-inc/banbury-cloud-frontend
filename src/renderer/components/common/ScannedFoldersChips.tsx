@@ -3,15 +3,24 @@ import { Stack, Chip } from '@mui/material';
 import { neuranet } from '../../neuranet';
 import { useAuth } from '../../context/AuthContext';
 
-export default function ScannedFoldersChips({ scanned_folders, username }: { scanned_folders: string[], username: string }) {
-  // Handler to delete a folder from the list if needed
-  const handleDeleteFolder = (folderToDelete: string) => {
-    // Implement your delete functionality here
+interface ScannedFoldersChipsProps {
+  scanned_folders: string[];
+  username: string;
+  onFoldersUpdate: () => void; // New callback prop
+}
+
+export default function ScannedFoldersChips({ scanned_folders, username, onFoldersUpdate }: ScannedFoldersChipsProps) {
+  // Handler to delete a folder from the list
+  const handleDeleteFolder = async (folderToDelete: string) => {
     console.log("Deleting folder:", folderToDelete);
-
-
-    neuranet.device.remove_scanned_folder(folderToDelete, username);
-
+    
+    try {
+      await neuranet.device.remove_scanned_folder(folderToDelete, username);
+      onFoldersUpdate(); // Call the callback to trigger a refresh
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      // Optionally, show an error message to the user
+    }
   };
 
   return (
@@ -20,7 +29,7 @@ export default function ScannedFoldersChips({ scanned_folders, username }: { sca
         <Chip
           key={index}
           label={folder}
-          onDelete={() => handleDeleteFolder(folder)}  // Optional delete handler
+          onDelete={() => handleDeleteFolder(folder)}
           color="primary"
           variant="outlined"
         />
@@ -28,4 +37,3 @@ export default function ScannedFoldersChips({ scanned_folders, username }: { sca
     </Stack>
   );
 }
-
