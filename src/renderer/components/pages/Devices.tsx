@@ -707,11 +707,8 @@ export default function Devices() {
                 {selectedTab === 0 ? (
                   // Device Info tab content
                   <Stack direction="column" spacing={2}>
-                    <Stack justifyContent="space-evenly" direction="row" spacing={4}>
+                    <Stack direction="row" spacing={4}>
                       <Stack direction="column" spacing={2}>
-                      <Typography variant="h5" gutterBottom>
-                        Device Information
-                      </Typography>
                       <Typography>
                         <strong style={{ color: "white"}}>Status:</strong>{" "}
                         <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
@@ -724,12 +721,8 @@ export default function Devices() {
                       <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
                     </Stack>
 
-                    <Divider orientation="vertical" flexItem />
 
                     <Stack direction="column" spacing={2}>
-                      <Typography variant="h5" gutterBottom>
-                        Network Details
-                      </Typography>
                       <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
                       <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
                     </Stack>
@@ -738,7 +731,7 @@ export default function Devices() {
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                   Scanned Folders
                 </Typography>
                 <ScannedFoldersChips 
