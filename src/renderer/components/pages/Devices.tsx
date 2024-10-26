@@ -44,6 +44,8 @@ import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBoxButton from '../TaskBoxButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import { CONFIG } from '../../config/config';
 
@@ -205,6 +207,14 @@ export default function Devices() {
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
   const [selectedDevice, setSelectedDevice] = useState<DeviceData | null>(null);
+
+  // Add this new state for managing tabs
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  // Add this function to handle tab changes
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
 
   let url: string;
   if (CONFIG.prod) {
@@ -685,42 +695,50 @@ export default function Devices() {
                   {selectedDevice.device_name}
                 </Typography>
 
-
+                {/* Add the tabs here */}
+                <Tabs value={selectedTab} onChange={handleTabChange} aria-label="device details tabs">
+                  <Tab label="Device Info" />
+                  <Tab label="Performance" />
+                </Tabs>
 
                 <Divider sx={{ my: 2 }} />
-                <Stack justifyContent="space-evenly" direction="row" spacing={2}>
-                  <Stack direction="column" spacing={2}>
-                    <Typography variant="h5" gutterBottom>
-                      Device Information
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography>
-                      <strong style={{ color: "white" }}>Status:</strong>{" "}
-                      <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
-                        {selectedDevice.available}
-                      </span>
-                    </Typography>
-                    <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
-                    <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
-                    <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
-                    <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+
+                {/* Conditional rendering based on selected tab */}
+                {selectedTab === 0 ? (
+                  // Device Info tab content
+                  <Stack justifyContent="space-evenly" direction="row" spacing={4}>
+                    <Stack direction="column" spacing={2}>
+                      <Typography variant="h6" gutterBottom>
+                        Device Information
+                      </Typography>
+                      <Typography>
+                        <strong style={{ color: "white" }}>Status:</strong>{" "}
+                        <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
+                          {selectedDevice.available}
+                        </span>
+                      </Typography>
+                      <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
+                      <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
+                      <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
+                      <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                    </Stack>
+
+                    <Divider orientation="vertical" flexItem />
+
+                    <Stack direction="column" spacing={2}>
+                      <Typography variant="h6" gutterBottom>
+                        Network Details
+                      </Typography>
+                      <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                      <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
+                    </Stack>
                   </Stack>
-
+                ) : (
+                  // Performance tab content
                   <Stack direction="column" spacing={2}>
-                    <Typography variant="h5" gutterBottom>
-                      Network Details
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
-                    <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
-                  </Stack>
-
-
-                  <Stack direction="column" spacing={2}>
-                    <Typography variant="h5" gutterBottom>
+                    <Typography variant="h6" gutterBottom>
                       Performance Metrics
                     </Typography>
-                    <Divider sx={{ my: 2 }} />
                     <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
                     <Typography><strong>CPU Speed: </strong>{selectedDevice.cpu_info_speed}</Typography>
                     <Typography><strong>CPU Cores: </strong>{selectedDevice.cpu_info_cores}</Typography>
@@ -733,15 +751,14 @@ export default function Devices() {
                     <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
                     <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
                     <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
-
                   </Stack>
+                )}
 
-                </Stack>
+                <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h5" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                   Scanned Folders
                 </Typography>
-                <Divider sx={{ my: 2 }} />
                 <ScannedFoldersChips 
                   scanned_folders={selectedDevice.scanned_folders} 
                   username={username ?? ''} 
