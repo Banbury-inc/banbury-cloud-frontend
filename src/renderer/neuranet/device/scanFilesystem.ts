@@ -1,6 +1,4 @@
-
 import { neuranet } from '../../neuranet';
-import axios from 'axios';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
@@ -11,22 +9,39 @@ import { CONFIG } from '../../config/config';
 export async function scanFilesystem(username: string): Promise<string> {
   const fullDeviceSync = CONFIG.full_device_sync;
   const skipDotFiles = CONFIG.skip_dot_files;
+  const scanSelectedFolders = CONFIG.scan_selected_folders;
 
-  // Determine the directory path based on the fullDeviceSync flag
-  const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
+  let directoriesToScan: string[] = [];
+
+  if (scanSelectedFolders) {
+    // Get the array of scanned folders from get_scanned_folders
+    const response = await neuranet.device.get_scanned_folders(username);
+    if (typeof response === 'object' && 'result' in response && response.result === 'success') {
+      if ('scanned_folders' in response && Array.isArray(response.scanned_folders)) {
+        console.log(response.scanned_folders);
+        directoriesToScan = response.scanned_folders;
+      } else {
+        console.log('No valid folders returned from get_scanned_folders.');
+        return 'No valid folders to scan';
+      }
+    } else {
+      console.log('Failed to get scanned folders.');
+      return 'Failed to get scanned folders';
+    }
+    
+    if (directoriesToScan.length === 0) {
+      console.log('No folders selected for scanning.');
+      return 'No folders to scan';
+    }
+  } else {
+    // If not scanning selected folders, use the default directory
+    const defaultDirectory = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
+    directoriesToScan = [defaultDirectory];
+  }
 
   let filesInfo: any[] = [];
 
-  // Check if the directory exists, create if it does not and create a welcome text file
-  if (!fs.existsSync(bcloudDirectoryPath)) {
-    fs.mkdirSync(bcloudDirectoryPath, { recursive: true });
-    const welcomeFilePath = path.join(bcloudDirectoryPath, 'welcome.txt');
-    fs.writeFileSync(
-      welcomeFilePath,
-      `Welcome to Banbury Cloud! This is the directory that will contain all of the files that you would like to have in the cloud and streamed throughout all of your devices.`
-    );
-  }
-
+  // Function to get file kind (unchanged)
   function getFileKind(filename: string): string {
     const ext = path.extname(filename).toLowerCase();
     const fileTypes: { [key: string]: string } = {
@@ -50,7 +65,13 @@ export async function scanFilesystem(username: string): Promise<string> {
     return fileTypes[ext] || 'Unknown';
   }
 
+  // Modified traverseDirectory function to handle multiple directories
   async function traverseDirectory(currentPath: string): Promise<void> {
+    if (!fs.existsSync(currentPath)) {
+      console.log(`Directory does not exist: ${currentPath}`);
+      return;
+    }
+
     const files = fs.readdirSync(currentPath);
 
     for (const filename of files) {
@@ -98,14 +119,16 @@ export async function scanFilesystem(username: string): Promise<string> {
     }
   }
 
-  // Start processing the directories
-  await traverseDirectory(bcloudDirectoryPath);
+  // Traverse all directories in the directoriesToScan array
+  for (const directory of directoriesToScan) {
+    console.log(`Scanning directory: ${directory}`);
+    await traverseDirectory(directory);
+  }
 
-  // After traversing, send any remaining files to the server
+  // After traversing all directories, send any remaining files to the server
   if (filesInfo.length > 0) {
     await handlers.files.addFiles(username, filesInfo);
   }
 
   return 'success';
 }
-

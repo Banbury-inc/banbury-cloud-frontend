@@ -19,15 +19,19 @@ export default function NewScannedFolderButton() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+
+    const file = event.target.files ? event.target.files[0] : null;
+    console.log('File:', file);
+    if (!file) return;
 
     setLoading(true);
     try {
       // Get the folder path from the first file
-      const folderPath = files[0].webkitRelativePath.split('/')[0];
+      const entirepath = file.webkitRelativePath;
+      console.log('Entire path:', entirepath);
+      const folderPath = file.webkitRelativePath.split('/')[0];
       console.log('Selected folder:', folderPath);
-      const absoluteFolderPath = path.join(process.cwd(), folderPath);
+      const absoluteFolderPath = path.dirname(file.path);
       console.log('Absolute folder path:', absoluteFolderPath);
       
       // Add the selected folder as a scanned folder

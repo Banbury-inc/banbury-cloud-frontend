@@ -3,5 +3,6 @@ export const CONFIG = {
   relayPort: 443,
   full_device_sync: false,
   skip_dot_files: true,
+  scan_selected_folders: true,
   prod: false,
 };
