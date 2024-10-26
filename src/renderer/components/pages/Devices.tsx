@@ -27,6 +27,7 @@ import Grid from '@mui/material/Grid';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { LineChart } from '@mui/x-charts/LineChart';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
@@ -768,16 +769,84 @@ export default function Devices() {
                     <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
                     <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
                   </Stack>
-                  <Stack direction="column" spacing={2}>
+                  <Stack direction="column" spacing={4}>
                     <Typography variant="h6" gutterBottom>
-                      Performance Metrics
+                      CPU Usage
                     </Typography>
-                    
+                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
+                      <LineChart
+                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
+                        series={[
+                          {
+                            data: [2, 5.5, 2, 8.5, 1.5, 5],
+                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
+                          },
+                          {
+                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
+                          },
+                          {
+                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
+                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
+                          },
+                        ]}
+                        height={300}
+                        width={500}
+                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                      /> 
+                    </Box>
 
+                    <Typography variant="h6" gutterBottom>
+                      GPU Usage
+                    </Typography>
+                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
+                      <LineChart
+                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
+                        series={[
+                          {
+                            data: [2, 5.5, 2, 8.5, 1.5, 5],
+                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
+                          },
+                          {
+                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
+                          },
+                          {
+                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
+                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
+                          },
+                        ]}
+                        height={300}
+                        width={500}
+                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                      /> 
+                    </Box>
 
-                    </Stack>
+                    <Typography variant="h6" gutterBottom>
+                      RAM Usage
+                    </Typography>
+                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
+                      <LineChart
+                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
+                        series={[
+                          {
+                            data: [2, 5.5, 2, 8.5, 1.5, 5],
+                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
+                          },
+                          {
+                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
+                          },
+                          {
+                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
+                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
+                          },
+                        ]}
+                        height={300}
+                        width={500}
+                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                      /> 
+                    </Box>
                   </Stack>
-                )}
+                </Stack>
+              )}
 
               </>
             ) : (
