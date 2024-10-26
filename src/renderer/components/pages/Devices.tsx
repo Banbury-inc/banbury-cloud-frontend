@@ -695,7 +695,6 @@ export default function Devices() {
                   {selectedDevice.device_name}
                 </Typography>
 
-                {/* Add the tabs here */}
                 <Tabs value={selectedTab} onChange={handleTabChange} aria-label="device details tabs">
                   <Tab label="Device Info" />
                   <Tab label="Performance" />
@@ -706,13 +705,14 @@ export default function Devices() {
                 {/* Conditional rendering based on selected tab */}
                 {selectedTab === 0 ? (
                   // Device Info tab content
-                  <Stack justifyContent="space-evenly" direction="row" spacing={4}>
-                    <Stack direction="column" spacing={2}>
-                      <Typography variant="h6" gutterBottom>
+                  <Stack direction="column" spacing={2}>
+                    <Stack justifyContent="space-evenly" direction="row" spacing={4}>
+                      <Stack direction="column" spacing={2}>
+                      <Typography variant="h5" gutterBottom>
                         Device Information
                       </Typography>
                       <Typography>
-                        <strong style={{ color: "white" }}>Status:</strong>{" "}
+                        <strong style={{ color: "white"}}>Status:</strong>{" "}
                         <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
                           {selectedDevice.available}
                         </span>
@@ -726,17 +726,33 @@ export default function Devices() {
                     <Divider orientation="vertical" flexItem />
 
                     <Stack direction="column" spacing={2}>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography variant="h5" gutterBottom>
                         Network Details
                       </Typography>
                       <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
                       <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
                     </Stack>
+
                   </Stack>
+
+                <Divider sx={{ my: 3 }} />
+
+                <Typography variant="h6" gutterBottom>
+                  Scanned Folders
+                </Typography>
+                <ScannedFoldersChips 
+                  scanned_folders={selectedDevice.scanned_folders} 
+                  username={username ?? ''} 
+                  onFoldersUpdate={handleFoldersUpdate}
+                  />
+                </Stack>
+
+
                 ) : (
                   // Performance tab content
-                  <Stack direction="column" spacing={2}>
-                    <Typography variant="h6" gutterBottom>
+                  <Stack direction="row" spacing={4}>
+                    <Stack direction="column" spacing={2}>
+                      <Typography variant="h6" gutterBottom>
                       Performance Metrics
                     </Typography>
                     <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
@@ -752,18 +768,17 @@ export default function Devices() {
                     <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
                     <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
                   </Stack>
+                  <Stack direction="column" spacing={2}>
+                    <Typography variant="h6" gutterBottom>
+                      Performance Metrics
+                    </Typography>
+                    
+
+
+                    </Stack>
+                  </Stack>
                 )}
 
-                <Divider sx={{ my: 3 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  Scanned Folders
-                </Typography>
-                <ScannedFoldersChips 
-                  scanned_folders={selectedDevice.scanned_folders} 
-                  username={username ?? ''} 
-                  onFoldersUpdate={handleFoldersUpdate}
-                />
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>
