@@ -1,11 +1,17 @@
 import React from 'react';
 import { Stack, Chip } from '@mui/material';
+import { neuranet } from '../../neuranet';
+import { useAuth } from '../../context/AuthContext';
 
-export default function ScannedFoldersChips({ scanned_folders }: { scanned_folders: string[] }) {
+export default function ScannedFoldersChips({ scanned_folders, username }: { scanned_folders: string[], username: string }) {
   // Handler to delete a folder from the list if needed
   const handleDeleteFolder = (folderToDelete: string) => {
     // Implement your delete functionality here
     console.log("Deleting folder:", folderToDelete);
+
+
+    neuranet.device.remove_scanned_folder(folderToDelete, username);
+
   };
 
   return (

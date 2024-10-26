@@ -752,7 +752,7 @@ export default function Devices() {
 
 
 
-                <ScannedFoldersChips scanned_folders={selectedDevice.scanned_folders} />
+                <ScannedFoldersChips scanned_folders={selectedDevice.scanned_folders} username={username ?? ''} />
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>
