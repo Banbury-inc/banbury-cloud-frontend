@@ -32,6 +32,7 @@ import { CardContent, Container } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
 import ScannedFoldersChips from '../common/ScannedFoldersChips';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
+import NewScannedFolderButton from '../new_scanned_folder_button';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import TextField from '@mui/material/TextField';
@@ -747,6 +748,8 @@ export default function Devices() {
                 >
                   Browse For Media Folder
                 </Button>
+                <NewScannedFolderButton />
+
 
 
                 <ScannedFoldersChips scanned_folders={selectedDevice.scanned_folders} />
