@@ -4,7 +4,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../context/AuthContext';
 import { neuranet } from '../neuranet';
-
+import path from 'path';
 // Extend the InputHTMLAttributes interface to include webkitdirectory and directory
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -27,13 +27,15 @@ export default function NewScannedFolderButton() {
       // Get the folder path from the first file
       const folderPath = files[0].webkitRelativePath.split('/')[0];
       console.log('Selected folder:', folderPath);
+      const absoluteFolderPath = path.join(process.cwd(), folderPath);
+      console.log('Absolute folder path:', absoluteFolderPath);
       
       // Add the selected folder as a scanned folder
-      let task_description = `Adding scanned folder: ${folderPath}`;
+      let task_description = `Adding scanned folder: ${absoluteFolderPath}`;
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
       setTaskbox_expanded(true);
 
-      const addResult = await neuranet.device.add_scanned_folder(folderPath, username ?? '');
+      const addResult = await neuranet.device.add_scanned_folder(absoluteFolderPath, username ?? '');
       
       if (addResult === 'success') {
         await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
