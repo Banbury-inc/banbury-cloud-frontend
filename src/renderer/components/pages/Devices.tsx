@@ -9,6 +9,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
 import Table from '@mui/material/Table';
+import Chip from '@mui/material/Chip';
 import TableBody from '@mui/material/TableBody';
 import DevicesIcon from '@mui/icons-material/Devices';
 import TableCell from '@mui/material/TableCell';
@@ -29,6 +30,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
+import ScannedFoldersChips from '../common/ScannedFoldersChips';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
@@ -72,6 +74,8 @@ interface DeviceData {
   ram_usage: string;
   ram_total: string;
   ram_free: string;
+  scanned_folders: string[];
+
 }
 
 const headCells: HeadCell[] = [
@@ -271,6 +275,7 @@ export default function Devices() {
         ram_usage: device.ram_usage,
         ram_total: device.ram_total,
         ram_free: device.ram_free,
+        scanned_folders: Array.isArray(device.scanned_folders) ? device.scanned_folders : [], // Ensure it's always an array
 
       }));
 
@@ -323,6 +328,7 @@ export default function Devices() {
     setFileRows(filteredDevices);
 
   }, [global_file_path, global_file_path_device, allDevices]);
+
 
 
   const handleRequestSort = (
@@ -625,13 +631,13 @@ export default function Devices() {
                   numSelected={selected.length}
                   order={order}
                   orderBy={orderBy}
-                  onSelectAllClick={handleSelectAllClick}
-                  onRequestSort={handleRequestSort}
+                  onSelectAllClick={() => { }}
+                  onRequestSort={() => { }}
                   rowCount={allDevices.length}
                 />
                 <TableBody>
                   {isLoading ? (
-                    Array.from(new Array(rowsPerPage)).map((_, index) => (
+                    Array.from(new Array(10)).map((_, index) => (
                       <TableRow key={index}>
                         <TableCell padding="checkbox">
                           <Skeleton variant="rectangular" width={24} height={24} />
@@ -642,66 +648,40 @@ export default function Devices() {
                       </TableRow>
                     ))
                   ) : (
-                    stableSort(allDevices, getComparator(order, orderBy))
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((row, index) => {
-                        const isItemSelected = isSelected(row.id);
-                        const labelId = `enhanced-table-checkbox-${index}`;
-
-                        return (
-                          <TableRow
-                            hover
-                            onClick={() => handleDeviceClick(row)}
-                            role="checkbox"
-                            aria-checked={isItemSelected}
-                            tabIndex={-1}
-                            key={row.id}
-                            selected={!!selectedDevice && selectedDevice.id === row.id}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                color="primary"
-                                checked={isItemSelected}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  handleClick(event, row.id);
-                                }}
-                                inputProps={{ 'aria-labelledby': labelId }}
-                              />
-                            </TableCell>
-                            <TableCell component="th" id={labelId} scope="row" padding="normal">
-                              {row.device_name}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
+                    allDevices.map((row, index) => (
+                      <TableRow
+                        hover
+                        onClick={() => handleDeviceClick(row)}
+                        key={row.id}
+                        selected={!!selectedDevice && selectedDevice.id === row.id}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox color="primary" />
+                        </TableCell>
+                        <TableCell component="th" scope="row" padding="normal">
+                          {row.device_name}
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
                 </TableBody>
               </Table>
             </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, 50, 100]}
-              component="div"
-              count={allDevices.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
           </CardContent>
         </Card>
 
         {/* Right panel: Device details */}
         <Card variant="outlined" sx={{ height: '100%', width: '70%', overflow: 'auto' }}>
           <CardContent>
-
             {selectedDevice ? (
               <>
                 <Typography variant="h4" gutterBottom>
                   {selectedDevice.device_name}
                 </Typography>
-                <Divider sx={{ my: 2 }} />
 
+
+
+                <Divider sx={{ my: 2 }} />
                 <Stack justifyContent="space-evenly" direction="row" spacing={2}>
                   <Stack direction="column" spacing={2}>
                     <Typography variant="h5" gutterBottom>
@@ -753,10 +733,9 @@ export default function Devices() {
                 </Stack>
 
                 <Typography variant="h5" gutterBottom>
-                  Files
+                  Scanned Folders
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-
                 <Typography variant="body1" gutterBottom>
                   Add Folders to your library
                 </Typography>
@@ -770,8 +749,7 @@ export default function Devices() {
                 </Button>
 
 
-
-
+                <ScannedFoldersChips scanned_folders={selectedDevice.scanned_folders} />
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>
@@ -779,7 +757,6 @@ export default function Devices() {
           </CardContent>
         </Card>
       </Stack>
-    </Box >
-
+    </Box>
   );
 }
