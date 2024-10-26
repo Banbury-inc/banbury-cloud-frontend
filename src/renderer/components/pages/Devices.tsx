@@ -609,6 +609,7 @@ export default function Devices() {
                   </Button>
                 </Tooltip>
               </Grid>
+              <NewScannedFolderButton />
             </Grid>
             <Grid container justifyContent='flex-end' alignItems='flex-end'>
               <Grid item>
@@ -741,19 +742,6 @@ export default function Devices() {
                   Scanned Folders
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Typography variant="body1" gutterBottom>
-                  Add Folders to your library
-                </Typography>
-                <Button
-                  onClick={() => handle_add_scanned_folder("this/is/a/newly/added/folder/to/scan", username ?? '')}
-                  variant="outlined"
-                  color="primary"
-                  sx={{ mt: 2 }}
-                >
-                  Browse For Media Folder
-                </Button>
-                <NewScannedFolderButton />
-
                 <ScannedFoldersChips 
                   scanned_folders={selectedDevice.scanned_folders} 
                   username={username ?? ''} 
