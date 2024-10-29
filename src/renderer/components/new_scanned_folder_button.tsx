@@ -17,22 +17,17 @@ export default function NewScannedFolderButton() {
   const [loading, setLoading] = useState(false);
   const { username, tasks, setTasks, setTaskbox_expanded } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
     const file = event.target.files ? event.target.files[0] : null;
-    console.log('File:', file);
     if (!file) return;
 
     setLoading(true);
     try {
       // Get the folder path from the first file
       const entirepath = file.webkitRelativePath;
-      console.log('Entire path:', entirepath);
       const folderPath = file.webkitRelativePath.split('/')[0];
-      console.log('Selected folder:', folderPath);
       const absoluteFolderPath = path.dirname(file.path);
-      console.log('Absolute folder path:', absoluteFolderPath);
       
       // Add the selected folder as a scanned folder
       let task_description = `Adding scanned folder: ${absoluteFolderPath}`;

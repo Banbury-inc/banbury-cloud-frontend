@@ -30,7 +30,6 @@ function saveFile(fileName: string) {
     if (err) {
       console.error('Error saving file:', err);
     } else {
-      console.log(`File successfully saved as ${fileName}, total size: ${completeBuffer.length} bytes`);
       return 'success';
 
     }
@@ -151,7 +150,6 @@ export function createWebSocketConnection(username: string, device_name: string,
         });
       }
       if (request_type === 'device_info') {
-        console.log(`Received device info request for device: ${device_name}`);
         let device_info = await neuranet.device.getDeviceInfo();
         const message = {
           message: `device_info_response`,
@@ -161,7 +159,6 @@ export function createWebSocketConnection(username: string, device_name: string,
           device_info: device_info,
         };
         socket.send(JSON.stringify(message));
-        console.log(`Sent: ${JSON.stringify(message)}`);
       }
     }
   };

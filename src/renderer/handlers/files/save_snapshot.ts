@@ -14,7 +14,6 @@ export async function save_snapshot(username: string) {
 
   // Determine the directory path based on the fullDeviceSync flag
   const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
-  console.log(bcloudDirectoryPath);
 
   let filesInfo: any[] = [];
 
@@ -58,7 +57,6 @@ export async function save_snapshot(username: string) {
       const filePath = path.join(currentPath, filename);
       const stats = fs.statSync(filePath);
 
-      console.log(`Processing file ${filePath}`);
 
       // Skip dot directories if configured to do so
       if (skipDotFiles && filename.startsWith('.')) continue;
@@ -100,7 +98,6 @@ export async function save_snapshot(username: string) {
   const snapshotFilePath = path.join(bcloudDirectoryPath, `${username}_snapshot.json`);
   fs.writeFileSync(snapshotFilePath, JSON.stringify(filesInfo, null, 2));
 
-  console.log(`Snapshot saved to ${snapshotFilePath}`);
 
   return 'success';
 }
