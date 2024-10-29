@@ -29,7 +29,7 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { visuallyHidden } from '@mui/utils';
-import { CardContent, Container } from "@mui/material";
+import { CardContent, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
 import ScannedFoldersChips from '../common/ScannedFoldersChips';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
@@ -208,6 +208,7 @@ export default function Devices() {
   const [disableFetch, setDisableFetch] = useState(false);
   const { updates, setUpdates, tasks, setTasks, username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login, taskbox_expanded, setTaskbox_expanded } = useAuth();
   const [selectedDevice, setSelectedDevice] = useState<DeviceData | null>(null);
+  const [selectedMetric, setSelectedMetric] = useState<'gpu' | 'ram' | 'cpu'>('cpu');
 
   // Add this new state for managing tabs
   const [selectedTab, setSelectedTab] = useState(0);
@@ -753,48 +754,87 @@ export default function Devices() {
 
                 ) : (
                   // Performance tab content
-                  <Stack direction="row" spacing={4}>
-                    <Stack direction="column" spacing={2}>
-                      <Typography variant="h6" gutterBottom>
-                      Performance Metrics
-                    </Typography>
-                    <Typography><strong>CPU Info:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
-                    <Typography><strong>CPU Speed: </strong>{selectedDevice.cpu_info_speed}</Typography>
-                    <Typography><strong>CPU Cores: </strong>{selectedDevice.cpu_info_cores}</Typography>
-                    <Typography><strong>CPU Physical Cores: </strong>{selectedDevice.cpu_info_physical_cores}</Typography>
-                    <Typography><strong>CPU Processors: </strong>{selectedDevice.cpu_info_processors}</Typography>
-                    <Typography>
-                      <strong>CPU Usage:</strong> {`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
-                    </Typography>
-                    <Typography><strong>GPU Usage:</strong> {selectedDevice.gpu_usage[0]}</Typography>
-                    <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
-                    <Typography><strong>RAM Total:</strong> {selectedDevice.ram_total[0]}</Typography>
-                    <Typography><strong>RAM Free:</strong> {selectedDevice.ram_free[0]}</Typography>
-                  </Stack>
-                  <Stack direction="column" spacing={4}>
-                    <Typography variant="h6" gutterBottom>
-                      CPU Usage
-                    </Typography>
-                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
-                      <LineChart
-                        xAxis={[{ data: Array.from({length: selectedDevice.gpu_usage.length}, (_, i) => i + 1) }]}
-                        series={[
-                          {
-                            data: Array.isArray(selectedDevice.gpu_usage) 
-                              ? selectedDevice.gpu_usage.map(Number) 
-                              : [Number(selectedDevice.gpu_usage)],
-                            valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
-                          }
-                        ]}
-                        height={300}
-                        width={500}
-                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                      /> 
-                    </Box>
-                  </Stack>
-                </Stack>
-              )}
+                  <Stack direction="column" spacing={3} sx={{ p: 0 }}>
+                    {/* Performance metrics section */}
+                    <Card variant="outlined" sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                        Performance Metrics
+                      </Typography>
+                      
+                      <Stack direction="row" spacing={4}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="subtitle1" color="primary" gutterBottom>CPU Information</Typography>
+                          <Typography><strong>Manufacturer & Model:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
+                          <Typography><strong>Speed:</strong> {selectedDevice.cpu_info_speed}</Typography>
+                          <Typography><strong>Cores:</strong> {selectedDevice.cpu_info_cores} (Physical: {selectedDevice.cpu_info_physical_cores})</Typography>
+                          <Typography><strong>Processors:</strong> {selectedDevice.cpu_info_processors}</Typography>
+                          <Typography><strong>Current Usage:</strong> {`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}</Typography>
+                        </Box>
 
+                        <Divider orientation="vertical" flexItem />
+
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="subtitle1" color="primary" gutterBottom>Memory & GPU</Typography>
+                          <Typography><strong>GPU Usage:</strong> {selectedDevice.gpu_usage[0]}</Typography>
+                          <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
+                          <Typography><strong>Total RAM:</strong> {selectedDevice.ram_total[0]}</Typography>
+                          <Typography><strong>Free RAM:</strong> {selectedDevice.ram_free[0]}</Typography>
+                        </Box>
+                      </Stack>
+                    </Card>
+
+                    {/* Charts section */}
+                    <Card variant="outlined" sx={{ p: 3 }}>
+                      <Stack direction="column" spacing={2}>
+                        <FormControl sx={{ minWidth: 200 }}>
+                          <InputLabel id="chart-select-label">Select Metric</InputLabel>
+                          <Select
+                            labelId="chart-select-label"
+                            value={selectedMetric}
+                            label="Select Metric"
+                            onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
+                          >
+                            <MenuItem value="gpu">GPU Usage</MenuItem>
+                            <MenuItem value="ram">RAM Usage</MenuItem>
+                            <MenuItem value="cpu">CPU Usage</MenuItem>
+                          </Select>
+                        </FormControl>
+
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="subtitle1" color="primary" gutterBottom>
+                            {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
+                          </Typography>
+                          <LineChart
+                            xAxis={[{ 
+                              data: Array.from(
+                                {length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                         selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length}, 
+                                (_, i) => i + 1
+                              ) 
+                            }]}
+                            series={[{
+                              data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
+                                ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                              selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
+                                : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                                      selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
+                              valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                              color: selectedMetric === 'gpu' ? '#4CAF50' 
+                                    : selectedMetric === 'ram' ? '#2196F3' 
+                                    : '#FF5722',
+                              showMark: false
+                            }]}
+                            height={300}
+                            width={800}
+                            margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                          />
+                        </Box>
+                      </Stack>
+                    </Card>
+
+                  </Stack>
+                )}
               </>
             ) : (
               <Typography variant="body1">Select a device to view details</Typography>
