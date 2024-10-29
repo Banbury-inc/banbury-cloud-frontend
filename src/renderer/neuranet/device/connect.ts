@@ -62,7 +62,6 @@ export function createWebSocketConnection(username: string, device_name: string,
 
   // Open event: When the connection is established
   socket.onopen = function() {
-    console.log('WebSocket connection established');
 
     const message = {
       message: `Initiate live data connection`,
@@ -70,7 +69,6 @@ export function createWebSocketConnection(username: string, device_name: string,
       requesting_device_name: device_name,
     };
     socket.send(JSON.stringify(message));
-    console.log(`Sent: ${JSON.stringify(message)}`);
 
     // Call the callback function with the socket
     callback(socket);
@@ -91,7 +89,6 @@ export function createWebSocketConnection(username: string, device_name: string,
       const sending_device_name = data.sending_device_name;
 
       // Handle text-based messages (e.g., JSON data)
-      console.log('Message from server: ', event.data);
 
       // When the server indicates that the file transfer is complete, save the file
       if (data.message === 'File transfer complete') {
@@ -108,7 +105,6 @@ export function createWebSocketConnection(username: string, device_name: string,
       }
 
       if (request_type === 'file_request') {
-        console.log(`Received download request for file: ${file_name}`);
         const directory_name: string = 'BCloud';
         const directory_path: string = path.join(os.homedir(), directory_name);
         const file_save_path: string = path.join(directory_path, file_name);
@@ -117,7 +113,6 @@ export function createWebSocketConnection(username: string, device_name: string,
         const fileStream = fs.createReadStream(file_save_path);
 
         fileStream.on('data', (chunk) => {
-          console.log(`Sending file chunk: ${chunk.length} bytes`);
           socket.send(chunk); // Send the chunk as bytes
         });
 
@@ -131,15 +126,12 @@ export function createWebSocketConnection(username: string, device_name: string,
           };
           socket.send(JSON.stringify(message));
 
-          console.log('taskInfo', taskInfo)
 
           const newTaskInfo = {
             name: 'Downloading ' + file_name,
             device: sending_device_name,
             status: 'complete',
           }
-
-          console.log('newTaskInfo', newTaskInfo)
 
           neuranet.sessions.updateTask(username, newTaskInfo);
 
@@ -199,7 +191,6 @@ export function download_request(username: string, file_name: string, socket: We
     requesting_device_name: os.hostname(),
   };
   socket.send(JSON.stringify(message));
-  console.log(`Sent: ${JSON.stringify(message)}`);
 
 }
 
@@ -221,7 +212,6 @@ export function connect(username: string) {
     // Declare the device online
     //commenting out as url doesnt exist I don't think
     //neuranet.device.declare_online(username);
-    console.log('Device declared online');
     // download_request(username, file_name, socket);
   });
 

@@ -28,10 +28,14 @@ export default function ScannedFoldersChips({ scanned_folders, username, onFolde
       {scanned_folders.map((folder, index) => (
         <Chip
           key={index}
+
           label={folder}
           onDelete={() => handleDeleteFolder(folder)}
           color="primary"
           variant="outlined"
+          size="small"
+          sx={{ fontSize: '12px' }}
+
         />
       ))}
     </Stack>

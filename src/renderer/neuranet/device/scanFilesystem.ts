@@ -18,7 +18,6 @@ export async function scanFilesystem(username: string): Promise<string> {
     const response = await neuranet.device.get_scanned_folders(username);
     if (typeof response === 'object' && 'result' in response && response.result === 'success') {
       if ('scanned_folders' in response && Array.isArray(response.scanned_folders)) {
-        console.log(response.scanned_folders);
         directoriesToScan = response.scanned_folders;
       } else {
         console.log('No valid folders returned from get_scanned_folders.');
@@ -78,7 +77,6 @@ export async function scanFilesystem(username: string): Promise<string> {
       const filePath = path.join(currentPath, filename);
       const stats = fs.statSync(filePath);
 
-      console.log(`Processing file ${filePath}`);
 
       // Skip dot directories if configured to do so
       if (skipDotFiles && filename.startsWith('.')) continue;
@@ -103,7 +101,6 @@ export async function scanFilesystem(username: string): Promise<string> {
         // Send files to the server in batches of 1000
         if (filesInfo.length >= 1000) {
           await handlers.files.addFiles(username, filesInfo);
-          console.log('Sent 1000 files to the server');
           filesInfo = [];
         }
 
@@ -121,7 +118,6 @@ export async function scanFilesystem(username: string): Promise<string> {
 
   // Traverse all directories in the directoriesToScan array
   for (const directory of directoriesToScan) {
-    console.log(`Scanning directory: ${directory}`);
     await traverseDirectory(directory);
   }
 
