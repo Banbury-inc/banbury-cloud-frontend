@@ -804,36 +804,40 @@ export default function Devices() {
 
                       </Stack>
                       <Stack direction="column" alignItems="stretch" sx={{ mt: 2 }}>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
                           </Typography>
-                          <LineChart
-                            sx={{flex: 1}}
-                            xAxis={[{ 
-                              data: Array.from(
-                                {length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                         selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length}, 
-                                (_, i) => i + 1
-                              ) 
-                            }]}
-                            series={[{
-                              data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
-                                ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                              selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
-                                : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                                      selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
-                              valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
-                              color: selectedMetric === 'gpu' ? '#4CAF50' 
-                                    : selectedMetric === 'ram' ? '#2196F3' 
-                                    : '#FF5722',
-                              showMark: false
-                            }]}
-                            height={300}
-                            width={800}
-                            margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                          />
+                          <Box sx={{ width: '100%', height: '300px' }}>
+                            <LineChart
+                              sx={{
+                                flex: 1,
+                                width: '100%',
+                                height: '100%'
+                              }}
+                              xAxis={[{ 
+                                data: Array.from(
+                                  {length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                           selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length}, 
+                                  (_, i) => i + 1
+                                ) 
+                              }]}
+                              series={[{
+                                data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
+                                  ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
+                                  : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
+                                                        selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
+                                valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                                color: selectedMetric === 'gpu' ? '#4CAF50' 
+                                      : selectedMetric === 'ram' ? '#2196F3' 
+                                      : '#FF5722',
+                                showMark: false
+                              }]}
+                              margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                            />
+                          </Box>
                         </Box>
                       </Stack>
                     </Card>
