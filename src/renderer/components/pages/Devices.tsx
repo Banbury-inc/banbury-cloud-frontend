@@ -785,10 +785,12 @@ export default function Devices() {
 
                     {/* Charts section */}
                     <Card variant="outlined" sx={{ p: 3 }}>
-                      <Stack direction="column" spacing={2}>
-                        <FormControl sx={{ minWidth: 200 }}>
+                      <Stack direction="column" alignItems="flex-end" sx={{ mb: 2 }}>
+                        <FormControl sx={{ maxWidth: 150 }}>
                           <InputLabel id="chart-select-label">Select Metric</InputLabel>
                           <Select
+                            variant="outlined"
+                            size="small"
                             labelId="chart-select-label"
                             value={selectedMetric}
                             label="Select Metric"
@@ -800,11 +802,14 @@ export default function Devices() {
                           </Select>
                         </FormControl>
 
+                      </Stack>
+                      <Stack direction="column" alignItems="stretch" sx={{ mt: 2 }}>
                         <Box sx={{ flex: 1 }}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
                           </Typography>
                           <LineChart
+                            sx={{flex: 1}}
                             xAxis={[{ 
                               data: Array.from(
                                 {length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
