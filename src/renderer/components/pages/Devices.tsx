@@ -74,7 +74,7 @@ interface DeviceData {
   cpu_info_vendor: string;
   cpu_info_family: string;
   cpu_usage: string;
-  gpu_usage: string;
+  gpu_usage: string[];  // Change from string to string[]
   ram_usage: string;
   ram_total: string;
   ram_free: string;
@@ -283,7 +283,9 @@ export default function Devices() {
         cpu_info_vendor: device.cpu_info_vendor,
         cpu_info_family: device.cpu_info_family,
         cpu_usage: device.cpu_usage,
-        gpu_usage: device.gpu_usage,
+        gpu_usage: Array.isArray(device.gpu_usage)
+          ? device.gpu_usage
+          : [device.gpu_usage],
         ram_usage: device.ram_usage,
         ram_total: device.ram_total,
         ram_free: device.ram_free,
@@ -775,69 +777,14 @@ export default function Devices() {
                     </Typography>
                     <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
                       <LineChart
-                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
+                        xAxis={[{ data: Array.from({length: selectedDevice.gpu_usage.length}, (_, i) => i + 1) }]}
                         series={[
                           {
-                            data: [2, 5.5, 2, 8.5, 1.5, 5],
-                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
-                          },
-                          {
-                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
-                          },
-                          {
-                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
-                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
-                          },
-                        ]}
-                        height={300}
-                        width={500}
-                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                      /> 
-                    </Box>
-
-                    <Typography variant="h6" gutterBottom>
-                      GPU Usage
-                    </Typography>
-                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
-                      <LineChart
-                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
-                        series={[
-                          {
-                            data: [2, 5.5, 2, 8.5, 1.5, 5],
-                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
-                          },
-                          {
-                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
-                          },
-                          {
-                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
-                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
-                          },
-                        ]}
-                        height={300}
-                        width={500}
-                        margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                      /> 
-                    </Box>
-
-                    <Typography variant="h6" gutterBottom>
-                      RAM Usage
-                    </Typography>
-                    <Box sx={{ width: '100%', minWidth: '300px', maxWidth: '600px' }}>
-                      <LineChart
-                        xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
-                        series={[
-                          {
-                            data: [2, 5.5, 2, 8.5, 1.5, 5],
-                            valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
-                          },
-                          {
-                            data: [null, null, null, null, 5.5, 2, 8.5, 1.5, 5],
-                          },
-                          {
-                            data: [7, 8, 5, 4, null, null, 2, 5.5, 1],
-                            valueFormatter: (value) => (value == null ? '?' : value.toString()),
-                          },
+                            data: Array.isArray(selectedDevice.gpu_usage) 
+                              ? selectedDevice.gpu_usage.map(Number) 
+                              : [Number(selectedDevice.gpu_usage)],
+                            valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                          }
                         ]}
                         height={300}
                         width={500}
