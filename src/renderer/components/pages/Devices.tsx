@@ -498,6 +498,13 @@ export default function Devices() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       // Refresh the device list after adding a device
       await fetchDevices();
+
+      // Define the default directory for the new device
+      const defaultDirectory = path.join(os.homedir(), 'BCloud');
+
+      // Add the default directory to the device's scanned folders
+      await neuranet.device.add_scanned_folder(defaultDirectory, username ?? '');
+
     }
   };
 
