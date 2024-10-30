@@ -793,7 +793,7 @@ export default function Devices() {
 
 
                     {/* Charts section */}
-                      <Stack direction="column" alignItems="flex-end" sx={{ p: 2,mb: 2 }}>
+                      <Stack direction="column" alignItems="flex-end" sx={{ p: 0 }}>
                         <FormControl sx={{ maxWidth: 150 }}>
                           <InputLabel id="chart-select-label">Select Metric</InputLabel>
                           <Select
@@ -811,7 +811,7 @@ export default function Devices() {
                         </FormControl>
 
                       </Stack>
-                      <Stack direction="column" alignItems="stretch" sx={{ mt: 2, height: 'calc(100vh - 500px)' }}>
+                      <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 500px)' }}>
                         <Box sx={{ flex: 1, width: '100%', height: '100%'}}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
