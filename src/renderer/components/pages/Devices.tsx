@@ -698,7 +698,7 @@ export default function Devices() {
         </Card>
 
         {/* Right panel: Device details */}
-        <Card variant="outlined" sx={{ height: '100%', width: '70%', overflow: 'auto' }}>
+        <Card variant="outlined" sx={{ p: 2, height: '100%', width: '70%', overflow: 'auto' }}>
           <CardContent>
             {selectedDevice ? (
               <>
@@ -706,7 +706,18 @@ export default function Devices() {
                   {selectedDevice.device_name}
                 </Typography>
 
-                <Tabs value={selectedTab} onChange={handleTabChange} aria-label="device details tabs">
+                <Tabs 
+                  value={selectedTab} 
+                  onChange={handleTabChange} 
+                  aria-label="device details tabs"
+                  sx={{ 
+                    minHeight: '32px',
+                    '& .MuiTab-root': {
+                      minHeight: '32px',
+                      padding: '6px 12px'
+                    }
+                  }}
+                >
                   <Tab label="Device Info" />
                   <Tab label="Performance" />
                 </Tabs>
@@ -754,15 +765,10 @@ export default function Devices() {
 
                 ) : (
                   // Performance tab content
-                  <Stack direction="column" spacing={3} sx={{ p: 0 }}>
+                  <Stack direction="column" spacing={0} sx={{ p: 0 }}>
                     {/* Performance metrics section */}
-                    <Card variant="outlined" sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-                        Performance Metrics
-                      </Typography>
-                      
                       <Stack direction="row" spacing={4}>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ pl: 2, pr: 2, flex: 1 }}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>CPU Information</Typography>
                           <Typography><strong>Manufacturer & Model:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
                           <Typography><strong>Speed:</strong> {selectedDevice.cpu_info_speed}</Typography>
@@ -773,7 +779,7 @@ export default function Devices() {
 
                         <Divider orientation="vertical" flexItem />
 
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ pl: 2, pr: 2, flex: 1 }}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>Memory & GPU</Typography>
                           <Typography><strong>GPU Usage:</strong> {selectedDevice.gpu_usage[0]}</Typography>
                           <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
@@ -781,11 +787,13 @@ export default function Devices() {
                           <Typography><strong>Free RAM:</strong> {selectedDevice.ram_free[0]}</Typography>
                         </Box>
                       </Stack>
-                    </Card>
+
+
+                      <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
+
 
                     {/* Charts section */}
-                    <Card variant="outlined" sx={{ p: 3 }}>
-                      <Stack direction="column" alignItems="flex-end" sx={{ mb: 2 }}>
+                      <Stack direction="column" alignItems="flex-end" sx={{ p: 2,mb: 2 }}>
                         <FormControl sx={{ maxWidth: 150 }}>
                           <InputLabel id="chart-select-label">Select Metric</InputLabel>
                           <Select
@@ -803,12 +811,12 @@ export default function Devices() {
                         </FormControl>
 
                       </Stack>
-                      <Stack direction="column" alignItems="stretch" sx={{ mt: 2 }}>
-                        <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
+                      <Stack direction="column" alignItems="stretch" sx={{ mt: 2, height: 'calc(100vh - 500px)' }}>
+                        <Box sx={{ flex: 1, width: '100%', height: '100%'}}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
                           </Typography>
-                          <Box sx={{ width: '100%', height: '300px' }}>
+                          <Box sx={{ pb: 4, width: '100%', height: '100%' }}>
                             <LineChart
                               sx={{
                                 flex: 1,
@@ -840,7 +848,6 @@ export default function Devices() {
                           </Box>
                         </Box>
                       </Stack>
-                    </Card>
 
                   </Stack>
                 )}
