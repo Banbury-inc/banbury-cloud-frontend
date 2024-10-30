@@ -732,31 +732,62 @@ export default function Devices() {
 
                 {/* Conditional rendering based on selected tab */}
                 {selectedTab === 0 ? (
-                  // Device Info tab content
-                  <Stack direction="column" spacing={2}>
-                    <Stack direction="row" spacing={4}>
-                      <Stack direction="column" spacing={2}>
-                      <Typography>
-                        <strong style={{ color: "white"}}>Status:</strong>{" "}
-                        <span style={{ color: selectedDevice.available === "Available" ? "green" : "red" }}>
-                          {selectedDevice.available}
-                        </span>
-                      </Typography>
-                      <Typography><strong>Manufacturer:</strong> {selectedDevice.device_manufacturer}</Typography>
-                      <Typography><strong>Model:</strong> {selectedDevice.device_model}</Typography>
-                      <Typography><strong>Battery Status:</strong> {formatBatteryStatus(selectedDevice.battery_status)}</Typography>
-                      <Typography><strong>Storage Capacity:</strong> {formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
-                    </Stack>
+                  <Stack direction="column" spacing={3}>
+                        <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+                          <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
+                            {/* Device Status Section */}
+                            <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
+                              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                                <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                                <Typography variant="h6">Device Status</Typography>
+                              </Stack>
+                              <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Chip
+                                    icon={<GrainIcon />}
+                                    label={selectedDevice.available}
+                                    color={selectedDevice.available === "Available" ? "success" : "error"}
+                                    sx={{ minWidth: 100 }}
+                                  />
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
+                                  <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <DeviceHubIcon sx={{ color: 'text.secondary' }} />
+                                  <Typography noWrap>{selectedDevice.device_model}</Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
 
+                            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
 
-                    <Stack direction="column" spacing={2}>
-                      <Typography><strong>Upload Speed:</strong> {formatSpeed(selectedDevice.upload_speed)}</Typography>
-                      <Typography><strong>Download Speed:</strong> {formatSpeed(selectedDevice.download_speed)}</Typography>
-                    </Stack>
+                            {/* System Stats Section */}
+                            <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
+                              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                                <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                                <Typography variant="h6">System Stats</Typography>
+                              </Stack>
+                              <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <MemoryIcon sx={{ color: 'text.secondary' }} />
+                                  <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <SpeedIcon sx={{ color: 'success.main' }} />
+                                  <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <SpeedIcon sx={{ color: 'info.main' }} />
+                                  <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          </Stack>
+                        </Card>
 
-                  </Stack>
-
-                <Divider sx={{ my: 3 }} />
+                    <Divider sx={{ my: 3 }} />
 
                 <Typography variant="h5" gutterBottom>
                   Scanned Folders
