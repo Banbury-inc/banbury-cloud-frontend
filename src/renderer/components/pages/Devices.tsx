@@ -885,7 +885,7 @@ export default function Devices() {
                         </FormControl>
 
                       </Stack>
-                      <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 500px)' }}>
+                      <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 600px)' }}>
                         <Box sx={{ flex: 1, width: '100%', height: '100%'}}>
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
