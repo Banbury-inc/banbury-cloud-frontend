@@ -12,6 +12,8 @@ import Table from '@mui/material/Table';
 import Chip from '@mui/material/Chip';
 import TableBody from '@mui/material/TableBody';
 import DevicesIcon from '@mui/icons-material/Devices';
+import MemoryIcon from '@mui/icons-material/Memory';
+import SpeedIcon from '@mui/icons-material/Speed';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import { Skeleton } from '@mui/material';
@@ -47,6 +49,10 @@ import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import SettingsIcon from '@mui/icons-material/Settings';
+import StorageIcon from '@mui/icons-material/Storage';
 
 import { CONFIG } from '../../config/config';
 
@@ -767,26 +773,94 @@ export default function Devices() {
                   // Performance tab content
                   <Stack direction="column" spacing={0} sx={{ p: 0 }}>
                     {/* Performance metrics section */}
-                      <Stack direction="row" spacing={4}>
-                        <Box sx={{ pl: 2, pr: 2, flex: 1 }}>
-                          <Typography variant="subtitle1" color="primary" gutterBottom>CPU Information</Typography>
-                          <Typography><strong>Manufacturer & Model:</strong> {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}</Typography>
-                          <Typography><strong>Speed:</strong> {selectedDevice.cpu_info_speed}</Typography>
-                          <Typography><strong>Cores:</strong> {selectedDevice.cpu_info_cores} (Physical: {selectedDevice.cpu_info_physical_cores})</Typography>
-                          <Typography><strong>Processors:</strong> {selectedDevice.cpu_info_processors}</Typography>
-                          <Typography><strong>Current Usage:</strong> {`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}</Typography>
-                        </Box>
+                    <Stack direction="row" spacing={4}>
+                      <Card sx={{ flex: 1, p: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <MemoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                          <Typography variant="h6" color="primary">CPU Information</Typography>
+                        </Stack>
+                        
+                        <Box sx={{ mt: 2 }}>
+                          <Stack spacing={1.5}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Chip
+                                label={`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
+                                color={parseFloat(selectedDevice.cpu_usage) > 80 ? 'error' : 'success'}
+                                size="small"
+                                sx={{ mr: 1 }}
+                              />
+                              <Typography variant="body2">Current Usage</Typography>
+                            </Box>
 
-                        <Divider orientation="vertical" flexItem />
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <PrecisionManufacturingIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>
+                                {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}
+                              </Typography>
+                            </Box>
 
-                        <Box sx={{ pl: 2, pr: 2, flex: 1 }}>
-                          <Typography variant="subtitle1" color="primary" gutterBottom>Memory & GPU</Typography>
-                          <Typography><strong>GPU Usage:</strong> {selectedDevice.gpu_usage[0]}</Typography>
-                          <Typography><strong>RAM Usage:</strong> {selectedDevice.ram_usage[0]}</Typography>
-                          <Typography><strong>Total RAM:</strong> {selectedDevice.ram_total[0]}</Typography>
-                          <Typography><strong>Free RAM:</strong> {selectedDevice.ram_free[0]}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <SpeedIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>{selectedDevice.cpu_info_speed}</Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <DeviceHubIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>
+                                {selectedDevice.cpu_info_cores} Cores (Physical: {selectedDevice.cpu_info_physical_cores})
+                              </Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <SettingsIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>{selectedDevice.cpu_info_processors} Processors</Typography>
+                            </Box>
+                          </Stack>
                         </Box>
-                      </Stack>
+                      </Card>
+
+                      <Card sx={{ flex: 1, p: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <MemoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                          <Typography variant="h6" color="primary">Memory & GPU</Typography>
+                        </Stack>
+
+                        <Box sx={{ mt: 2 }}>
+                          <Stack spacing={1.5}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Typography>
+                                GPU Usage: <Chip 
+                                  label={selectedDevice.gpu_usage[0]} 
+                                  size="small" 
+                                  color={parseFloat(selectedDevice.gpu_usage[0]) > 80 ? 'error' : 'success'}
+                                />
+                              </Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <MemoryIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>
+                                RAM Usage: <Chip 
+                                  label={selectedDevice.ram_usage[0]} 
+                                  size="small"
+                                  color={parseFloat(selectedDevice.ram_usage[0]) > 80 ? 'error' : 'success'}
+                                />
+                              </Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>Total RAM: {selectedDevice.ram_total[0]}</Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                              <Typography>Free RAM: {selectedDevice.ram_free[0]}</Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </Card>
+                    </Stack>
 
 
                       <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
