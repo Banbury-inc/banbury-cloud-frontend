@@ -747,6 +747,7 @@ export default function Devices() {
                                     icon={<GrainIcon />}
                                     label={selectedDevice.available}
                                     color={selectedDevice.available === "Available" ? "success" : "error"}
+                                    size="small"
                                     sx={{ minWidth: 100 }}
                                   />
                                 </Box>
