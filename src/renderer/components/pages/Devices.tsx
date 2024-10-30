@@ -816,7 +816,7 @@ export default function Devices() {
                           <Typography variant="subtitle1" color="primary" gutterBottom>
                             {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
                           </Typography>
-                          <Box sx={{ pb: 4, width: '100%', height: '100%' }}>
+                          <Box sx={{ pb: 0, width: '100%', height: '100%' }}>
                             <LineChart
                               sx={{
                                 flex: 1,
