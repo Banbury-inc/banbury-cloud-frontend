@@ -298,6 +298,7 @@ export default function Files() {
         }
 
         console.log("Local file data loaded")
+        setIsLoading(false);
 
         // Step 3: Fetch files for all devices
         const fileInfoResponse = await axios.get<{
@@ -337,7 +338,6 @@ export default function Files() {
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setIsLoading(false);
       }
     };
 
