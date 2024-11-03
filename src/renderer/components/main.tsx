@@ -178,51 +178,52 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
-           'Profile'].map((text, index) => (
-            <Tooltip title={text} key={text} placement="right">
-              <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
-                <Button
-                  onClick={() => setActiveTab(text)}
-                  sx={{
-                    paddingLeft: '4px',
-                    paddingRight: '4px',
-                    minWidth: '30px',
-                  }} // Adjust the left and right padding as needed
+            'Devices',
+            'Profile'].map((text, index) => (
+              <Tooltip title={text} key={text} placement="right">
+                <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
+                  <Button
+                    onClick={() => setActiveTab(text)}
+                    sx={{
+                      paddingLeft: '4px',
+                      paddingRight: '4px',
+                      minWidth: '30px',
+                    }} // Adjust the left and right padding as needed
 
-                >
-                  <Icon
-                    fontSize="inherit"
                   >
+                    <Icon
+                      fontSize="inherit"
+                    >
 
-                    {(() => {
-                      switch (index % 5) {
-                        // case 0:
-                        // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
-                        case 0:
-                          return <FolderOutlinedIcon fontSize='inherit' />;
-                        //case 1:
-                        //return <DevicesIcon fontSize='inherit' />;
-                        // case 3:
-                        // return <AutoAwesomeIcon fontSize='inherit' />;
-                        case 1:
-                          return <AccountBoxIcon fontSize='inherit' />;
-                        default:
-                          return null;
-                      }
-                    })()}
-                  </Icon>
-                  {/*   <ListItemText */}
-                  {/*     secondary={text} */}
-                  {/*     sx={{ */}
-                  {/*       opacity: open ? 1 : 1, */}
-                  {/*       display: 'block', */}
-                  {/*       textAlign: 'center', */}
-                  {/*     }} */}
-                  {/*   /> */}
-                </Button>
-              </ListItem>
-            </Tooltip>
-          ))}
+                      {(() => {
+                        switch (index % 5) {
+                          // case 0:
+                          // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
+                          case 0:
+                            return <FolderOutlinedIcon fontSize='inherit' />;
+                          case 1:
+                            return <DevicesIcon fontSize='inherit' />;
+                          // case 3:
+                          // return <AutoAwesomeIcon fontSize='inherit' />;
+                          case 2:
+                            return <AccountBoxIcon fontSize='inherit' />;
+                          default:
+                            return null;
+                        }
+                      })()}
+                    </Icon>
+                    {/*   <ListItemText */}
+                    {/*     secondary={text} */}
+                    {/*     sx={{ */}
+                    {/*       opacity: open ? 1 : 1, */}
+                    {/*       display: 'block', */}
+                    {/*       textAlign: 'center', */}
+                    {/*     }} */}
+                    {/*   /> */}
+                  </Button>
+                </ListItem>
+              </Tooltip>
+            ))}
         </List>
         <Divider />
         <List>
