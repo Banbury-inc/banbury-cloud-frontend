@@ -43,6 +43,7 @@ import { handlers } from '../../handlers';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';
+import { formatRAM } from '../../utils';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBoxButton from '../TaskBoxButton';
 import Divider from '@mui/material/Divider';
@@ -195,6 +196,30 @@ function formatStorageCapacity(capacity: string | number): string {
   return capacity as string; // If it's not a number or valid numeric string, return as is (e.g., 'N/A')
 }
 
+
+
+// Add this utility function at the top of the file, outside of any component
+function formatTotalRAM(capacity: string | number): string {
+  // Convert capacity to number if it's a string
+  let capacityInBytes = typeof capacity === 'string' ? parseFloat(capacity) : capacity;
+
+  // If conversion failed or capacity is not a valid number, return as is
+  if (isNaN(capacityInBytes)) {
+    return capacity as string; // Return original string for invalid input, e.g., 'N/A'
+  }
+
+  // Check size and convert to MB or GB as needed
+  if (capacityInBytes >= 1e9) { // Greater than or equal to 1 GB
+    return `${(capacityInBytes / 1e9).toFixed(2)} GB`;
+  } else if (capacityInBytes >= 1e6) { // Greater than or equal to 1 MB
+    return `${(capacityInBytes / 1e6).toFixed(2)} MB`;
+  } else {
+    return `${capacityInBytes} bytes`; // For smaller values, return in bytes
+  }
+}
+
+
+
 export default function Devices() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
@@ -241,6 +266,7 @@ export default function Devices() {
 
   const fetchDevices = async () => {
     try {
+      const previousSelectedDeviceName = selectedDevice?.device_name; // Store the previously selected device name
       setIsLoading(true);
       // Fetch user information
       const userInfoResponse = await axios.get<{
@@ -302,9 +328,12 @@ export default function Devices() {
 
       setAllDevices(transformedDevices);
 
-      // Select the first device if the list is not empty
-      if (transformedDevices.length > 0) {
-        setSelectedDevice(transformedDevices[0]);
+      // Restore the previously selected device if it exists in the new list
+      const restoredDevice = transformedDevices.find(device => device.device_name === previousSelectedDeviceName);
+      if (restoredDevice) {
+        setSelectedDevice(restoredDevice);
+      } else if (transformedDevices.length > 0) {
+        setSelectedDevice(transformedDevices[0]); // Fallback to the first device if the previous one is not found
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -371,8 +400,15 @@ export default function Devices() {
   };
 
   const handle_add_scanned_folder = async (scanned_folder: string, username: string) => {
-    const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
-    console.log(result);
+    try {
+      const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
+      console.log(result);
+      if (result === 'success') {
+        await fetchDevices(); // Ensure fetchDevices is awaited to complete before proceeding
+      }
+    } catch (error) {
+      console.error('Error adding scanned folder:', error);
+    }
   }
 
   const handleFileNameClick = async (id: number) => {
@@ -605,6 +641,8 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
+
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -636,7 +674,7 @@ export default function Devices() {
                   </Button>
                 </Tooltip>
               </Grid>
-              <NewScannedFolderButton />
+              <NewScannedFolderButton fetchDevices={fetchDevices} />
             </Grid>
             <Grid container justifyContent='flex-end' alignItems='flex-end'>
               <Grid item>
@@ -722,11 +760,11 @@ export default function Devices() {
                   {selectedDevice.device_name}
                 </Typography>
 
-                <Tabs 
-                  value={selectedTab} 
-                  onChange={handleTabChange} 
+                <Tabs
+                  value={selectedTab}
+                  onChange={handleTabChange}
                   aria-label="device details tabs"
-                  sx={{ 
+                  sx={{
                     minHeight: '32px',
                     '& .MuiTab-root': {
                       minHeight: '32px',
@@ -743,72 +781,72 @@ export default function Devices() {
                 {/* Conditional rendering based on selected tab */}
                 {selectedTab === 0 ? (
                   <Stack direction="column" spacing={3}>
-                        <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                          <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
-                            {/* Device Status Section */}
-                            <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
-                              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                                <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                                <Typography variant="h6">Device Status</Typography>
-                              </Stack>
-                              <Stack spacing={2}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Chip
-                                    icon={<GrainIcon />}
-                                    label={selectedDevice.available}
-                                    color={selectedDevice.available === "Available" ? "success" : "error"}
-                                    size="small"
-                                    sx={{ minWidth: 100 }}
-                                  />
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
-                                  <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <DeviceHubIcon sx={{ color: 'text.secondary' }} />
-                                  <Typography noWrap>{selectedDevice.device_model}</Typography>
-                                </Box>
-                              </Stack>
+                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
+                        {/* Device Status Section */}
+                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">Device Status</Typography>
+                          </Stack>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Chip
+                                icon={<GrainIcon />}
+                                label={selectedDevice.available}
+                                color={selectedDevice.available === "Available" ? "success" : "error"}
+                                size="small"
+                                sx={{ minWidth: 100 }}
+                              />
                             </Box>
-
-                            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
-
-                            {/* System Stats Section */}
-                            <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
-                              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                                <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                                <Typography variant="h6">System Stats</Typography>
-                              </Stack>
-                              <Stack spacing={2}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <MemoryIcon sx={{ color: 'text.secondary' }} />
-                                  <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <SpeedIcon sx={{ color: 'success.main' }} />
-                                  <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <SpeedIcon sx={{ color: 'info.main' }} />
-                                  <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
-                                </Box>
-                              </Stack>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <DeviceHubIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{selectedDevice.device_model}</Typography>
                             </Box>
                           </Stack>
-                        </Card>
+                        </Box>
+
+                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
+
+                        {/* System Stats Section */}
+                        <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">System Stats</Typography>
+                          </Stack>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'success.main' }} />
+                              <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'info.main' }} />
+                              <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Card>
 
                     <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h5" gutterBottom>
-                  Scanned Folders
-                </Typography>
-                <ScannedFoldersChips 
-                  scanned_folders={selectedDevice.scanned_folders} 
-                  username={username ?? ''} 
-                  onFoldersUpdate={handleFoldersUpdate}
-                  />
-                </Stack>
+                    <Typography variant="h5" gutterBottom>
+                      Scanned Folders
+                    </Typography>
+                    <ScannedFoldersChips
+                      scanned_folders={selectedDevice.scanned_folders}
+                      username={username ?? ''}
+                      onFoldersUpdate={handleFoldersUpdate}
+                    />
+                  </Stack>
 
 
                 ) : (
@@ -821,7 +859,7 @@ export default function Devices() {
                           <MemoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
                           <Typography variant="h6" color="primary">CPU Information</Typography>
                         </Stack>
-                        
+
                         <Box sx={{ mt: 2 }}>
                           <Stack spacing={1.5}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -871,9 +909,10 @@ export default function Devices() {
                           <Stack spacing={1.5}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Typography>
-                                GPU Usage: <Chip 
-                                  label={selectedDevice.gpu_usage[0]} 
-                                  size="small" 
+                                GPU Usage: <Chip
+                                  // label={'${selectedDevice.gpu_usage[0]}%'}
+                                label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
+                                  size="small"
                                   color={parseFloat(selectedDevice.gpu_usage[0]) > 80 ? 'error' : 'success'}
                                 />
                               </Typography>
@@ -882,8 +921,9 @@ export default function Devices() {
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <MemoryIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
                               <Typography>
-                                RAM Usage: <Chip 
-                                  label={selectedDevice.ram_usage[0]} 
+                                RAM Usage: <Chip
+                                  // label={selectedDevice.ram_usage[0]}
+                                label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
                                   size="small"
                                   color={parseFloat(selectedDevice.ram_usage[0]) > 80 ? 'error' : 'success'}
                                 />
@@ -892,12 +932,12 @@ export default function Devices() {
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Total RAM: {selectedDevice.ram_total[0]}</Typography>
+                              <Typography>Total RAM: {formatRAM(selectedDevice.ram_total[0])}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Free RAM: {selectedDevice.ram_free[0]}</Typography>
+                              <Typography>Free RAM: {formatRAM(selectedDevice.ram_free[0])}</Typography>
                             </Box>
                           </Stack>
                         </Box>
@@ -905,65 +945,67 @@ export default function Devices() {
                     </Stack>
 
 
-                      <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
+                    <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
 
 
                     {/* Charts section */}
-                      <Stack direction="column" alignItems="flex-end" sx={{ p: 0 }}>
-                        <FormControl sx={{ maxWidth: 150 }}>
-                          <InputLabel id="chart-select-label">Select Metric</InputLabel>
-                          <Select
-                            variant="outlined"
-                            size="small"
-                            labelId="chart-select-label"
-                            value={selectedMetric}
-                            label="Select Metric"
-                            onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
-                          >
-                            <MenuItem value="gpu">GPU Usage</MenuItem>
-                            <MenuItem value="ram">RAM Usage</MenuItem>
-                            <MenuItem value="cpu">CPU Usage</MenuItem>
-                          </Select>
-                        </FormControl>
+                    <Stack direction="column" alignItems="flex-end" sx={{ p: 0 }}>
+                      <FormControl sx={{ maxWidth: 150 }}>
+                        <InputLabel id="chart-select-label">Select Metric</InputLabel>
+                        <Select
+                          variant="outlined"
+                          size="small"
+                          labelId="chart-select-label"
+                          value={selectedMetric}
+                          label="Select Metric"
+                          onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
+                        >
+                          <MenuItem value="gpu">GPU Usage</MenuItem>
+                          <MenuItem value="ram">RAM Usage</MenuItem>
+                          <MenuItem value="cpu">CPU Usage</MenuItem>
+                        </Select>
+                      </FormControl>
 
-                      </Stack>
-                      <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 600px)' }}>
-                        <Box sx={{ flex: 1, width: '100%', height: '100%'}}>
-                          <Typography variant="subtitle1" color="primary" gutterBottom>
-                            {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
-                          </Typography>
-                          <Box sx={{ pb: 0, width: '100%', height: '100%' }}>
-                            <LineChart
-                              sx={{
-                                flex: 1,
-                                width: '100%',
-                                height: '100%'
-                              }}
-                              xAxis={[{ 
-                                data: Array.from(
-                                  {length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                           selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length}, 
-                                  (_, i) => i + 1
-                                ) 
-                              }]}
-                              series={[{
-                                data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
-                                  ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
-                                  : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' : 
-                                                        selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
-                                valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
-                                color: selectedMetric === 'gpu' ? '#4CAF50' 
-                                      : selectedMetric === 'ram' ? '#2196F3' 
-                                      : '#FF5722',
-                                showMark: false
-                              }]}
-                              margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                            />
-                          </Box>
+                    </Stack>
+                    <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 600px)' }}>
+                      <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
+                        <Typography variant="subtitle1" color="primary" gutterBottom>
+                          {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
+                        </Typography>
+                        <Box sx={{ pb: 0, width: '100%', height: '100%' }}>
+                          <LineChart
+                            sx={{
+                              flex: 1,
+                              width: '100%',
+                              height: '100%'
+                            }}
+                            xAxis={[{
+                              data: Array.from(
+                                {
+                                  length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                    selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length
+                                },
+                                (_, i) => i + 1
+                              )
+                            }]}
+                            series={[{
+                              data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
+                                ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
+                                : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
+                              valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                              color: selectedMetric === 'gpu' ? '#4CAF50'
+                                : selectedMetric === 'ram' ? '#2196F3'
+                                  : '#FF5722',
+                              showMark: false
+                            }]}
+                            margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                          />
                         </Box>
-                      </Stack>
+                      </Box>
+                    </Stack>
 
                   </Stack>
                 )}

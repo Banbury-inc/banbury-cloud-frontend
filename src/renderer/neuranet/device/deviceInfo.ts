@@ -30,6 +30,11 @@ interface memUsage {
 export function name(): string {
   return os.hostname();
 }
+
+export function current_time(): string {
+  return DateTime.local().toFormat('yyyy-MM-dd HH:mm:ss');
+}
+
 export async function system_info(): Promise<string> {
   return JSON.stringify(await si.system());
 } 
