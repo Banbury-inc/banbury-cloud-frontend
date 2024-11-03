@@ -994,117 +994,89 @@ export default function Files() {
                         </TableRow>
                       ))
                     ) : (
-                      stableSort(fileRows, getComparator(order, orderBy))
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((row, index) => {
-                          const isItemSelected = isSelected(row.id);
-                          const labelId = `enhanced-table-checkbox-${index}`;
+                      fileRows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            <Typography variant="body1" color="textSecondary">
+                              No files available.
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        stableSort(fileRows, getComparator(order, orderBy))
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((row, index) => {
+                            const isItemSelected = isSelected(row.id);
+                            const labelId = `enhanced-table-checkbox-${index}`;
 
-                          return (
-                            <TableRow
-                              hover
-                              onClick={(event) => handleClick(event, row.id)}
-                              role="checkbox"
-                              aria-checked={isItemSelected}
-                              tabIndex={-1}
-                              key={row.id}
-                              selected={isItemSelected}
-                              onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                              onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                            >
-                              <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
-                                {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
-                                  <Checkbox
-                                    color="primary"
-                                    checked={isItemSelected}
-                                    inputProps={{ 'aria-labelledby': labelId }}
-                                  />
-                                ) : null}
-                              </TableCell>
-
-                              <TableCell
-                                sx={{
-                                  borderBottomColor: "#424242",
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-
-                                }}
-                                component="th"
-                                id={labelId}
-                                scope="row"
-                                padding="normal"
+                            return (
+                              <TableRow
+                                hover
+                                onClick={(event) => handleClick(event, row.id)}
+                                role="checkbox"
+                                aria-checked={isItemSelected}
+                                tabIndex={-1}
+                                key={row.id}
+                                selected={isItemSelected}
+                                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
+                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
                               >
-                                {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
-                                  <TextField
-                                    value={newFolderName}
-                                    size="small"
-                                    onChange={(e) => setNewFolderName(e.target.value)}
-                                    onBlur={() => handlers.keybinds.foldernameSave(
-                                      newFolderName,
-                                      setIsAddingFolder,
-                                      setUpdates,
-                                      updates,
-                                      global_file_path ?? '',
-                                      setFileRows,
-                                      setNewFolderName,
-                                      setDisableFetch,
-                                      username
-                                    )}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder="Enter folder name"
-                                    fullWidth
-                                    autoFocus
-                                  />
-                                ) : (
-                                  <ButtonBase
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      handleFileNameClick(row.id);
-                                    }}
-                                    style={{ textDecoration: 'none' }}
-                                  >
-                                    {row.file_name}
-                                  </ButtonBase>
-                                )}
-                              </TableCell>
-
-
-                              <TableCell
-                                align="left"
-                                padding="normal"
-
-                                sx={{
-                                  borderBottomColor: "#424242",
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}>{row.file_size}</TableCell>
-
-                              <TableCell align="left" sx={{
-                                borderBottomColor: "#424242",
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-
-
-                              }} >{row.kind}</TableCell>
-
-                              {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
-                                <TableCell align="left" sx={{
-                                  borderBottomColor: "#424242",
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-
-
-                                }} >{row.device_name}
+                                <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
+                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
+                                    <Checkbox
+                                      color="primary"
+                                      checked={isItemSelected}
+                                      inputProps={{ 'aria-labelledby': labelId }}
+                                    />
+                                  ) : null}
                                 </TableCell>
-                              )}
 
+                                <TableCell
+                                  sx={{
+                                    borderBottomColor: "#424242",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
+                                >
+                                  {row.kind === "Folder" && isAddingFolder && row.file_name === "" ? (
+                                    <TextField
+                                      value={newFolderName}
+                                      size="small"
+                                      onChange={(e) => setNewFolderName(e.target.value)}
+                                      onBlur={() => handlers.keybinds.foldernameSave(
+                                        newFolderName,
+                                        setIsAddingFolder,
+                                        setUpdates,
+                                        updates,
+                                        global_file_path ?? '',
+                                        setFileRows,
+                                        setNewFolderName,
+                                        setDisableFetch,
+                                        username
+                                      )}
+                                      onKeyPress={handleKeyPress}
+                                      placeholder="Enter folder name"
+                                      fullWidth
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <ButtonBase
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleFileNameClick(row.id);
+                                      }}
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      {row.file_name}
+                                    </ButtonBase>
+                                  )}
+                                </TableCell>
 
-
-                              {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
                                 <TableCell
                                   align="left"
                                   padding="normal"
@@ -1113,31 +1085,65 @@ export default function Files() {
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    color: row.available === "Available" ? '#1DB954' : row.available === "Unavailable" ? 'red' : 'inherit',  // Default color is 'inherit'
                                   }}
                                 >
-                                  {row.available}
+                                  {row.file_size}
                                 </TableCell>
-                              )}
 
-                              {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
-                                <TableCell
-                                  padding="normal"
-                                  align="right" sx={{
+                                <TableCell align="left" sx={{
+                                  borderBottomColor: "#424242",
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}>
+                                  {row.kind}
+                                </TableCell>
 
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
+                                  <TableCell align="left" sx={{
                                     borderBottomColor: "#424242",
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                  }} >{row.date_uploaded}</TableCell>
-                              )}
+                                  }}>
+                                    {row.device_name}
+                                  </TableCell>
+                                )}
 
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
+                                  <TableCell
+                                    align="left"
+                                    padding="normal"
+                                    sx={{
+                                      borderBottomColor: "#424242",
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      color: row.available === "Available" ? '#1DB954' : row.available === "Unavailable" ? 'red' : 'inherit',  // Default color is 'inherit'
+                                    }}
+                                  >
+                                    {row.available}
+                                  </TableCell>
+                                )}
 
-
-
-                            </TableRow>
-                          );
-                        })
+                                {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
+                                  <TableCell
+                                    padding="normal"
+                                    align="right"
+                                    sx={{
+                                      borderBottomColor: "#424242",
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}
+                                  >
+                                    {row.date_uploaded}
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            );
+                          })
+                      )
                     )}
                 </TableBody>
               </Table>
