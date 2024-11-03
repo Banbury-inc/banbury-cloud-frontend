@@ -969,7 +969,15 @@ export default function Devices() {
                 )}
               </>
             ) : (
-              <Typography variant="body1">Select a device to view details</Typography>
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <DevicesIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h5" color="textSecondary">
+                  No devices available
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Please add a device to get started.
+                </Typography>
+              </Box>
             )}
           </CardContent>
         </Card>
