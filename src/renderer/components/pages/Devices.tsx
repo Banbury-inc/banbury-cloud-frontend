@@ -374,7 +374,7 @@ export default function Devices() {
     const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
     console.log(result);
     if (result === 'success') {
-      handleFoldersUpdate(); // Use the callback to refresh devices
+      fetchDevices(); // Directly call fetchDevices to refresh the device list
     }
   }
 
