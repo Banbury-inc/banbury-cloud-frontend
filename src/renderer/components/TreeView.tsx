@@ -14,6 +14,14 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { fileWatcherEmitter } from '../neuranet/device/watchdog';
 
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+
+const file_name: string = 'treeview_data_snapshot.json';
+const directory_name: string = 'BCloud';
+const directory_path: string = path.join(os.homedir(), directory_name);
+const snapshot_json: string = path.join(directory_path, file_name);
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as utils from '../utils/';
@@ -264,11 +272,22 @@ export default function CustomizedTreeView() {
 
 
 
+        // Load snapshot from the JSON file if it exists
+        if (fs.existsSync(snapshot_json)) {
+          const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
+          files = JSON.parse(snapshot);
+          console.log('Loaded snapshot from file:', snapshot_json);
+        }
+
+        // Fetch files for all devices
         const fileInfoResponse = await axios.get<{
           files: any[];
         }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
 
         files = fileInfoResponse.data.files;
+
+        // Save the fetched data to a JSON file
+        fs.writeFileSync(snapshot_json, JSON.stringify(files, null, 2), 'utf-8');
 
         allFilesData = devices.flatMap((device: any, index: any) => {
           const deviceFiles = files.filter(file => file.device_name === device.device_name);
