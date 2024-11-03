@@ -3,6 +3,7 @@ import { neuranet } from '../../neuranet'
 export async function getDeviceInfo() {
     try {
         const [
+            current_time,
             usb_devices,
             storage_capacity_gb,
             device_manufacturer,
@@ -26,6 +27,7 @@ export async function getDeviceInfo() {
             download_speed,
             bluetooth_status
         ] = await Promise.all([
+            neuranet.device.current_time(),
             neuranet.device.usb_devices(),
             neuranet.device.storage_capacity(),
             neuranet.device.device_manufacturer(),
@@ -51,6 +53,7 @@ export async function getDeviceInfo() {
         ]);
 
         return {
+            current_time,
             usb_devices,
             storage_capacity_gb,
             device_manufacturer,
