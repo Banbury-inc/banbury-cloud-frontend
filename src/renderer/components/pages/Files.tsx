@@ -9,6 +9,7 @@ import { useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import Table from '@mui/material/Table';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableBody from '@mui/material/TableBody';
@@ -952,57 +953,59 @@ export default function Files() {
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
-            <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
-              <Table
-                aria-labelledby="tableTitle"
-                size="small"
-                stickyHeader
-              >
-                <EnhancedTableHead
-                  numSelected={selected.length}
-                  order={order}
-                  orderBy={orderBy}
-                  onSelectAllClick={handleSelectAllClick}
-                  onRequestSort={handleRequestSort}
-                  rowCount={fileRows.length}
-                />
-                <TableBody>
-                  {
-                    isLoading ? (
-                      Array.from(new Array(rowsPerPage)).map((_, index) => (
-                        <TableRow key={index}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      fileRows.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} align="center">
-                            <Typography variant="body1" color="textSecondary">
-                              No files available.
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
+            {fileRows.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h5" color="textSecondary">
+                  No files available.
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Please upload a file to get started.
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
+                  <Table
+                    aria-labelledby="tableTitle"
+                    size="small"
+                    stickyHeader
+                  >
+                    <EnhancedTableHead
+                      numSelected={selected.length}
+                      order={order}
+                      orderBy={orderBy}
+                      onSelectAllClick={handleSelectAllClick}
+                      onRequestSort={handleRequestSort}
+                      rowCount={fileRows.length}
+                    />
+                    <TableBody>
+                      {isLoading ? (
+                        Array.from(new Array(rowsPerPage)).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell padding="checkbox">
+                              <Skeleton variant="rectangular" width={24} height={24} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                          </TableRow>
+                        ))
                       ) : (
                         stableSort(fileRows, getComparator(order, orderBy))
                           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -1144,11 +1147,21 @@ export default function Files() {
                               </TableRow>
                             );
                           })
-                      )
-                    )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                  component="div"
+                  count={fileRows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
+            )}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
               component="div"
