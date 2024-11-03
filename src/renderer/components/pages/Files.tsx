@@ -22,6 +22,7 @@ import TablePagination from '@mui/material/TablePagination';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import GrainIcon from '@mui/icons-material/Grain';
+import Typography from '@mui/material/Typography';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Button from '@mui/material/Button';
@@ -106,7 +107,7 @@ function FileBreadcrumbs() {
   };
 
   return (
-    <div style={{ padding: '8px 16px'}}>
+    <div style={{ padding: '8px 16px' }}>
       <Breadcrumbs aria-label="breadcrumb">
         <Link
           underline="hover"
@@ -160,9 +161,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell 
+        <TableCell
           padding="checkbox"
-          sx={{ 
+          sx={{
             backgroundColor: 'background.paper',
           }}
         >
@@ -183,7 +184,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               key={headCell.id}
               align={headCell.numeric ? 'right' : 'left'}
               sortDirection={orderBy === headCell.id ? order : false}
-              sx={{ 
+              sx={{
                 backgroundColor: 'background.paper',
               }}
             >
@@ -952,8 +953,8 @@ export default function Files() {
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
             <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
-              <Table 
-                aria-labelledby="tableTitle" 
+              <Table
+                aria-labelledby="tableTitle"
                 size="small"
                 stickyHeader
               >
