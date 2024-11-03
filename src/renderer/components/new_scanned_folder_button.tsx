@@ -44,7 +44,6 @@ export default function NewScannedFolderButton({ fetchDevices }: NewScannedFolde
         await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
         // Trigger a refresh of the devices to reflect the new folder
         await fetchDevices(); // Use the passed fetchDevices function
-        await neuranet.sessions.failTask(username ?? '', taskInfo, 'Failed to add scanned folder', tasks, setTasks);
       }
     } catch (error) {
       console.error('Error selecting folder:', error);
