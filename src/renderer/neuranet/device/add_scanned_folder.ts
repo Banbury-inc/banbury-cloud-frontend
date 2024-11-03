@@ -56,6 +56,7 @@ export async function add_scanned_folder(
     }
   } catch (error) {
     console.error('Error fetching data:', error);
+    return 'error'; // Ensure an error is returned if the request fails
   }
 }
 
