@@ -9,7 +9,6 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../context/AuthContext';
 import { neuranet } from '../neuranet';
 import path from 'path';
-import { fetchDevices } from '../components/pages/Devices'; // Import fetchDevices from Devices.tsx
 // Extend the InputHTMLAttributes interface to include webkitdirectory and directory
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
