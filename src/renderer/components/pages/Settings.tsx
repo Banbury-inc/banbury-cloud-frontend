@@ -203,7 +203,7 @@ export default function Profile() {
                       <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
                         <Grid item>
                           <Typography variant="subtitle1" gutterBottom>Current version</Typography>
-                          <Typography variant="body2" gutterBottom>v1.0.1 beta</Typography>
+                          <Typography variant="body2" gutterBottom>v3.1.1</Typography>
                         </Grid>
                       </Grid>
                       <Divider orientation="horizontal" variant="middle" />
