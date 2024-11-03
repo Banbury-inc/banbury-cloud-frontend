@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - name: Check out the repository
@@ -23,13 +23,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Build the app
         run: npm run build
 
       - name: Package with Electron Builder
-        run: npm run package:dist2
+        run: npm run deploy
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }} # Add this if you have a code-signing certificate
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
