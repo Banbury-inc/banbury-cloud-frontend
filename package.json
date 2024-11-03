@@ -161,7 +161,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "Banbury-Inc",
+        "owner": "Banbury-inc",
         "repo": "banbury-cloud-frontend"
       }
     ],
