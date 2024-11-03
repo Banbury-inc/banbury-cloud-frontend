@@ -36,12 +36,12 @@ export async function add_scanned_folder(
 
     if (result === 'success') {
 
-      console.log("declare offline success");
+      console.log("add scanned folder success");
 
       return result;
     }
     if (result === 'fail') {
-      console.log("declare offline failed");
+      console.log("add scanned folder failed");
       return 'failed';
     }
     if (result === 'task_already_exists') {
@@ -50,7 +50,7 @@ export async function add_scanned_folder(
     }
 
     else {
-      console.log("declare offline failed");
+      console.log("add scanned folder failed");
       console.log(result);
       return 'task_add failed';
     }
