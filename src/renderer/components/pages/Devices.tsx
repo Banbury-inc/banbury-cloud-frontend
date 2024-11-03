@@ -371,10 +371,14 @@ export default function Devices() {
   };
 
   const handle_add_scanned_folder = async (scanned_folder: string, username: string) => {
-    const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
-    console.log(result);
-    if (result === 'success') {
-      fetchDevices(); // Directly call fetchDevices to refresh the device list
+    try {
+      const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
+      console.log(result);
+      if (result === 'success') {
+        await fetchDevices(); // Ensure fetchDevices is awaited to complete before proceeding
+      }
+    } catch (error) {
+      console.error('Error adding scanned folder:', error);
     }
   }
 
