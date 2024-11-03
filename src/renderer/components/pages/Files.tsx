@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import os from 'os';
 import Stack from '@mui/material/Stack';
 import { join } from 'path';
@@ -9,6 +9,7 @@ import { useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import Table from '@mui/material/Table';
 import DownloadIcon from '@mui/icons-material/Download';
 import TableBody from '@mui/material/TableBody';
@@ -22,6 +23,7 @@ import TablePagination from '@mui/material/TablePagination';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import GrainIcon from '@mui/icons-material/Grain';
+import Typography from '@mui/material/Typography';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Button from '@mui/material/Button';
@@ -95,6 +97,61 @@ interface EnhancedTableProps {
   rowCount: number;
 }
 
+// Move the breadcrumbs out of the TableHead component and create a new component
+function FileBreadcrumbs() {
+  const { files, global_file_path, global_file_path_device } = useAuth();
+  const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : [];
+
+  const handleBreadcrumbClick = (path: string) => {
+    console.info(`Navigate to: ${path}`);
+    // Set global_file_path or navigate logic here
+  };
+
+  return (
+    <div style={{ padding: '8px 16px' }}>
+      <Breadcrumbs aria-label="breadcrumb">
+        <Link
+          underline="hover"
+          color="inherit"
+          href="#"
+          onClick={() => handleBreadcrumbClick('/')}
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
+          Core
+        </Link>
+        {global_file_path_device && (
+          <Link
+            underline="hover"
+            color="inherit"
+            href="#"
+            onClick={() => handleBreadcrumbClick(global_file_path_device)}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
+            {global_file_path_device}
+          </Link>
+        )}
+        {pathSegments.map((segment, index) => {
+          const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
+          return (
+            <Link
+              key={index}
+              underline="hover"
+              color="inherit"
+              href="#"
+              onClick={() => handleBreadcrumbClick(pathUpToSegment)}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {segment}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    </div>
+  );
+}
+
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
@@ -102,64 +159,15 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort(event, property);
   };
 
-  const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
-  const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
-
-  // Function to handle breadcrumb click, might need more logic to actually navigate
-  const handleBreadcrumbClick = (path: string) => {
-    console.info(`Navigate to: ${path}`);
-    // Set global_file_path or navigate logic here
-  };
-
   return (
     <TableHead>
       <TableRow>
-        <TableCell colSpan={headCells.length + 1} style={{ padding: 0 }}>
-          <div style={{ display: 'flex', width: '100%' }}>
-            <Breadcrumbs aria-label="breadcrumb" style={{ flexGrow: 1 }}>
-              <Link
-                underline="hover"
-                color="inherit"
-                href="#"
-                onClick={() => handleBreadcrumbClick('/')}
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
-                <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
-                Core
-              </Link>
-              {global_file_path_device && (  // Only render if global_file_path_device has a value
-                <Link
-                  underline="hover"
-                  color="inherit"
-                  href="#"
-                  onClick={() => handleBreadcrumbClick(global_file_path_device)}  // Pass the device path to the handler
-                  style={{ display: 'flex', alignItems: 'center' }}
-                >
-                  <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
-                  {global_file_path_device}
-                </Link>
-              )}
-              {pathSegments.map((segment, index) => {
-                const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
-                return (
-                  <Link
-                    key={index}
-                    underline="hover"
-                    color="inherit"
-                    href="#"
-                    onClick={() => handleBreadcrumbClick(pathUpToSegment)}
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    {segment}
-                  </Link>
-                );
-              })}
-            </Breadcrumbs>
-          </div>
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell padding="checkbox">
+        <TableCell
+          padding="checkbox"
+          sx={{
+            backgroundColor: 'background.paper',
+          }}
+        >
           <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -177,6 +185,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               key={headCell.id}
               align={headCell.numeric ? 'right' : 'left'}
               sortDirection={orderBy === headCell.id ? order : false}
+              sx={{
+                backgroundColor: 'background.paper',
+              }}
             >
               <TableSortLabel
                 active={orderBy === headCell.id}
@@ -289,6 +300,7 @@ export default function Files() {
         }
 
         console.log("Local file data loaded")
+        setIsLoading(false);
 
         // Step 3: Fetch files for all devices
         const fileInfoResponse = await axios.get<{
@@ -328,7 +340,6 @@ export default function Files() {
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setIsLoading(false);
       }
     };
 
@@ -879,18 +890,6 @@ export default function Files() {
                   </Button>
                 </Tooltip>
               </Grid>
-              <Grid item paddingRight={1}>
-                <Tooltip title="Add Device">
-                  <Button
-                    onClick={handleAddDeviceClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <AddToQueueIcon
-                      fontSize="inherit"
-                    />
-                  </Button>
-                </Tooltip>
-              </Grid>
 
 
               <Grid item paddingRight={1}>
@@ -952,20 +951,36 @@ export default function Files() {
           </Box>
         </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
-          <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
-            <Box my={0}>
-              <TableContainer sx={{ maxHeight: '96%', overflowY: 'auto', overflowX: 'auto' }}>
-                <Table aria-labelledby="tableTitle" size="small">
-                  <EnhancedTableHead numSelected={selected.length}
-                    order={order}
-                    orderBy={orderBy}
-                    onSelectAllClick={handleSelectAllClick}
-                    onRequestSort={handleRequestSort}
-                    rowCount={fileRows.length}
-                  />
-                  <TableBody>
-                    {
-                      isLoading ? (
+          <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
+            <FileBreadcrumbs />
+            {fileRows.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 5 }}>
+                <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h5" color="textSecondary">
+                  No files available.
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Please upload a file to get started.
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
+                  <Table
+                    aria-labelledby="tableTitle"
+                    size="small"
+                    stickyHeader
+                  >
+                    <EnhancedTableHead
+                      numSelected={selected.length}
+                      order={order}
+                      orderBy={orderBy}
+                      onSelectAllClick={handleSelectAllClick}
+                      onRequestSort={handleRequestSort}
+                      rowCount={fileRows.length}
+                    />
+                    <TableBody>
+                      {isLoading ? (
                         Array.from(new Array(rowsPerPage)).map((_, index) => (
                           <TableRow key={index}>
                             <TableCell padding="checkbox">
@@ -1008,7 +1023,7 @@ export default function Files() {
                                 key={row.id}
                                 selected={isItemSelected}
                                 onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
-                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state                onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
+                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
                               >
                                 <TableCell sx={{ borderBottomColor: "#424242" }} padding="checkbox">
                                   {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
@@ -1026,7 +1041,6 @@ export default function Files() {
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-
                                   }}
                                   component="th"
                                   id={labelId}
@@ -1067,26 +1081,27 @@ export default function Files() {
                                   )}
                                 </TableCell>
 
-
                                 <TableCell
                                   align="left"
                                   padding="normal"
-
                                   sx={{
                                     borderBottomColor: "#424242",
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                  }}>{row.file_size}</TableCell>
+                                  }}
+                                >
+                                  {row.file_size}
+                                </TableCell>
 
                                 <TableCell align="left" sx={{
                                   borderBottomColor: "#424242",
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
-
-
-                                }} >{row.kind}</TableCell>
+                                }}>
+                                  {row.kind}
+                                </TableCell>
 
                                 {(!isSmallScreen || headCells.find(cell => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
                                   <TableCell align="left" sx={{
@@ -1094,13 +1109,10 @@ export default function Files() {
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-
-
-                                  }} >{row.device_name}
+                                  }}>
+                                    {row.device_name}
                                   </TableCell>
                                 )}
-
-
 
                                 {(!isSmallScreen || headCells.find(cell => cell.id === 'available')?.isVisibleOnSmallScreen) && (
                                   <TableCell
@@ -1121,35 +1133,44 @@ export default function Files() {
                                 {(!isSmallScreen || headCells.find(cell => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
                                   <TableCell
                                     padding="normal"
-                                    align="right" sx={{
-
+                                    align="right"
+                                    sx={{
                                       borderBottomColor: "#424242",
                                       whiteSpace: 'nowrap',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
-                                    }} >{row.date_uploaded}</TableCell>
+                                    }}
+                                  >
+                                    {row.date_uploaded}
+                                  </TableCell>
                                 )}
-
-
-
-
                               </TableRow>
                             );
                           })
                       )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                component="div"
-                count={fileRows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </Box>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                  component="div"
+                  count={fileRows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
+            )}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              component="div"
+              count={fileRows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
           </CardContent>
         </Card>
       </Stack>

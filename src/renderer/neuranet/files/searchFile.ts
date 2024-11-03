@@ -15,23 +15,18 @@ export async function searchFile(username: string, fileName: string) {
 
     if (response.data.result === 'success') {
       const fileData = response.data.file;
-      console.log("File found:", fileData);
       return response.data.file;
     } else if (response.data.result === 'device_not_found') {
-      console.log("Device not found");
       return 'device not found';
     } else if (response.data.result === 'object_id_not_found') {
-      console.log("Device ID not found");
       return 'object_id_not_found';
     } else if (response.data.result === 'file_not_found') {
-      console.log("File not found");
       return 'file_not_found';
     }
     else {
       return response.data.result;
     }
   } catch (error) {
-    console.error('Error searching for file:', error);
     return 'error';
   }
 }

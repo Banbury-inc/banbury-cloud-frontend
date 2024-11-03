@@ -80,7 +80,6 @@ function getFileKind(filename: string) {
 
 // Function that gets triggered when a new file is added
 function onFileAdded(filePath: string, username: string) {
-  console.log(`New file added: ${filePath}`);
 
   const stats = fs.statSync(filePath);
   let filesInfo: any[] = [];
@@ -100,7 +99,6 @@ function onFileAdded(filePath: string, username: string) {
 
   filesInfo.push(fileInfo);
 
-  console.log('File Info:', fileInfo);
 
 
   // Read the snapshot JSON file
@@ -110,8 +108,6 @@ function onFileAdded(filePath: string, username: string) {
   // File to delete (you can adjust this filePath)
   const file_name_to_add = path.basename(filePath);
   const file_path_to_add = path.join(path.dirname(filePath), path.basename(filePath));
-  console.log('File to add:', file_name_to_add);
-  console.log('Path to add:', file_path_to_add);
 
   // Check if the file already exists in the snapshot
   const existingFileIndex = database_snapshot.findIndex(
@@ -122,18 +118,13 @@ function onFileAdded(filePath: string, username: string) {
   if (existingFileIndex !== -1) {
     // If the file already exists, update the existing entry
     database_snapshot[existingFileIndex] = fileInfo;
-    console.log('File already exists. Updating the file info in the database snapshot.');
   } else {
     // If the file does not exist, add the new file to the snapshot
     database_snapshot.push(fileInfo);
-    console.log('New file added to the database snapshot.');
   }
 
   // Write the updated JSON back to the file
   fs.writeFileSync(snapshot_json, JSON.stringify(database_snapshot, null, 2), 'utf8');
-
-  console.log('File added to database snapshot:', file_name_to_add);
-
 
   fileWatcherEmitter.emit('fileChanged');
 
@@ -147,7 +138,6 @@ function onFileAdded(filePath: string, username: string) {
 
 // Function that gets triggered when a new file is added
 function onFileDeleted(filePath: string, username: string) {
-  console.log(`File removed: ${filePath}`);
 
 
   let filesInfo: any[] = [];
@@ -169,7 +159,6 @@ function onFileDeleted(filePath: string, username: string) {
 
   filesInfo.push(fileInfo);
 
-  console.log('File Info:', fileInfo);
 
   // Read the snapshot JSON file
   const data = fs.readFileSync(snapshot_json, 'utf8');
@@ -178,8 +167,6 @@ function onFileDeleted(filePath: string, username: string) {
   // File to delete (you can adjust this filePath)
   const file_name_to_delete = path.basename(filePath);
   const file_path_to_delete = path.join(path.dirname(filePath), path.basename(filePath));
-  console.log('File to delete:', file_name_to_delete);
-  console.log('Path to delete:', file_path_to_delete);
 
   // Search and remove the matching entry in the JSON array
   database_snapshot = database_snapshot.filter(
@@ -190,7 +177,6 @@ function onFileDeleted(filePath: string, username: string) {
   // Write the updated JSON back to the file
   fs.writeFileSync(snapshot_json, JSON.stringify(database_snapshot, null, 2), 'utf8');
 
-  console.log('File deleted from database snapshot:', file_name_to_delete);
 
 
   fileWatcherEmitter.emit('fileChanged');
@@ -216,11 +202,9 @@ export function detectFileChanges(directoryPath: string, username: string) {
   // Event listeners
   watcher
     .on('add', (filePath) => {
-      console.log(`File added: ${filePath}`);
       onFileAdded(filePath, username); // Call the onFileAdded function
     })
     .on('unlink', (filePath) => {
-      console.log(`File removed: ${filePath}`);
       onFileDeleted(filePath, username); // Call the onFileAdded function
     })
     .on('change', (filePath) => console.log(`File changed: ${filePath}`))

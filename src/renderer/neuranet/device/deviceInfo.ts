@@ -30,9 +30,30 @@ interface memUsage {
 export function name(): string {
   return os.hostname();
 }
+
+export function current_time(): string {
+  return DateTime.local().toFormat('yyyy-MM-dd HH:mm:ss');
+}
+
 export async function system_info(): Promise<string> {
   return JSON.stringify(await si.system());
 } 
+
+export async function device_manufacturer(): Promise<string> {
+  const systemData = await si.system();
+  return systemData.manufacturer || 'Unknown';
+}
+
+export async function device_model(): Promise<string> {
+  const systemData = await si.system();
+  return systemData.model || 'Unknown';
+} 
+
+export async function device_version(): Promise<string> {
+  const systemData = await si.system();
+  return systemData.version || 'Unknown';
+} 
+
 
 export async function services(name?: string): Promise<string> {
   return JSON.stringify(await si.services(name || ''));
@@ -88,6 +109,37 @@ export async function cpu_info(): Promise<CPUPerformance> {
     throw error; // Rethrow error to handle externally
   }
 }
+
+export async function cpu_info_manufacturer(): Promise<string> {
+  const cpuData = await si.cpu();
+  return cpuData.manufacturer || 'Unknown';
+}
+
+export async function cpu_info_brand(): Promise<string> {
+  const cpuData = await si.cpu();
+  return cpuData.brand || 'Unknown';
+} 
+
+export async function cpu_info_speed(): Promise<number> {
+  const cpuData = await si.cpu();
+  return cpuData.speed || 0;
+}
+
+export async function cpu_info_cores(): Promise<number> {
+  const cpuData = await si.cpu();
+  return cpuData.cores || 0;
+}
+
+export async function cpu_info_physicalCores(): Promise<number> {
+  const cpuData = await si.cpu();
+  return cpuData.physicalCores || 0;
+}
+
+
+export async function cpu_info_processors(): Promise<number> {
+  const cpuData = await si.cpu();
+  return cpuData.processors || 0;
+} 
 
 export async function cpu_usage(): Promise<number> {
   try {
@@ -194,7 +246,6 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
-
 export async function battery_status(): Promise<number> {
   try {
     const batteryData = await si.battery();
@@ -226,15 +277,35 @@ export async function network_interfaces(): Promise<string> {
   }
 } 
 
-export async function network_speed(): Promise<number> {
+export async function network_speed(): Promise<any> {
   try {
     const networkData = await si.networkStats();
-    return networkData[0].rx_sec || 0;
+    return networkData;
   } catch (error) {
     console.error('Error retrieving network speed:', error);
     throw error; // Rethrow error to handle externally
   }
 } 
+
+export async function upload_speed(): Promise<number> {
+  try {
+    const networkData = await si.networkStats();
+    return networkData[0].tx_bytes || 0;
+  } catch (error) {
+    console.error('Error retrieving upload speed:', error);
+    throw error; // Rethrow error to handle externally
+  }
+} 
+
+export async function download_speed(): Promise<number> {
+  try {
+    const networkData = await si.networkStats();
+    return networkData[0].rx_bytes || 0;
+  } catch (error) {
+    console.error('Error retrieving download speed:', error);
+    throw error; // Rethrow error to handle externally
+  }
+}
 
 export async function bluetooth_status(): Promise<boolean> {
   try {
@@ -252,7 +323,6 @@ export async function bluetooth_status(): Promise<boolean> {
     return false;
   }
 }
-
 
 async function countFilesAndFolders(directoryPath: string): Promise<number> {
   let totalCount = 0;
@@ -293,9 +363,6 @@ async function countFilesAndFolders(directoryPath: string): Promise<number> {
   console.log(`Final total number of files and folders: ${totalCount}`);
   return totalCount;
 }
-
-
-
 
 export async function directory_info(username: any) {
 

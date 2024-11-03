@@ -33,6 +33,7 @@ import useHistory from 'react-router-dom';
 import crypto from 'crypto';
 import { Dispatch, SetStateAction } from 'react';
 import { neuranet } from '../../neuranet';
+import { CONFIG } from '../../config/config';
 interface Message {
   type: string;
   content: string;
