@@ -43,6 +43,7 @@
     "copy-webpack-plugin": "^12.0.2",
     "electron-notarize": "^1.2.2",
     "electron-store": "^9.0.0",
+    "electron-updater": "^6.3.9",
     "fast-speedtest-api": "^0.3.2",
     "frameless-titlebar": "^2.1.4",
     "install": "^0.13.0",
@@ -157,6 +158,14 @@
       "package.json",
       "dist/**",
       "dist/renderer/**"
+    ],
+
+    "publish": [
+        {
+      "provider": "github",
+      "owner": "Banbury-Inc",
+      "repo": "banbury-cloud-frontend"
+        }
     ],
     "extraResources": [],
     "afterSign": "scripts/notarize.js"
