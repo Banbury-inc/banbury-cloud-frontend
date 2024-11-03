@@ -241,6 +241,7 @@ export default function Devices() {
 
   const fetchDevices = async () => {
     try {
+      const previousSelectedDeviceName = selectedDevice?.device_name; // Store the previously selected device name
       setIsLoading(true);
       // Fetch user information
       const userInfoResponse = await axios.get<{
@@ -302,9 +303,12 @@ export default function Devices() {
 
       setAllDevices(transformedDevices);
 
-      // Select the first device if the list is not empty
-      if (transformedDevices.length > 0) {
-        setSelectedDevice(transformedDevices[0]);
+      // Restore the previously selected device if it exists in the new list
+      const restoredDevice = transformedDevices.find(device => device.device_name === previousSelectedDeviceName);
+      if (restoredDevice) {
+        setSelectedDevice(restoredDevice);
+      } else if (transformedDevices.length > 0) {
+        setSelectedDevice(transformedDevices[0]); // Fallback to the first device if the previous one is not found
       }
     } catch (error) {
       console.error('Error fetching data:', error);
