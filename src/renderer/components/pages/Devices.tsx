@@ -373,6 +373,9 @@ export default function Devices() {
   const handle_add_scanned_folder = async (scanned_folder: string, username: string) => {
     const result = await neuranet.device.add_scanned_folder(scanned_folder, username);
     console.log(result);
+    if (result === 'success') {
+      fetchDevices(); // Refresh devices after adding a scanned folder
+    }
   }
 
   const handleFileNameClick = async (id: number) => {
