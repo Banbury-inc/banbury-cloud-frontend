@@ -38,7 +38,8 @@ export default function NewScannedFolderButton() {
       
       if (addResult === 'success') {
         await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-      } else {
+        // Trigger a refresh of the devices to reflect the new folder
+        await neuranet.device.fetchDevices();
         await neuranet.sessions.failTask(username ?? '', taskInfo, 'Failed to add scanned folder', tasks, setTasks);
       }
     } catch (error) {
