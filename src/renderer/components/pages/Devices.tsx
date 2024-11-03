@@ -680,8 +680,16 @@ export default function Devices() {
                         </TableCell>
                       </TableRow>
                     ))
+                  ) : fileRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={2} align="center">
+                        <Typography variant="body1" color="textSecondary">
+                          No devices available.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    allDevices.map((row, index) => (
+                    fileRows.map((row, index) => (
                       <TableRow
                         hover
                         onClick={() => handleDeviceClick(row)}
@@ -706,7 +714,9 @@ export default function Devices() {
         {/* Right panel: Device details */}
         <Card variant="outlined" sx={{ p: 2, height: '100%', width: '70%', overflow: 'auto' }}>
           <CardContent>
-            {selectedDevice ? (
+            {isLoading ? (
+              <Skeleton variant="rectangular" width="100%" height={400} />
+            ) : selectedDevice ? (
               <>
                 <Typography variant="h4" gutterBottom>
                   {selectedDevice.device_name}
