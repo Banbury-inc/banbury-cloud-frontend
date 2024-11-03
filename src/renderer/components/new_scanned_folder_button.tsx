@@ -1,4 +1,8 @@
 import React, { useState, useRef } from 'react';
+
+interface NewScannedFolderButtonProps {
+  fetchDevices: () => Promise<void>;
+}
 import { Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -14,7 +18,7 @@ declare module 'react' {
   }
 }
 
-export default function NewScannedFolderButton() {
+export default function NewScannedFolderButton({ fetchDevices }: NewScannedFolderButtonProps) {
   const [loading, setLoading] = useState(false);
   const { username, tasks, setTasks, setTaskbox_expanded } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,7 +44,7 @@ export default function NewScannedFolderButton() {
       if (addResult === 'success') {
         await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
         // Trigger a refresh of the devices to reflect the new folder
-        await fetchDevices(); // Call fetchDevices from Devices.tsx
+        await fetchDevices(); // Use the passed fetchDevices function
         await neuranet.sessions.failTask(username ?? '', taskInfo, 'Failed to add scanned folder', tasks, setTasks);
       }
     } catch (error) {

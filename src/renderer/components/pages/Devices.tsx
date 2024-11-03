@@ -643,7 +643,7 @@ export default function Devices() {
                   </Button>
                 </Tooltip>
               </Grid>
-              <NewScannedFolderButton />
+              <NewScannedFolderButton fetchDevices={fetchDevices} />
             </Grid>
             <Grid container justifyContent='flex-end' alignItems='flex-end'>
               <Grid item>
