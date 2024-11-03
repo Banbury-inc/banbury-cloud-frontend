@@ -5,7 +5,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../context/AuthContext';
 import { neuranet } from '../neuranet';
 import path from 'path';
-import { fetchDevices } from '../pages/Devices'; // Import fetchDevices from Devices.tsx
+import { fetchDevices } from '../components/pages/Devices'; // Import fetchDevices from Devices.tsx
 // Extend the InputHTMLAttributes interface to include webkitdirectory and directory
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -29,14 +29,14 @@ export default function NewScannedFolderButton() {
       const entirepath = file.webkitRelativePath;
       const folderPath = file.webkitRelativePath.split('/')[0];
       const absoluteFolderPath = path.dirname(file.path);
-      
+
       // Add the selected folder as a scanned folder
       let task_description = `Adding scanned folder: ${absoluteFolderPath}`;
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
       setTaskbox_expanded(true);
 
       const addResult = await neuranet.device.add_scanned_folder(absoluteFolderPath, username ?? '');
-      
+
       if (addResult === 'success') {
         await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
         // Trigger a refresh of the devices to reflect the new folder
