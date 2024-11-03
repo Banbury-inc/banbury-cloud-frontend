@@ -43,6 +43,7 @@ import { handlers } from '../../handlers';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';
+import { formatRAM } from '../../utils';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
 import TaskBoxButton from '../TaskBoxButton';
 import Divider from '@mui/material/Divider';
@@ -194,6 +195,30 @@ function formatStorageCapacity(capacity: string | number): string {
   }
   return capacity as string; // If it's not a number or valid numeric string, return as is (e.g., 'N/A')
 }
+
+
+
+// Add this utility function at the top of the file, outside of any component
+function formatTotalRAM(capacity: string | number): string {
+  // Convert capacity to number if it's a string
+  let capacityInBytes = typeof capacity === 'string' ? parseFloat(capacity) : capacity;
+
+  // If conversion failed or capacity is not a valid number, return as is
+  if (isNaN(capacityInBytes)) {
+    return capacity as string; // Return original string for invalid input, e.g., 'N/A'
+  }
+
+  // Check size and convert to MB or GB as needed
+  if (capacityInBytes >= 1e9) { // Greater than or equal to 1 GB
+    return `${(capacityInBytes / 1e9).toFixed(2)} GB`;
+  } else if (capacityInBytes >= 1e6) { // Greater than or equal to 1 MB
+    return `${(capacityInBytes / 1e6).toFixed(2)} MB`;
+  } else {
+    return `${capacityInBytes} bytes`; // For smaller values, return in bytes
+  }
+}
+
+
 
 export default function Devices() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
@@ -616,6 +641,8 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
+
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -883,7 +910,8 @@ export default function Devices() {
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <Typography>
                                 GPU Usage: <Chip
-                                  label={selectedDevice.gpu_usage[0]}
+                                  // label={'${selectedDevice.gpu_usage[0]}%'}
+                                label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
                                   size="small"
                                   color={parseFloat(selectedDevice.gpu_usage[0]) > 80 ? 'error' : 'success'}
                                 />
@@ -894,7 +922,8 @@ export default function Devices() {
                               <MemoryIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
                               <Typography>
                                 RAM Usage: <Chip
-                                  label={selectedDevice.ram_usage[0]}
+                                  // label={selectedDevice.ram_usage[0]}
+                                label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
                                   size="small"
                                   color={parseFloat(selectedDevice.ram_usage[0]) > 80 ? 'error' : 'success'}
                                 />
@@ -903,12 +932,12 @@ export default function Devices() {
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Total RAM: {selectedDevice.ram_total[0]}</Typography>
+                              <Typography>Total RAM: {formatRAM(selectedDevice.ram_total[0])}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Free RAM: {selectedDevice.ram_free[0]}</Typography>
+                              <Typography>Free RAM: {formatRAM(selectedDevice.ram_free[0])}</Typography>
                             </Box>
                           </Stack>
                         </Box>
