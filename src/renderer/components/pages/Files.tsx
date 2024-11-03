@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import os from 'os';
 import Stack from '@mui/material/Stack';
 import { join } from 'path';
