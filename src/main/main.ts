@@ -3,6 +3,7 @@ import * as url from "url";
 import axios from 'axios'; // Adjusted import for axios
 import net from 'net';
 import { BrowserWindow, app, dialog, ipcMain } from "electron";
+import { autoUpdater } from "electron-updater";
 import { exec } from "child_process";
 import { resolve } from 'path';
 import { shell } from "electron";
@@ -114,6 +115,29 @@ ipcMain.on('fetch-data', async (event, args) => {
   } catch (error) {
     console.error('Error fetching data:', error);
   }
+});
+
+autoUpdater.checkForUpdatesAndNotify();
+
+autoUpdater.on('update-available', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update available',
+    message: 'A new update is available. It will be downloaded in the background.',
+  });
+});
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update ready',
+    message: 'A new update is ready. Quit and install now?',
+    buttons: ['Yes', 'Later']
+  }).then(result => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
 });
 
 ipcMain.on('update-username', (event, username) => {
