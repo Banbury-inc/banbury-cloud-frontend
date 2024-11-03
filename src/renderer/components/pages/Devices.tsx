@@ -251,7 +251,7 @@ export default function Devices() {
 
   let url: string;
   if (CONFIG.prod) {
-    url = 'https://website2-389236221119.us-central1.run.app';
+    url = 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app';
   } else {
     url = 'http://localhost:8080';
   }

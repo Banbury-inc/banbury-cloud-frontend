@@ -4,6 +4,7 @@ interface NewScannedFolderButtonProps {
   fetchDevices: () => Promise<void>;
 }
 import { Tooltip } from '@mui/material';
+import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 import LoadingButton from '@mui/lab/LoadingButton';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../context/AuthContext';
@@ -70,7 +71,8 @@ export default function NewScannedFolderButton({ fetchDevices }: NewScannedFolde
         loadingPosition="end"
         sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
-        <FolderOpenIcon fontSize="inherit" />
+        <CreateNewFolderOutlinedIcon
+        fontSize="inherit" />
         <input
           type="file"
           ref={fileInputRef}

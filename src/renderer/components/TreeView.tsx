@@ -25,9 +25,6 @@ const snapshot_json: string = path.join(directory_path, file_name);
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as utils from '../utils/';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
 
 interface FileData {
   id: string;
