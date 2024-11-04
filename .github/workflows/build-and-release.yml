@@ -64,12 +64,12 @@ jobs:
       - name: Create and push a new tag
         env:
           VERSION: ${{ env.VERSION }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          PAT: ${{ secrets.PAT }}
         run: |
-          git config user.name "mmills6060"
-          git config user.email "mmills6060@gmail.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "v$VERSION"
-          git push origin "v$VERSION"
+          git push https://$PAT@github.com/${{ github.repository }} "v$VERSION"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
