@@ -131,7 +131,8 @@
         "nsis",
         "msi"
       ],
-      "icon": "static/NeuraNet_Icons/web/icon-512.png"
+      "icon": "static/NeuraNet_Icons/web/icon-512.png",
+      "signAndEditExecutable": false
     },
     "mac": {
       "entitlements": "build/entitlements.mac.plist",
