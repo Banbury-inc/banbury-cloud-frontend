@@ -44,18 +44,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download MacOS Artifacts (if applicable)
-        if: matrix.os == 'macos-latest'
-        uses: actions/download-artifact@v3
-        with:
-          name: macos-latest-artifacts
-          path: ./dist/macos
+   #   - name: Download MacOS Artifacts (if applicable)
+   #     if: matrix.os == 'macos-latest'
+   #     uses: actions/download-artifact@v3
+   #     with:
+   #       name: macos-latest-artifacts
+    #      path: ./dist/macos
 
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-artifacts
-          path: ./dist/windows
+     # - name: Download Windows Artifacts
+      #  uses: actions/download-artifact@v3
+      #  with:
+      #    name: windows-latest-artifacts
+      #    path: ./dist/windows
 
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v3
