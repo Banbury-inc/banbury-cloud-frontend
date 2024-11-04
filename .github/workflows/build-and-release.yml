@@ -68,7 +68,7 @@ jobs:
       - name: Create and push a new tag
         env:
           VERSION: ${{ env.VERSION }}
-          PAT: ${{ secrets.PAT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
