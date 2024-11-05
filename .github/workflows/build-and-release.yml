@@ -80,7 +80,7 @@ jobs:
           git tag "v$VERSION"
           git push https://$PAT@github.com/${{ github.repository }} "v$VERSION"
       - name: Notarize the App
-        run: node scripts/notarize.ts
+        run: npx ts-node scripts/notarize.ts
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Create Release
