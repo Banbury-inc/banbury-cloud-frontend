@@ -143,8 +143,7 @@
         "dmg",
         "pkg"
       ],
-      "icon": "static/NeuraNet_Icons/macos/AppIcon.icns",
-      "afterSign": "scripts/notarize.ts"
+      "icon": "static/NeuraNet_Icons/macos/AppIcon.icns"
     },
     "linux": {
       "target": [
