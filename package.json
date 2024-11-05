@@ -165,7 +165,8 @@
         "repo": "banbury-cloud-frontend"
       }
     ],
-    "extraResources": []
+    "extraResources": [],
+    "afterSign": "scripts/notarize.ts"
   },
   "engines": {
     "npm": ">=7.0.0",
