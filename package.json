@@ -27,6 +27,7 @@
   "author": "Banbury <mmills6060@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@electron/notarize": "^2.5.0",
     "@electron/remote": "^2.1.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
