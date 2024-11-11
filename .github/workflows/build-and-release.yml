@@ -10,8 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-
+        os: [ubuntu-latest, windows-latest, macos-latest]  # Add Windows support
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
@@ -19,54 +18,74 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20.11.0'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Build the app
         run: npm run build
 
       - name: Package with Electron Builder
-        run: npm run package:dist2
+        run: npm run deploy
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }} # Add this if you have a code-signing certificate
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Set GH_TOKEN to avoid token error in electron-builder
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ runner.os }}-artifacts
+          name: ${{ matrix.os }}-artifacts
           path: packages/**/*
-
+          
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
+      - name: Check out the repository
+        uses: actions/checkout@v3
         with:
-          name: macos-latest-artifacts
-          path: ./dist/macos
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-artifacts
-          path: ./dist/windows
+          fetch-depth: 0  # Ensure full history for tagging
+
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v3
         with:
           name: ubuntu-latest-artifacts
           path: ./dist/linux
 
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-latest-artifacts
+          path: ./dist/windows
+
+      - name: Download macos Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-latest-artifacts
+          path: ./dist/macos
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Create and push a new tag
+        env:
+          VERSION: ${{ env.VERSION }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION"
+          git push https://$PAT@github.com/${{ github.repository }} "v$VERSION"
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: "v${{ env.VERSION }}"
           files: |
-            ./dist/macos/*
-            ./dist/windows/*
             ./dist/linux/*
+            ./dist/windows/*.exe
+            ./dist/macos/*.dmg
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

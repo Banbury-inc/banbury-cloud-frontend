@@ -27,6 +27,7 @@
   "author": "Banbury <mmills6060@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@electron/notarize": "^2.5.0",
     "@electron/remote": "^2.1.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
@@ -41,7 +42,6 @@
     "chokidar": "^4.0.0",
     "configparser": "^0.3.10",
     "copy-webpack-plugin": "^12.0.2",
-    "electron-notarize": "^1.2.2",
     "electron-store": "^9.0.0",
     "electron-updater": "^6.3.9",
     "fast-speedtest-api": "^0.3.2",
@@ -66,7 +66,7 @@
     "styled-components": "^6.1.9"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.4.0",
+    "@electron/notarize": "^2.5.0",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.6",
     "@types/node": "^16.11.45",
@@ -132,7 +132,8 @@
         "nsis",
         "msi"
       ],
-      "icon": "static/NeuraNet_Icons/web/icon-512.png"
+      "icon": "static/NeuraNet_Icons/web/icon-512.png",
+      "signAndEditExecutable": false
     },
     "mac": {
       "entitlements": "build/entitlements.mac.plist",
