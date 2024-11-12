@@ -43,7 +43,7 @@ import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import TextField from '@mui/material/TextField';
 import { handlers } from '../../handlers';
 import * as utils from '../../utils';
-import CustomizedTreeView from '../TreeView';
+import CustomizedTreeView from '../common/TreeView/TreeView';
 import path from 'path';
 import fs from 'fs';
 import { neuranet } from '../../neuranet';

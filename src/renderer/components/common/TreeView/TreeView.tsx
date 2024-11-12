@@ -11,7 +11,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import VideocamIcon from '@mui/icons-material/Videocam'; import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import DescriptionIcon from '@mui/icons-material/Description';
 
-import { fileWatcherEmitter } from '../neuranet/device/watchdog';
+import { fileWatcherEmitter } from '../../../neuranet/device/watchdog';
 
 import axios from 'axios';
 import fs from 'fs';
@@ -23,8 +23,8 @@ const directory_name: string = 'BCloud';
 const directory_path: string = path.join(os.homedir(), directory_name);
 const snapshot_json: string = path.join(directory_path, file_name);
 import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
-import * as utils from '../utils/';
+import { useAuth } from '../../../context/AuthContext';
+import * as utils from '../../../utils';
 
 interface FileData {
   id: string;
