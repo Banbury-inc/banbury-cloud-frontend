@@ -6,6 +6,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../../context/AuthContext';
 import { neuranet } from '../../neuranet';
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+
 import path from 'path';
 // Extend the InputHTMLAttributes interface to include webkitdirectory and directory
 declare module 'react' {
@@ -64,7 +66,7 @@ export default function AddFileToSyncButton({ selectedFileNames }: { selectedFil
         loadingPosition="end"
         sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
-        <CreateNewFolderOutlinedIcon
+        <CloudUploadOutlinedIcon
           fontSize="inherit"
         />
       </LoadingButton>
