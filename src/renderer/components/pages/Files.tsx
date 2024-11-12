@@ -5,7 +5,7 @@ import { join } from 'path';
 import { shell } from 'electron';
 import isEqual from 'lodash/isEqual';
 import axios from 'axios';
-import { useMediaQuery } from '@mui/material';
+import { Divider, useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
@@ -52,7 +52,7 @@ import TaskBox from '../TaskBox';
 import TaskBoxButton from '../TaskBoxButton';
 
 import SyncIcon from '@mui/icons-material/Sync';
-
+import AddFileToSyncButton from '../common/add_file_to_sync_button';
 
 // Simplified data interface to match your file structure
 interface DatabaseData {
@@ -917,6 +917,14 @@ export default function Files() {
                       fontSize="inherit"
                     />
                   </Button>
+                </Tooltip>
+              </Grid>
+              <Divider orientation="vertical" flexItem />
+              <Grid item paddingRight={2} paddingLeft={1}>
+                <Tooltip title="Add to Sync">
+                  <AddFileToSyncButton
+                    selectedFileNames={selectedFileNames}
+                  />
                 </Tooltip>
               </Grid>
             </Grid>
