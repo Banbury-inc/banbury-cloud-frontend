@@ -922,7 +922,9 @@ export default function Files() {
               <Divider orientation="vertical" flexItem />
               <Grid item paddingRight={2} paddingLeft={1}>
                 <Tooltip title="Add to Sync">
-                  <AddFileToSyncButton />
+                  <AddFileToSyncButton
+                    selectedFileNames={selectedFileNames}
+                  />
                 </Tooltip>
               </Grid>
             </Grid>

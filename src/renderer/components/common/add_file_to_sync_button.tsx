@@ -15,66 +15,57 @@ declare module 'react' {
   }
 }
 
-export default function AddFileToSyncButton() {
+export default function AddFileToSyncButton({ selectedFileNames }: { selectedFileNames: string[] }) {
   const [loading, setLoading] = useState(false);
   const { username, tasks, setTasks, setTaskbox_expanded } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
-    const file = event.target.files ? event.target.files[0] : null;
-    if (!file) return;
 
-    setLoading(true);
-    try {
-      // Get the folder path from the first file
-      const entirepath = file.webkitRelativePath;
-      const folderPath = file.webkitRelativePath.split('/')[0];
-      const absoluteFolderPath = path.dirname(file.path);
+  const handleAddFileToSync = async () => {
+  setLoading(true);
 
-      // Add the selected folder as a scanned folder
-      let task_description = `Adding file to sync: ${absoluteFolderPath}`;
-      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-      setTaskbox_expanded(true);
+    for (const file of selectedFileNames) {
 
-      const addResult = await neuranet.device.add_file_to_sync(absoluteFolderPath, username ?? '');
+      try {
 
-      if (addResult === 'success') {
-        await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+        console.log("file", file);
+
+        // Add the selected folder as a scanned folder
+        let task_description = `Adding file to sync: ${file}`;
+        let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+        setTaskbox_expanded(true);
+
+        const addResult = await neuranet.device.add_file_to_sync(file, username ?? '');
+
+        if (addResult === 'success') {
+          await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+        }
+      } catch (error) {
+        console.error('Error selecting folder:', error);
       }
-    } catch (error) {
-      console.error('Error selecting folder:', error);
-    } finally {
+    }
+    try {
       setLoading(false);
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    } catch (error) {
+      console.error('Error setting loading to false:', error);
     }
   };
 
-  const triggerFolderSelect = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
 
   return (
     <Tooltip title="Add File to File Sync">
       <LoadingButton
-        onClick={triggerFolderSelect}
+        onClick={handleAddFileToSync}
         loading={loading}
         loadingPosition="end"
         sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
         <CreateNewFolderOutlinedIcon
-        fontSize="inherit" />
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFolderSelect}
-          style={{ display: 'none' }}
-          webkitdirectory=""
-          directory=""
+          fontSize="inherit"
         />
       </LoadingButton>
     </Tooltip>
