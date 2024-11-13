@@ -54,6 +54,7 @@ import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
 import { EnhancedTableProps, HeadCell } from './types';
+import { useFileData } from './hooks/useFileData';
 
 
 const headCells: HeadCell[] = [
@@ -123,11 +124,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-const file_name: string = 'mmills_database_snapshot.json';
-const directory_name: string = 'BCloud';
-const directory_path: string = path.join(os.homedir(), directory_name);
-const snapshot_json: string = path.join(directory_path, file_name);
-
 export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
@@ -135,13 +131,10 @@ export default function Files() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<DatabaseData[]>([]); // State for storing fetched file data
-  const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -172,215 +165,15 @@ export default function Files() {
       .filter((file_name) => file_name !== null); // Filter out any null values if a file wasn't found
   };
 
-  useEffect(() => {
-    const fetchData_with_api = async () => {
-      try {
-        // Step 1: Fetch user information
-        const userInfoResponse = await axios.get<{
-          first_name: string;
-          last_name: string;
-          phone_number: string;
-          email: string;
-        }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
-
-        const { first_name, last_name } = userInfoResponse.data;
-        setFirstname(first_name);
-        setLastname(last_name);
-
-        // Step 2: Fetch device information
-        const deviceInfoResponse = await axios.get<{
-          devices: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
-
-        const { devices } = deviceInfoResponse.data;
-
-        let files: DatabaseData[] = [];
-
-        // set files to the value of snapshot_json if it exists
-        if (fs.existsSync(snapshot_json)) {
-          const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
-          files = JSON.parse(snapshot);
-          console.log('Loaded snapshot from file:', snapshot_json);
-          console.log('Snapshot:', files);
-        }
-
-        // Combine devices with their associated files
-        let allFilesData = devices.flatMap((device, index) => {
-          const deviceFiles = files.filter((file) => file.device_name === device.device_name);
-          return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
-            file_name: file.file_name,
-            file_size: file.file_size,
-            kind: file.kind,
-            file_path: file.file_path,
-            date_uploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
-            device_name: device.device_name,
-            helpers: 0,
-            available: device.online ? 'Available' : 'Unavailable',
-          }));
-        });
-
-        console.log(allFilesData);
-
-        setAllFiles(allFilesData);
-        if (!disableFetch) {
-          setAllFiles(allFilesData);
-        }
-
-        console.log('Local file data loaded');
-        setIsLoading(false);
-
-        // Step 3: Fetch files for all devices
-        const fileInfoResponse = await axios.get<{
-          files: any[];
-        }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
-
-        files = fileInfoResponse.data.files;
-
-        // initialize files as an empty array
-
-        // // save files as a json
-        fs.writeFileSync(snapshot_json, JSON.stringify(files, null, 2), 'utf-8');
-
-        allFilesData = devices.flatMap((device, index) => {
-          const deviceFiles = files.filter((file) => file.device_name === device.device_name);
-          return deviceFiles.map((file, fileIndex) => ({
-            id: index * 1000 + fileIndex,
-            file_name: file.file_name,
-            file_size: file.file_size,
-            kind: file.kind,
-            file_path: file.file_path,
-            date_uploaded: file.date_uploaded,
-            deviceID: (index + 1).toString(), // Convert deviceID to string
-            device_name: device.device_name,
-            helpers: 0,
-            available: device.online ? 'Available' : 'Unavailable',
-          }));
-        });
-
-        setAllFiles(allFilesData);
-        if (!disableFetch) {
-          setAllFiles(allFilesData);
-        }
-
-        console.log('API file data loaded');
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-      }
-    };
-
-    fetchData_with_api();
-  }, [username, disableFetch, updates]);
-
-  const fetchData = async (
-    username: string | null,
-    disableFetch: boolean,
-    setFirstname: any,
-    setLastname: any,
-    setAllFiles: any,
-    setIsLoading: any,
-  ) => {
-    try {
-      // Step 1: Fetch user information
-      const userInfoResponse = await axios.get<{
-        first_name: string;
-        last_name: string;
-        phone_number: string;
-        email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
-
-      const { first_name, last_name } = userInfoResponse.data;
-      setFirstname(first_name);
-      setLastname(last_name);
-
-      // Step 2: Fetch device information
-      const deviceInfoResponse = await axios.get<{
-        devices: any[];
-      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
-
-      const { devices } = deviceInfoResponse.data;
-
-      let files: DatabaseData[] = [];
-
-      // Load snapshot from the JSON file if it exists
-      if (fs.existsSync(snapshot_json)) {
-        const snapshot = fs.readFileSync(snapshot_json, 'utf-8');
-        files = JSON.parse(snapshot);
-        console.log('Loaded snapshot from file:', snapshot_json);
-        console.log('Snapshot:', files);
-      }
-
-      // Combine devices with their associated files
-      let allFilesData = devices.flatMap((device, index) => {
-        const deviceFiles = files.filter((file) => file.device_name === device.device_name);
-        return deviceFiles.map((file, fileIndex) => ({
-          id: index * 1000 + fileIndex,
-          file_name: file.file_name,
-          fileSize: file.file_size,
-          kind: file.kind,
-          file_path: file.file_path,
-          date_uploaded: file.date_uploaded,
-          deviceID: (index + 1).toString(), // Convert deviceID to string
-          device_name: device.device_name,
-          helpers: 0,
-          available: device.online ? 'Available' : 'Unavailable',
-        }));
-      });
-
-      if (!disableFetch) {
-        setAllFiles(allFilesData);
-      }
-
-      console.log('Local file data loaded');
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleFileChange = () => {
-      console.log('File changed, fetching data...');
-      fetchData(username, disableFetch, setFirstname, setLastname, setAllFiles, setIsLoading);
-    };
-
-    fileWatcherEmitter.on('fileChanged', handleFileChange);
-
-    return () => {
-      fileWatcherEmitter.off('fileChanged', handleFileChange);
-    };
-  }, [username, disableFetch]);
-
-  useEffect(() => {
-    const pathToShow = global_file_path || '/';
-    const pathSegments = pathToShow.split('/').filter(Boolean).length;
-
-    const filteredFiles = allFiles.filter((file) => {
-      if (!global_file_path && !global_file_path_device) {
-        return true; // Show all files
-      }
-
-      if (!global_file_path && global_file_path_device) {
-        return file.device_name === global_file_path_device; // Show all files for the specified device
-      }
-
-      // Add a check to ensure filePath is defined
-      if (!file.file_path) {
-        return false; // Skip files with undefined filePath
-      }
-
-      const fileSegments = file.file_path.split('/').filter(Boolean).length;
-      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
-      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
-
-      return isInSameDirectory || isFile;
-    });
-
-    setFileRows(filteredFiles);
-  }, [global_file_path, global_file_path_device, allFiles]);
+  const { isLoading, allFiles, fileRows, setAllFiles } = useFileData(
+    username,
+    disableFetch,
+    updates,
+    global_file_path,
+    global_file_path_device,
+    setFirstname,
+    setLastname
+  );
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -582,22 +375,9 @@ export default function Files() {
   const [backHistory, setBackHistory] = useState<any[]>([]);
   const [forwardHistory, setForwardHistory] = useState<any[]>([]);
 
-  const handleKeyPress = async (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      await handlers.keybinds.foldernameSave(
-        newFolderName,
-        setIsAddingFolder,
-        setUpdates,
-        updates,
-        global_file_path ?? '',
-        setFileRows,
-        setNewFolderName,
-        setDisableFetch,
-        username,
-      );
-    }
-  };
+
+
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -886,40 +666,15 @@ export default function Files() {
                                     scope="row"
                                     padding="normal"
                                   >
-                                    {row.kind === 'Folder' && isAddingFolder && row.file_name === '' ? (
-                                      <TextField
-                                        value={newFolderName}
-                                        size="small"
-                                        onChange={(e) => setNewFolderName(e.target.value)}
-                                        onBlur={() =>
-                                          handlers.keybinds.foldernameSave(
-                                            newFolderName,
-                                            setIsAddingFolder,
-                                            setUpdates,
-                                            updates,
-                                            global_file_path ?? '',
-                                            setFileRows,
-                                            setNewFolderName,
-                                            setDisableFetch,
-                                            username,
-                                          )
-                                        }
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Enter folder name"
-                                        fullWidth
-                                        autoFocus
-                                      />
-                                    ) : (
-                                      <ButtonBase
-                                        onClick={(event) => {
+                                    <ButtonBase
+                                      onClick={(event) => {
                                           event.stopPropagation();
                                           handleFileNameClick(row.id);
                                         }}
                                         style={{ textDecoration: 'none' }}
                                       >
                                         {row.file_name}
-                                      </ButtonBase>
-                                    )}
+                                    </ButtonBase>
                                   </TableCell>
 
                                   <TableCell
