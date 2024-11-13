@@ -43,12 +43,13 @@ import { neuranet } from '../../../neuranet';
 import { fileWatcherEmitter } from '../../../neuranet/device/watchdog';
 import * as utils from '../../../utils';
 import AccountMenuIcon from '../../common/AccountMenuIcon';
-import CustomizedTreeView from '../../common/TreeView/TreeView';
+import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
 import TaskBox from '../../TaskBox';
 import TaskBoxButton from '../../TaskBoxButton';
 import { DatabaseData, Order } from './types';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
+
 
 
 import SyncIcon from '@mui/icons-material/Sync';
@@ -567,7 +568,7 @@ export default function Files() {
               <CardContent>
                 <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                   <Grid item>
-                    <CustomizedTreeView />
+                    <FileTreeView />
                   </Grid>
                 </Grid>
               </CardContent>
