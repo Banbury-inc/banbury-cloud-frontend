@@ -47,23 +47,14 @@ import CustomizedTreeView from '../../common/TreeView/TreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
 import TaskBox from '../../TaskBox';
 import TaskBoxButton from '../../TaskBoxButton';
+import { DatabaseData, Order } from './types';
+import { FileBreadcrumbs } from './components/FileBreadcrumbs';
+
 
 import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
+import { EnhancedTableProps, HeadCell } from './types';
 
-// Simplified data interface to match your file structure
-interface DatabaseData {
-  id: number;
-  file_name: string;
-  kind: string;
-  date_uploaded: string;
-  file_size: string;
-  file_path: string;
-  deviceID: string;
-  device_name: string;
-  helpers: number;
-  available: string;
-}
 
 const headCells: HeadCell[] = [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
@@ -74,79 +65,7 @@ const headCells: HeadCell[] = [
   { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
 
-type Order = 'asc' | 'desc';
 
-interface HeadCell {
-  disablePadding?: boolean;
-  id: keyof DatabaseData;
-  label: string;
-  numeric: boolean;
-  isVisibleOnSmallScreen: boolean;
-}
-
-interface EnhancedTableProps {
-  numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-  order: Order;
-  orderBy: keyof DatabaseData;
-  rowCount: number;
-}
-
-// Move the breadcrumbs out of the TableHead component and create a new component
-function FileBreadcrumbs() {
-  const { files, global_file_path, global_file_path_device } = useAuth();
-  const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : [];
-
-  const handleBreadcrumbClick = (path: string) => {
-    console.info(`Navigate to: ${path}`);
-    // Set global_file_path or navigate logic here
-  };
-
-  return (
-    <div style={{ padding: '8px 16px' }}>
-      <Breadcrumbs aria-label="breadcrumb">
-        <Link
-          underline="hover"
-          color="inherit"
-          href="#"
-          onClick={() => handleBreadcrumbClick('/')}
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
-          Core
-        </Link>
-        {global_file_path_device && (
-          <Link
-            underline="hover"
-            color="inherit"
-            href="#"
-            onClick={() => handleBreadcrumbClick(global_file_path_device)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
-            {global_file_path_device}
-          </Link>
-        )}
-        {pathSegments.map((segment, index) => {
-          const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
-          return (
-            <Link
-              key={index}
-              underline="hover"
-              color="inherit"
-              href="#"
-              onClick={() => handleBreadcrumbClick(pathUpToSegment)}
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              {segment}
-            </Link>
-          );
-        })}
-      </Breadcrumbs>
-    </div>
-  );
-}
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
