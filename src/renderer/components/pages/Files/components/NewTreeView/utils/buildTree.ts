@@ -1,17 +1,14 @@
 import { DatabaseData } from '../types';
 
-export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[] {
+export function buildTree(files: DatabaseData[]): DatabaseData[] {
   // Move the entire buildTree function here
   // ... (keep the existing buildTree implementation)
 
     console.log("files", files)
-    console.log("devices", devices)
   
     // Build final tree
-    const allFilesData = devices.flatMap((device: any) => {
-      const deviceFiles = files.filter(file => file.device_name === device.device_name);
-      return deviceFiles.map((file, fileIndex) => ({
-        id: `device-${device.device_number}-file-${fileIndex}`,
+    const allFilesData = files.flatMap((file, fileIndex) => ({
+        id: `device-${file.deviceID}-file-${fileIndex}`,
         file_type: file.file_type,
         file_name: file.file_name,
         file_size: file.file_size,
@@ -19,13 +16,12 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
         kind: file.kind,
         helpers: file.helpers,
         date_uploaded: file.date_uploaded,
-        deviceID: device.device_number,
-        device_name: device.device_name,
+        deviceID: file.deviceID,
+        device_name: file.device_name,
         file_parent: file.file_parent,
         original_device: file.original_device,
-        available: device.online ? "Available" : "Unavailable",
-      }));
-    });
+        available: file.available,
+    }));
 
 
 
@@ -37,7 +33,7 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
 
   // Create the root "Core" node
   const coreNode: DatabaseData = {
-    id: 'core',
+    id: 'Core',
     file_type: 'directory',
     file_name: 'Core',
     file_size: '',
@@ -48,20 +44,20 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
     helpers: 0,
     available: '',
     deviceID: '',
-    device_name: `Unnamed Device`,
+    device_name: '',
     children: [],
     original_device: '',
   };
 
   // Create "Devices" and "Cloud Sync" nodes
   const devicesNode: DatabaseData = {
-    id: 'devices',
+    id: 'Devices',
     file_type: 'directory',
     file_name: 'Devices',
     file_size: '',
     file_path: '',
     kind: 'DevicesFolder',
-    file_parent: 'core',
+    file_parent: 'Core',
     date_uploaded: '',
     helpers: 0,
     available: '',
@@ -72,13 +68,13 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
   };
 
   const cloudSyncNode: DatabaseData = {
-    id: 'cloud-sync',
+    id: 'Cloud Sync',
     file_type: 'directory',
     file_name: 'Cloud Sync',
     file_size: '',
     file_path: '',
     kind: 'CloudSyncFolder',
-    file_parent: 'core',
+    file_parent: 'Core',
     date_uploaded: '',
     helpers: 0,
     available: '',
@@ -111,7 +107,7 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
         helpers: 0,
         available: '',
         kind: 'Device',
-        file_parent: 'core',
+        file_parent: 'Devices',
         deviceID: file.deviceID || `undefined-${index}`,
         device_name: file.device_name || `Unnamed Device ${index}`,
         children: [],
@@ -172,7 +168,7 @@ export function buildTree(files: DatabaseData[], devices: any[]): DatabaseData[]
 
   // Modify the device nodes to be children of the Devices node instead of Core
   devicesMap.forEach(deviceNode => {
-    deviceNode.file_parent = 'devices'; // Update parent reference
+    deviceNode.file_parent = 'Devices'; // Update parent reference
     devicesNode.children!.push(deviceNode);
   });
 

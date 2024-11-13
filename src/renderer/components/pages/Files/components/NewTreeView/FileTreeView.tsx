@@ -65,35 +65,21 @@ export default function FileTreeView() {
   const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const [disableFetch, setDisableFetch] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchedFiles, setFetchedFiles] = useState<DatabaseData[]>([]);
 
   const file_name: string = 'mmills_database_snapshot.json';
   const directory_name: string = 'BCloud';
   const directory_path: string = path.join(os.homedir(), directory_name);
   const snapshot_json: string = path.join(directory_path, file_name);
 
-  useEffect(() => {
-    fetchData(
-      username,
-      disableFetch,
-      snapshot_json,
-      global_file_path || '',
-      {
-        setFirstname,
-        setLastname,
-        setFileRows,
-        setAllFiles,
-        set_Files,
-      },
-      buildTree
-    );
-  }, [username, disableFetch, updates]);
+  const cache = new Map<string, DatabaseData[]>();
+
+
 
   useEffect(() => {
-    const handleFileChange = () => {
-      console.log('File changed, fetching data from file tree...');
-      setIsLoading(true);
-      fetchData(
-        username,
+    const fetchAndUpdateFiles = async () => {
+      const new_files = await fetchData(
+        username || '',
         disableFetch,
         snapshot_json,
         global_file_path || '',
@@ -104,9 +90,55 @@ export default function FileTreeView() {
           setAllFiles,
           set_Files,
           setIsLoading,
+          cache,
         },
-        buildTree
       );
+
+      if (new_files) {
+        const updatedFiles = [...fetchedFiles, ...new_files];
+        setFetchedFiles(updatedFiles);
+        
+        const treeData = buildTree(updatedFiles);
+        setFileRows(treeData);
+        if (!disableFetch) {
+          setAllFiles(treeData);
+        }
+        set_Files(updatedFiles);
+      }
+    };
+
+    fetchAndUpdateFiles();
+  }, [username, disableFetch, updates, global_file_path]);
+
+  useEffect(() => {
+    const handleFileChange = async () => {
+      const new_files = await fetchData(
+        username || '',
+        disableFetch,
+        snapshot_json,
+        global_file_path || '',
+        {
+          setFirstname,
+          setLastname,
+          setFileRows,
+          setAllFiles,
+          set_Files,
+          setIsLoading,
+          cache,
+        },
+      );
+
+      if (new_files) {
+        const updatedFiles = [...fetchedFiles, ...new_files];
+        setFetchedFiles(updatedFiles);
+        
+        const treeData = buildTree(updatedFiles);
+        setFileRows(treeData);
+        if (!disableFetch) {
+          setAllFiles(treeData);
+        }
+        set_Files(updatedFiles);
+      }
     };
 
     fileWatcherEmitter.on('fileChanged', handleFileChange);
@@ -116,6 +148,13 @@ export default function FileTreeView() {
   }, [username, disableFetch]);
 
   const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
+    console.log("nodeId", nodeId);
+
+    console.log("fetching data")
+
+
+
+
     const findNodeById = (nodes: DatabaseData[], id: any): DatabaseData | null => {
       for (const node of nodes) {
         if (node.id === id) {
@@ -130,20 +169,39 @@ export default function FileTreeView() {
       }
       return null;
     };
-
     const selectedNode = findNodeById(fileRows, nodeId);
     if (selectedNode) {
-      console.log('Selected node file path:', selectedNode.file_path);
-      console.log('Selected node device name:', selectedNode.device_name);
-
-      if (global_file_path !== selectedNode.file_path || global_file_path_device !== selectedNode.device_name) {
-        // Set the global file path and device
-        setGlobal_file_path(selectedNode.file_path);
-        setGlobal_file_path_device(selectedNode.device_name);
-
-        // Log the node information but not the global_file_path (since it's async)
-        console.log('Setting global file path:', selectedNode.file_path);
+      console.log('Selected node:', selectedNode);
+      // Don't set path for root core node
+      if (selectedNode.id === 'Core') {
+        setGlobal_file_path(selectedNode.id);
+        setGlobal_file_path_device('');
+        return;
       }
+      // Don't set path for main Devices or Cloud Sync nodes
+      if (selectedNode.id === 'Devices' || selectedNode.id === 'Cloud Sync') {
+        setGlobal_file_path(`Core/${selectedNode.id}`);
+        setGlobal_file_path_device('');
+        return;
+      }
+
+      let newFilePath = '';
+      // If it's a device node (direct child of 'Devices')
+      if (selectedNode.file_parent === 'Devices') {
+        newFilePath = `Core/Devices/${selectedNode.file_name}`;
+      } 
+      // For files and folders under devices
+      else if (selectedNode.file_path) {
+        newFilePath = `Core/Devices/${selectedNode.device_name}${selectedNode.file_path}`;
+      }
+      // Set the global file path and device
+      setGlobal_file_path(newFilePath);
+      setGlobal_file_path_device(selectedNode.device_name);
+      // Log the node information
+      console.log('Setting global file path:', newFilePath);
+      console.log('Setting device name:', selectedNode.device_name);
+
+
     }
   };
 

@@ -17,28 +17,6 @@ export function FileBreadcrumbs() {
   return (
     <div style={{ padding: '8px 16px' }}>
       <Breadcrumbs aria-label="breadcrumb">
-        <Link
-          underline="hover"
-          color="inherit"
-          href="#"
-          onClick={() => handleBreadcrumbClick('/')}
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <GrainIcon style={{ marginRight: 5 }} fontSize="inherit" />
-          Core
-        </Link>
-        {global_file_path_device && (
-          <Link
-            underline="hover"
-            color="inherit"
-            href="#"
-            onClick={() => handleBreadcrumbClick(global_file_path_device)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <DevicesIcon style={{ marginRight: 5 }} fontSize="inherit" />
-            {global_file_path_device}
-          </Link>
-        )}
         {pathSegments.map((segment, index) => {
           const pathUpToSegment = '/' + pathSegments.slice(0, index + 1).join('/');
           return (
