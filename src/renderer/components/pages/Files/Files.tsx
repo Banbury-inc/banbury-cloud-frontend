@@ -825,15 +825,6 @@ export default function Files() {
                 />
               </>
             )}
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, 50, 100]}
-              component="div"
-              count={fileRows.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
           </CardContent>
         </Card>
       </Stack>
