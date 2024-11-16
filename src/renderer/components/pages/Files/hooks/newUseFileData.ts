@@ -56,25 +56,34 @@ export const newUseFileData = (
 
   // Filter files effect
   useEffect(() => {
-    const pathToShow = global_file_path || '/';
+
+    const file_path = global_file_path?.split('/').slice(3).join('/');
+    const pathToShow = '/' + (file_path || '/');
+    console.log('pathToShow', pathToShow)
     const pathSegments = pathToShow.split('/').filter(Boolean).length;
+    console.log('pathSegments', pathSegments)
 
     const filteredFiles = files.filter((file: any) => {
       if (!global_file_path && !global_file_path_device) {
         return true; // Show all files
       }
 
-      if (!global_file_path && global_file_path_device) {
-        return file.device_name === global_file_path_device; // Show all files for the specified device
-      }
+      // if (!global_file_path && global_file_path_device) {
+      //   return file.device_name === global_file_path_device; // Show all files for the specified device
+      // }
 
       if (!file.file_path) {
         return false; // Skip files with undefined filePath
       }
 
+
       const fileSegments = file.file_path.split('/').filter(Boolean).length;
+
       const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
+
+
       const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
+
 
       return isInSameDirectory || isFile;
     });
@@ -111,6 +120,11 @@ export const newUseFileData = (
 
   }, [global_file_path, global_file_path_device, files, devices, disableFetch, username, setFirstname, setLastname, setDevices]);
 
+
+
+
+
+
   return {
     isLoading,
     allFiles,
@@ -118,3 +132,5 @@ export const newUseFileData = (
     setAllFiles,
   };
 }; 
+
+
