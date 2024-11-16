@@ -24,8 +24,8 @@ const snapshot_json: string = path.join(directory_path, file_name);
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../../../../context/AuthContext';
 import * as utils from '../../../../../utils';
-import { fetchData } from './utils/fetchData';
 import { buildTree } from './utils/buildTree';
+import { fetchFileData } from '../../utils/fetchFileData'
 import { DatabaseData } from './types';
 
 
@@ -78,7 +78,7 @@ export default function FileTreeView() {
 
   useEffect(() => {
     const fetchAndUpdateFiles = async () => {
-      const new_files = await fetchData(
+      const new_files = await fetchFileData(
         username || '',
         disableFetch,
         snapshot_json,
@@ -112,7 +112,7 @@ export default function FileTreeView() {
 
   useEffect(() => {
     const handleFileChange = async () => {
-      const new_files = await fetchData(
+      const new_files = await fetchFileData(
         username || '',
         disableFetch,
         snapshot_json,

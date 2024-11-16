@@ -48,6 +48,7 @@ import NewInputFileUploadButton from '../../newuploadfilebutton';
 import TaskBox from '../../TaskBox';
 import TaskBoxButton from '../../TaskBoxButton';
 import { DatabaseData, Order } from './types';
+import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 
 
@@ -56,6 +57,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
 import { EnhancedTableProps, HeadCell } from './types';
 import { useFileData } from './hooks/useFileData';
+import { newUseFileData } from './hooks/newUseFileData';
 
 
 const headCells: HeadCell[] = [
@@ -146,6 +148,7 @@ export default function Files() {
     tasks,
     setTasks,
     username,
+    files,
     first_name,
     last_name,
     devices,
@@ -166,15 +169,69 @@ export default function Files() {
       .filter((file_name) => file_name !== null); // Filter out any null values if a file wasn't found
   };
 
-  const { isLoading, allFiles, fileRows, setAllFiles } = useFileData(
+
+
+  // useEffect(() => {
+  //   const fetchAndUpdateDevices = async () => {
+  //     const new_devices = await fetchDeviceData(
+  //       username || '',
+  //       disableFetch,
+  //       global_file_path || '',
+  //       {
+  //         setFirstname,
+  //         setLastname,
+  //         setDevices,
+  //       },
+  //     );
+
+  //     if (new_devices) {
+  //       if (devices) {
+  //         const updatedDevices = [...devices, ...new_devices];
+  //         setDevices(updatedDevices);
+  //       } else {
+  //         setDevices(new_devices);
+  //       }
+  //     }
+  //   };
+
+  //   fetchAndUpdateDevices();
+  // }, [username, disableFetch, updates, global_file_path]);
+
+
+
+  const { isLoading, allFiles, fileRows, setAllFiles } = newUseFileData(
     username,
     disableFetch,
     updates,
     global_file_path,
     global_file_path_device,
     setFirstname,
-    setLastname
+    setLastname,
+    files,
+    devices,
+    setDevices,
   );
+
+  useEffect(() => {
+    console.log("Files variable changed:", files);
+
+  }, [files]);
+
+
+  useEffect(() => {
+    console.log("Devices variable changed:", devices);
+    let new_devices = fetchDeviceData(username || '', disableFetch, global_file_path || '', {
+      setFirstname,
+      setLastname,
+      setDevices,
+    });
+    console.log("new_devices", new_devices);
+
+  }, [devices]);
+
+
+
+
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -630,19 +687,19 @@ export default function Files() {
                         : stableSort(fileRows, getComparator(order, orderBy))
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((row, index) => {
-                              const isItemSelected = isSelected(row.id);
+                              const isItemSelected = isSelected(row.id as number);
                               const labelId = `enhanced-table-checkbox-${index}`;
 
                               return (
                                 <TableRow
                                   hover
-                                  onClick={(event) => handleClick(event, row.id)}
+                                  onClick={(event) => handleClick(event, row.id as number)}
                                   role="checkbox"
                                   aria-checked={isItemSelected}
                                   tabIndex={-1}
                                   key={row.id}
                                   selected={isItemSelected}
-                                  onMouseEnter={() => setHoveredRowId(row.id)} // Track hover state
+                                  onMouseEnter={() => setHoveredRowId(row.id as number)} // Track hover state
                                   onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
                                 >
                                   <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
@@ -670,7 +727,7 @@ export default function Files() {
                                     <ButtonBase
                                       onClick={(event) => {
                                           event.stopPropagation();
-                                          handleFileNameClick(row.id);
+                                          handleFileNameClick(row.id as number);
                                         }}
                                         style={{ textDecoration: 'none' }}
                                       >

@@ -1,11 +1,13 @@
 import axios from 'axios';
 import fs from 'fs';
-import { DatabaseData } from '../types';
+import { DatabaseData } from '../components/NewTreeView/types';
 import { useState } from 'react';
-import { useAuth } from '../../../../../../context/AuthContext';
-import { CONFIG } from '../../../../../../config/config';
+import { useAuth } from '../../../../context/AuthContext';
+import { CONFIG } from '../../../../config/config';
 
-export const fetchData = async (
+
+
+export const fetchFileData = async (
   username: string,
   disableFetch: boolean,
   snapshot_json: string,
