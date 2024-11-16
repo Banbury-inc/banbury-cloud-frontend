@@ -22,9 +22,6 @@ export const fetchFileData = async (
     cache: Map<string, DatabaseData[]>;
   },
 ) => {
-  console.log("fetching data");
-  console.log("global_file_path", global_file_path);
-
 
 
   try {
@@ -37,7 +34,6 @@ export const fetchFileData = async (
       })
     ]);
 
-    console.log("fileInfoResponse", fileInfoResponse);
 
     return fileInfoResponse.data.files;
 

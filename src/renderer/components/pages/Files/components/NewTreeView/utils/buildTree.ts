@@ -4,7 +4,6 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
   // Move the entire buildTree function here
   // ... (keep the existing buildTree implementation)
 
-    console.log("files", files)
   
     // Build final tree
     const allFilesData = files.flatMap((file, fileIndex) => ({
@@ -29,7 +28,6 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
 
   const fileMap = new Map<string, DatabaseData>();
 
-  console.log("bulding tree")
 
   // Create the root "Core" node
   const coreNode: DatabaseData = {

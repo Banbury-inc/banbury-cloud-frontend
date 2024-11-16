@@ -213,19 +213,16 @@ export default function Files() {
   );
 
   useEffect(() => {
-    console.log("Files variable changed:", files);
 
   }, [files]);
 
 
   useEffect(() => {
-    console.log("Devices variable changed:", devices);
     let new_devices = fetchDeviceData(username || '', disableFetch, global_file_path || '', {
       setFirstname,
       setLastname,
       setDevices,
     });
-    console.log("new_devices", new_devices);
 
   }, [devices]);
 

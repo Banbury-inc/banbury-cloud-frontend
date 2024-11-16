@@ -28,8 +28,6 @@ export const newUseFileData = (
   const [fileRows, setFileRows] = useState<any[]>([]);
 
 
-  console.log('files', files)
-  console.log('allfiles', allFiles)
 
 
   // Helper function to map devices to files
@@ -59,9 +57,7 @@ export const newUseFileData = (
 
     const file_path = global_file_path?.split('/').slice(3).join('/');
     const pathToShow = '/' + (file_path || '/');
-    console.log('pathToShow', pathToShow)
     const pathSegments = pathToShow.split('/').filter(Boolean).length;
-    console.log('pathSegments', pathSegments)
 
     const filteredFiles = files.filter((file: any) => {
       if (!global_file_path && !global_file_path_device) {
@@ -90,8 +86,6 @@ export const newUseFileData = (
 
     setFileRows(filteredFiles);
 
-    console.log('devices', devices);
-    console.log('files', files);
 
     if (devices && files) {
       const allFilesData = mapDevicesToFiles(devices, files);
@@ -106,7 +100,6 @@ export const newUseFileData = (
           if (new_devices) {
             setDevices(new_devices);
           }
-          console.log("new_devices", new_devices);
         })
         .catch((error) => {
           console.error("Error fetching device data:", error);

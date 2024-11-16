@@ -17,8 +17,6 @@ export const fetchDeviceData = async (
     setDevices: (value: any[]) => void;
   },
 ) => {
-  console.log("fetching data");
-  console.log("global_file_path", global_file_path);
 
 
   try {
@@ -29,7 +27,6 @@ export const fetchDeviceData = async (
       axios.get<{ devices: any[]; }>(`${api_url}/getdeviceinfo/${username}/`)
     ]);
 
-    console.log("deviceInfoResponse", deviceInfoResponse);
 
     return deviceInfoResponse.data.devices;
 
