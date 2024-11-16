@@ -99,9 +99,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         </TableCell>
         {headCells
           .filter((headCell) => !isSmallScreen || headCell.isVisibleOnSmallScreen)
-          .map((headCell) => (
+          .map((headCell, index) => (
             <TableCell
-              key={headCell.id}
+              key={`${headCell.id}-${index}`}
               align={headCell.numeric ? 'right' : 'left'}
               sortDirection={orderBy === headCell.id ? order : false}
               sx={{
@@ -644,8 +644,7 @@ export default function Files() {
               </Box>
             ) : (
               <>
-                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
-                  <Table aria-labelledby="tableTitle" size="small" stickyHeader>
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
                     <EnhancedTableHead
                       numSelected={selected.length}
                       order={order}
@@ -657,7 +656,7 @@ export default function Files() {
                     <TableBody>
                       {isLoading
                         ? Array.from(new Array(rowsPerPage)).map((_, index) => (
-                            <TableRow key={index}>
+                            <TableRow key={`skeleton-${index}`}>
                               <TableCell padding="checkbox">
                                 <Skeleton variant="rectangular" width={24} height={24} />
                               </TableCell>

@@ -148,9 +148,7 @@ export default function FileTreeView() {
   }, [username, disableFetch]);
 
   const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
-    console.log("nodeId", nodeId);
 
-    console.log("fetching data")
 
 
 
@@ -171,7 +169,6 @@ export default function FileTreeView() {
     };
     const selectedNode = findNodeById(fileRows, nodeId);
     if (selectedNode) {
-      console.log('Selected node:', selectedNode);
       // Don't set path for root core node
       if (selectedNode.id === 'Core') {
         setGlobal_file_path(selectedNode.id);

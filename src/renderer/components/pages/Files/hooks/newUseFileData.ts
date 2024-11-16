@@ -32,16 +32,16 @@ export const newUseFileData = (
 
   // Helper function to map devices to files
   const mapDevicesToFiles = (devices: any[], files: any[]) => {
-    return devices.flatMap((device, index) => {
+    return devices.flatMap((device, deviceIndex) => {
       const deviceFiles = files.filter((file) => file.device_name === device.device_name);
       return deviceFiles.map((file, fileIndex) => ({
-        id: index * 1000 + fileIndex,
+        id: `${device.device_name}-${file.file_path}-${deviceIndex}-${fileIndex}`,
         file_name: file.file_name,
         file_size: file.file_size,
         kind: file.kind,
         file_path: file.file_path,
         date_uploaded: file.date_uploaded,
-        deviceID: (index + 1).toString(),
+        deviceID: (deviceIndex + 1).toString(),
         device_name: device.device_name,
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
@@ -54,43 +54,8 @@ export const newUseFileData = (
 
   // Filter files effect
   useEffect(() => {
-
-    const file_path = global_file_path?.split('/').slice(3).join('/');
-    const pathToShow = '/' + (file_path || '/');
-    const pathSegments = pathToShow.split('/').filter(Boolean).length;
-
-    const filteredFiles = files.filter((file: any) => {
-      if (!global_file_path && !global_file_path_device) {
-        return true; // Show all files
-      }
-
-      // if (!global_file_path && global_file_path_device) {
-      //   return file.device_name === global_file_path_device; // Show all files for the specified device
-      // }
-
-      if (!file.file_path) {
-        return false; // Skip files with undefined filePath
-      }
-
-
-      const fileSegments = file.file_path.split('/').filter(Boolean).length;
-
-      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
-
-
-      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
-
-
-      return isInSameDirectory || isFile;
-    });
-
-    setFileRows(filteredFiles);
-
-
-    if (devices && files) {
-      const allFilesData = mapDevicesToFiles(devices, files);
-      setAllFiles(allFilesData);
-    } else {
+    if (!devices || !files) {
+      // Fetch devices if they're not available
       fetchDeviceData(username || '', disableFetch, global_file_path || '', {
         setFirstname,
         setLastname,
@@ -104,9 +69,41 @@ export const newUseFileData = (
         .catch((error) => {
           console.error("Error fetching device data:", error);
         });
+      return;
     }
 
-    // Ensure setIsLoading is only called once after all operations
+    // First map devices to files to include availability
+    const allFilesData = mapDevicesToFiles(devices, files);
+    setAllFiles(allFilesData);
+
+    // Then filter the mapped files
+    const file_path = global_file_path?.split('/').slice(3).join('/');
+    const pathToShow = '/' + (file_path || '/');
+    const pathSegments = pathToShow.split('/').filter(Boolean).length;
+
+    const filteredFiles = allFilesData.filter((file: any) => {
+      if (!global_file_path && !global_file_path_device) {
+        return true; // Show all files
+      }
+
+      if (!global_file_path && global_file_path_device) {
+        return file.device_name === global_file_path_device; // Filter by device
+      }
+
+      if (!file.file_path) {
+        return false; // Skip files with undefined filePath
+      }
+
+      const fileSegments = file.file_path.split('/').filter(Boolean).length;
+      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
+      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
+
+      return isInSameDirectory || isFile;
+    });
+
+    console.log('Filtered files:', filteredFiles);
+    setFileRows(filteredFiles);
+
     if (isLoading) {
       setIsLoading(false);
     }
