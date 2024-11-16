@@ -27,6 +27,7 @@ import * as utils from '../../../../../utils';
 import { buildTree } from './utils/buildTree';
 import { fetchFileData } from '../../utils/fetchFileData'
 import { DatabaseData } from './types';
+import { fetchFileSyncData } from '../../utils/fetchFileSyncData';
 
 
 
@@ -109,6 +110,40 @@ export default function FileTreeView() {
 
     fetchAndUpdateFiles();
   }, [username, disableFetch, updates, global_file_path]);
+
+useEffect(() => {
+  const fetchAndUpdateFiles = async () => {
+    const new_files = await fetchFileSyncData(
+      username || '',
+      disableFetch,
+      snapshot_json,
+      global_file_path || '',
+      {
+        setFirstname,
+        setLastname,
+        setFileRows,
+        setAllFiles,
+        set_Files,
+        setIsLoading,
+        cache,
+      },
+    );
+
+    if (new_files) {
+      const updatedFiles = [...fetchedFiles, ...new_files];
+      setFetchedFiles(updatedFiles);
+      
+      const treeData = buildTree(updatedFiles);
+      setFileRows(treeData);
+      if (!disableFetch) {
+        setAllFiles(treeData);
+      }
+      set_Files(updatedFiles);
+    }
+  };
+
+  fetchAndUpdateFiles();
+}, [username, disableFetch, updates, global_file_path]);
 
   useEffect(() => {
     const handleFileChange = async () => {

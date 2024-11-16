@@ -90,7 +90,29 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
   const devicesMap = new Map<string, DatabaseData>();
 
   files.forEach((file, index) => {
-    // Create a unique key based on the device name
+    // Check if the file belongs to Cloud Sync
+    if (file.file_path.startsWith('Core/Cloud Sync/')) {
+      // Create a file node directly under Cloud Sync
+      const fileNode: DatabaseData = {
+        id: `cloud-sync-file-${index}`,
+        file_type: file.file_type,
+        file_name: file.file_path.split('/').pop() || '', // Get the last part of the path as filename
+        file_size: file.file_size,
+        file_path: file.file_path,
+        kind: file.kind,
+        file_parent: 'Cloud Sync',
+        date_uploaded: file.date_uploaded,
+        helpers: file.helpers,
+        available: file.available,
+        deviceID: file.deviceID,
+        device_name: file.device_name,
+        original_device: file.original_device,
+      };
+      cloudSyncNode.children!.push(fileNode);
+      return; // Skip the rest of the loop for this file
+    }
+
+    // Original device handling logic continues...
     const uniqueDeviceKey = file.device_name || `Unnamed-Device-${index}`;
 
     if (!devicesMap.has(uniqueDeviceKey)) {
@@ -169,6 +191,10 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     deviceNode.file_parent = 'Devices'; // Update parent reference
     devicesNode.children!.push(deviceNode);
   });
+
+  // Before returning, let's ensure the Cloud Sync node and its children are properly structured
+  const cloudSyncChildren = cloudSyncNode.children || [];
+  console.log(`Cloud Sync node has ${cloudSyncChildren.length} children`); // Debug log
 
   // Return the tree with "Core" as the root
   return [coreNode];
