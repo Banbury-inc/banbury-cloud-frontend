@@ -11,7 +11,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import Files from './pages/Files';
+import Files from './pages/Files/Files';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import AI from './pages/AI';

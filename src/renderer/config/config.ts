@@ -5,4 +5,4 @@ export const CONFIG = {
   skip_dot_files: true,
   scan_selected_folders: true,
   prod: false,
-};
+}

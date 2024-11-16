@@ -69,8 +69,8 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import DataManagementCard from './TreeView';
-import CustomizedTreeView from './TreeView';
+import DataManagementCard from './common/TreeView/TreeView';
+import CustomizedTreeView from './common/TreeView/TreeView';
 import { BorderLeft, NavigateBefore } from '@mui/icons-material';
 import TaskBadge from './TaskBadge';
 import { handlers } from '../handlers'
