@@ -800,6 +800,7 @@ export default function Devices() {
                   }}
                 >
                   <Tab label="Device Info" />
+                  <Tab label="Cloud Sync" />
                   <Tab label="Performance" />
                 </Tabs>
 
@@ -874,9 +875,77 @@ export default function Devices() {
                       onFoldersUpdate={handleFoldersUpdate}
                     />
                   </Stack>
+                ) : selectedTab === 1 ? (
+                  <Stack direction="column" spacing={3}>
+                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
+                        {/* Device Status Section */}
+                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">Device Status</Typography>
+                          </Stack>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Chip
+                                icon={<GrainIcon />}
+                                label={selectedDevice.available}
+                                color={selectedDevice.available === "Available" ? "success" : "error"}
+                                size="small"
+                                sx={{ minWidth: 100 }}
+                              />
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <DeviceHubIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{selectedDevice.device_model}</Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
 
+                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
 
-                ) : (
+                        {/* System Stats Section */}
+                        <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">System Stats</Typography>
+                          </Stack>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'success.main' }} />
+                              <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'info.main' }} />
+                              <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Card>
+
+                    <Divider sx={{ my: 3 }} />
+
+                    <Typography variant="h5" gutterBottom>
+                      Scanned Folders
+                    </Typography>
+                    <ScannedFoldersChips
+                      scanned_folders={selectedDevice.scanned_folders}
+                      username={username ?? ''}
+                      onFoldersUpdate={handleFoldersUpdate}
+                    />
+                  </Stack>
+
+                ) : selectedTab === 2 ? (
+
                   // Performance tab content
                   <Stack direction="column" spacing={0} sx={{ p: 0 }}>
                     {/* Performance metrics section */}
@@ -1035,6 +1104,16 @@ export default function Devices() {
                     </Stack>
 
                   </Stack>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 5 }}>
+                    <DevicesIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h5" color="textSecondary">
+                      No devices available
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Please add a device to get started.
+                    </Typography>
+                  </Box>
                 )}
               </>
             ) : (
