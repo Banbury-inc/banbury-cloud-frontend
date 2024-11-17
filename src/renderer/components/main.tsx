@@ -11,7 +11,10 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import Files from './pages/Files/Files';
+import CloudSync from './pages/CloudSync/CloudSync';
+import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import AI from './pages/AI';
@@ -178,6 +181,7 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
+            'Cloud Sync',
             'Devices',
             'Profile'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
@@ -202,10 +206,12 @@ export default function PermanentDrawerLeft() {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
+                            return <CloudOutlinedIcon fontSize='inherit' />;
+                          case 2:
                             return <DevicesIcon fontSize='inherit' />;
                           // case 3:
                           // return <AutoAwesomeIcon fontSize='inherit' />;
-                          case 2:
+                          case 3:
                             return <AccountBoxIcon fontSize='inherit' />;
                           default:
                             return null;
@@ -269,6 +275,8 @@ export default function PermanentDrawerLeft() {
               return <Files />;
             case 'Devices':
               return <Devices />;
+            case 'Cloud Sync':
+              return <CloudSync />;
             case 'AI':
               return <AI />;
             case 'Profile':

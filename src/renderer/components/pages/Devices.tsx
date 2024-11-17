@@ -91,6 +91,7 @@ interface DeviceData {
 
 const headCells: HeadCell[] = [
   { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
 ];
 
 type Order = 'asc' | 'desc';
@@ -231,7 +232,7 @@ export default function Devices() {
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<DeviceData[]>([]); // State for storing fetched file data
+  const [deviceRows, setDeviceRows] = useState<DeviceData[]>([]); // State for storing fetched file data
   const [allDevices, setAllDevices] = useState<DeviceData[]>([]);
   const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
@@ -258,7 +259,7 @@ export default function Devices() {
 
   const getSelectedDeviceNames = () => {
     return selected.map(id => {
-      const device = fileRows.find(device => device.id === id);
+      const device = deviceRows.find(device => device.id === id);
       return device ? device.device_name : null;
     }).filter(device_name => device_name !== null); // Filter out any null values if a file wasn't found
   };
@@ -375,7 +376,7 @@ export default function Devices() {
       return isInSameDirectory || isFile;
     });
 
-    setFileRows(filteredDevices);
+    setDeviceRows(filteredDevices);
 
   }, [global_file_path, global_file_path_device, allDevices]);
 
@@ -392,7 +393,7 @@ export default function Devices() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = fileRows.map((n) => n.id);
+      const newSelected = deviceRows.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -427,9 +428,9 @@ export default function Devices() {
         selected.slice(selectedIndex + 1),
       );
     }
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
+    const device_name = deviceRows.find(device => device.id === id)?.device_name;
     const newSelectedDeviceNames = newSelected
-      .map(id => fileRows.find(device => device.id === id)?.device_name)
+      .map(id => deviceRows.find(device => device.id === id)?.device_name)
       .filter(name => name !== undefined) as string[];
     console.log(newSelectedDeviceNames[0]);
     const directoryName = "BCloud";
@@ -518,8 +519,8 @@ export default function Devices() {
     }
     setSelected(newSelected);
 
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
-    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
+    const device_name = deviceRows.find(device => device.id === id)?.device_name;
+    const newSelectedDeviceNames = newSelected.map(id => deviceRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
     setSelectedDeviceNames(newSelectedDeviceNames);
     console.log(newSelectedDeviceNames)
     console.log(selectedDeviceNames)
@@ -581,7 +582,7 @@ export default function Devices() {
         setUpdates,
         updates,
         global_file_path ?? '',
-        setFileRows,
+        setDeviceRows,
         setNewFolderName,
         setDisableFetch,
         username
@@ -601,7 +602,7 @@ export default function Devices() {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   // Calculate empty rows for pagination
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - fileRows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - deviceRows.length) : 0;
 
   function stableSort<T>(array: T[], comparator: (a: T, b: T) => number): T[] {
     return array
@@ -617,7 +618,10 @@ export default function Devices() {
   function getComparator<Key extends keyof any>(
     order: Order,
     orderBy: Key,
-  ): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
+  ): (
+    a: { [key in Key]: number | string | string[] }, 
+    b: { [key in Key]: number | string | string[] }
+  ) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
@@ -718,30 +722,53 @@ export default function Devices() {
                         </TableCell>
                       </TableRow>
                     ))
-                  ) : fileRows.length === 0 ? (
+                  ) : allDevices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={2} align="center">
+                      <TableCell colSpan={3} align="center">
                         <Typography variant="body1" color="textSecondary">
                           No devices available.
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    fileRows.map((row, index) => (
-                      <TableRow
-                        hover
-                        onClick={() => handleDeviceClick(row)}
-                        key={row.id}
-                        selected={!!selectedDevice && selectedDevice.id === row.id}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox color="primary" />
-                        </TableCell>
-                        <TableCell component="th" scope="row" padding="normal">
-                          {row.device_name}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    stableSort(allDevices, getComparator(order, orderBy))
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row, index) => {
+                        const isItemSelected = isSelected(row.id);
+                        const labelId = `enhanced-table-checkbox-${index}`;
+
+                        return (
+                          <TableRow
+                            hover
+                            onClick={() => handleDeviceClick(row)}
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={row.id}
+                            selected={!!selectedDevice && selectedDevice.id === row.id}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  'aria-labelledby': labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell component="th" id={labelId} scope="row" padding="normal">
+                              {row.device_name}
+                            </TableCell>
+                            <TableCell align="left">
+                              <Chip
+                                label={row.available}
+                                color={row.available === "Available" ? "success" : "error"}
+                                size="small"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                   )}
                 </TableBody>
               </Table>

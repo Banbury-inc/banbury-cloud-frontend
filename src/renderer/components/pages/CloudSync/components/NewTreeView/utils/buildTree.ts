@@ -194,6 +194,7 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
 
   // Before returning, let's ensure the Cloud Sync node and its children are properly structured
   const cloudSyncChildren = cloudSyncNode.children || [];
+  console.log(`Cloud Sync node has ${cloudSyncChildren.length} children`); // Debug log
 
   // Return the tree with "Core" as the root
   return [coreNode];

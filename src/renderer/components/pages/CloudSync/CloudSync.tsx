@@ -9,7 +9,8 @@ import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlin
 import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import { CardContent, Container, Divider, Skeleton, useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs'; import Button from '@mui/material/Button';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -46,9 +47,10 @@ import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
 import TaskBox from '../../TaskBox';
 import TaskBoxButton from '../../TaskBoxButton';
+import { DatabaseData, Order } from './types';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
-import { DatabaseData, Order } from './types/index';
+
 
 
 import SyncIcon from '@mui/icons-material/Sync';
@@ -56,17 +58,15 @@ import AddFileToSyncButton from '../../common/add_file_to_sync_button';
 import { EnhancedTableProps, HeadCell } from './types';
 import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
-import Rating from '@mui/material/Rating';
 
 
-const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
-  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
-  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
-  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
-  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
-  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
-  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+const headCells: HeadCell[] = [
+  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
+  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
+  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
+  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
 ];
 
 
@@ -74,9 +74,6 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
-  const { global_file_path } = useAuth();
-  const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
-  const headCells = getHeadCells(isCloudSync);
   const createSortHandler = (property: keyof DatabaseData) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
@@ -101,18 +98,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           />
         </TableCell>
         {headCells
-          .filter((headCell: HeadCell) => {
-            // Check screen size visibility
-            const isVisibleOnCurrentScreen = !isSmallScreen || headCell.isVisibleOnSmallScreen;
-            
-            // Show appropriate columns based on context
-            const isVisibleInCurrentContext = isCloudSync 
-              ? headCell.id !== 'device_name'  // Hide only location in Cloud Sync
-              : headCell.id !== 'file_priority'; // Hide priority outside Cloud Sync
-            
-            return isVisibleOnCurrentScreen && isVisibleInCurrentContext;
-          })
-          .map((headCell: HeadCell, index: number) => (
+          .filter((headCell) => !isSmallScreen || headCell.isVisibleOnSmallScreen)
+          .map((headCell, index) => (
             <TableCell
               key={`${headCell.id}-${index}`}
               align={headCell.numeric ? 'right' : 'left'}
@@ -140,7 +127,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-export default function Files() {
+export default function CloudSync() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
@@ -162,14 +149,12 @@ export default function Files() {
     setTasks,
     username,
     files,
-    sync_files,
     first_name,
     last_name,
     devices,
     setFirstname,
     setLastname,
     setDevices,
-    setSyncFiles,
     redirect_to_login,
     setredirect_to_login,
     taskbox_expanded,
@@ -223,7 +208,6 @@ export default function Files() {
     setFirstname,
     setLastname,
     files,
-    sync_files,
     devices,
     setDevices,
   );
@@ -426,6 +410,7 @@ export default function Files() {
     }
   };
   const handleSyncClick = async () => {
+    console.log('handling sync click');
     // let result = handlers.files.addFile(username ?? '');
     let task_description = 'Scanning filesystem';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
@@ -437,6 +422,7 @@ export default function Files() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       setUpdates(updates + 1);
     }
+    console.log(result);
   };
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -491,30 +477,6 @@ export default function Files() {
     }
     return 0;
   }
-
-  const handlePriorityChange = async (row : any, newValue: number | null) => {
-    if (newValue === null) return;
-
-
-    let task_description = 'Updating File Priority';
-    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-    setTaskbox_expanded(true);
-
-    const newPriority = newValue;
-
-    const result = await neuranet.files.updateFilePriority(row._id, username ?? '', newPriority);
-
-    if (result === 'success') {
-      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-      setUpdates(updates + 1);
-    }
-
-
-    
-  };
-
-  const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
-  const headCells = getHeadCells(isCloudSync);
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -794,8 +756,8 @@ export default function Files() {
                                     {row.kind}
                                   </TableCell>
 
-                                  {(!isCloudSync &&
-                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleNotOnCloudSync) && (
+                                  {(!isSmallScreen ||
+                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
                                     <TableCell
                                       align="left"
                                       sx={{
@@ -828,38 +790,6 @@ export default function Files() {
                                       }}
                                     >
                                       {row.available}
-                                    </TableCell>
-                                  )}
-
-                                  {(isCloudSync ||
-                                    headCells.find((cell) => cell.id === 'file_priority')?.isVisibleNotOnCloudSync) && (
-                                    <TableCell
-                                      align="left"
-                                      padding="normal"
-                                      onClick={(e) => e.stopPropagation()} 
-                                      sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      <Rating
-                                        name={`priority-${row.id}`}
-                                        value={Number(row.file_priority)}
-                                        max={5}
-                                        onChange={(event, newValue) => handlePriorityChange(row, newValue)}
-                                        sx={{
-                                          '& .MuiRating-iconFilled': {
-                                            color: (theme) => {
-                                              const priority = Number(row.file_priority);
-                                              if (priority >= 4) return '#FF9500';
-                                              if (priority === 3) return '#FFCC00';
-                                              return '#1DB954';
-                                            }
-                                          }
-                                        }}
-                                      />
                                     </TableCell>
                                   )}
 
