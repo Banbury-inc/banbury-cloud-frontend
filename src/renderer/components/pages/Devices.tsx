@@ -15,6 +15,7 @@ import DevicesIcon from '@mui/icons-material/Devices';
 import MemoryIcon from '@mui/icons-material/Memory';
 import SpeedIcon from '@mui/icons-material/Speed';
 import TableCell from '@mui/material/TableCell';
+import CloudIcon from '@mui/icons-material/Cloud';
 import TableContainer from '@mui/material/TableContainer';
 import { Skeleton } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
@@ -30,6 +31,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LineChart } from '@mui/x-charts/LineChart';
+import StarIcon from '@mui/icons-material/Star';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
@@ -645,7 +647,24 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
+  const handleSyncStorageChange = async (value: string) => {
+    console.log(value);
+    
+    let task_description = 'Updating Sync Storage Capacity';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
 
+    let result = await neuranet.device.update_sync_storage_capacity(username ?? '', value);
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+      fetchDevices();
+    }
+
+  };
+
+  const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -800,6 +819,7 @@ export default function Devices() {
                   }}
                 >
                   <Tab label="Device Info" />
+                  <Tab label="Cloud Sync" />
                   <Tab label="Performance" />
                 </Tabs>
 
@@ -874,9 +894,69 @@ export default function Devices() {
                       onFoldersUpdate={handleFoldersUpdate}
                     />
                   </Stack>
+                ) : selectedTab === 1 ? (
+                  <Stack direction="column" spacing={3}>
+                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
+                        {/* Cloud Sync Section */}
+                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <CloudIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">Cloud Sync</Typography>
+                          </Stack>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Predicted CPU Usage: {}%</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Predicted RAM Usage: {}%</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Predicted GPU Usage: {}%</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'info.main' }} />
+                              <Typography noWrap>Predicted Download Speed: {}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'success.main' }} />
+                              <Typography noWrap>Predicted Upload Speed: {}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <StorageIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Sync Storage Capacity: {} GB</Typography>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                type="number"
+                                value={syncStorageValue}
+                                onChange={(e) => setSyncStorageValue(e.target.value)}
+                                sx={{ width: 100 }}
+                              />
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleSyncStorageChange(syncStorageValue)}
+                                sx={{ ml: 1 }}
+                              >
+                                Submit
+                              </Button>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <StarIcon sx={{ color: 'warning.main' }} />
+                              <Typography noWrap>Score: {}</Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Card>
+                  </Stack>
 
+                ) : selectedTab === 2 ? (
 
-                ) : (
                   // Performance tab content
                   <Stack direction="column" spacing={0} sx={{ p: 0 }}>
                     {/* Performance metrics section */}
@@ -1035,6 +1115,16 @@ export default function Devices() {
                     </Stack>
 
                   </Stack>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 5 }}>
+                    <DevicesIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h5" color="textSecondary">
+                      No devices available
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Please add a device to get started.
+                    </Typography>
+                  </Box>
                 )}
               </>
             ) : (
