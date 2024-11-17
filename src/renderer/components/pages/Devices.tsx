@@ -649,10 +649,19 @@ export default function Devices() {
 
   const handleSyncStorageChange = async (value: string) => {
     console.log(value);
+    
+    let task_description = 'Updating Sync Storage Capacity';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
     let result = await neuranet.device.update_sync_storage_capacity(username ?? '', value);
+
     if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
       fetchDevices();
     }
+
   };
 
   const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
