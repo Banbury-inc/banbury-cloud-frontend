@@ -20,7 +20,6 @@ export const newUseFileData = (
   setFirstname: (name: string) => void,
   setLastname: (name: string) => void,
   files: any,
-  sync_files: any,
   devices: any,
   setDevices: (devices: any[]) => void,
 ) => {
@@ -74,13 +73,7 @@ export const newUseFileData = (
     }
 
     // First map devices to files to include availability
-    const regularFilesData = mapDevicesToFiles(devices, files);
-    
-    // Combine regular files and sync files
-    const allFilesData = [...regularFilesData, ...sync_files];
-    
-    console.log('sync_files', sync_files);
-
+    const allFilesData = mapDevicesToFiles(devices, files);
     setAllFiles(allFilesData);
 
     // Then filter the mapped files
@@ -91,14 +84,6 @@ export const newUseFileData = (
     const filteredFiles = allFilesData.filter((file: any) => {
       if (!global_file_path && !global_file_path_device) {
         return true; // Show all files
-      }
-
-      if (global_file_path === "Core/Cloud Sync") {
-        console.log('inside if statement')
-        console.log('sync_files', sync_files);
-        setFileRows(sync_files);
-        // Show any file that contains "Cloud Sync" in its path
-        return sync_files;
       }
 
       if (!global_file_path && global_file_path_device) {
@@ -116,17 +101,14 @@ export const newUseFileData = (
       return isInSameDirectory || isFile;
     });
 
-    if (global_file_path === "Core/Cloud Sync") {
-      setFileRows(sync_files);
-    } else {
-      setFileRows(filteredFiles);
-    }
+    console.log('Filtered files:', filteredFiles);
+    setFileRows(filteredFiles);
 
     if (isLoading) {
       setIsLoading(false);
     }
 
-  }, [global_file_path, global_file_path_device, files, sync_files, devices, disableFetch, username, setFirstname, setLastname, setDevices]);
+  }, [global_file_path, global_file_path_device, files, devices, disableFetch, username, setFirstname, setLastname, setDevices]);
 
 
 

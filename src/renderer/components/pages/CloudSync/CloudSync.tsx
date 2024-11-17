@@ -127,7 +127,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-export default function Files() {
+export default function CloudSync() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof DatabaseData>('file_name');
@@ -149,14 +149,12 @@ export default function Files() {
     setTasks,
     username,
     files,
-    sync_files,
     first_name,
     last_name,
     devices,
     setFirstname,
     setLastname,
     setDevices,
-    setSyncFiles,
     redirect_to_login,
     setredirect_to_login,
     taskbox_expanded,
@@ -210,7 +208,6 @@ export default function Files() {
     setFirstname,
     setLastname,
     files,
-    sync_files,
     devices,
     setDevices,
   );

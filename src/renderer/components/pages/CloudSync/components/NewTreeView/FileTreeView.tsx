@@ -60,7 +60,7 @@ function getIconForKind(kind: string) {
 
 
 export default function FileTreeView() {
-  const { updates, files, set_Files, sync_files, setSyncFiles, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
+  const { updates, files, set_Files, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
   const [fileRows, setFileRows] = useState<DatabaseData[]>([]);
   const [expanded, setExpanded] = useState<string[]>(['core']);
   const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
@@ -113,8 +113,6 @@ export default function FileTreeView() {
         cache,
       },
     );
-
-      setSyncFiles(new_synced_files || []);
 
 
       if (new_files) {
