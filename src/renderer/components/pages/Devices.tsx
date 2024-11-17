@@ -647,8 +647,12 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
-  const handleSyncStorageChange = (value: string) => {
+  const handleSyncStorageChange = async (value: string) => {
     console.log(value);
+    let result = await neuranet.device.update_sync_storage_capacity(username ?? '', value);
+    if (result === 'success') {
+      fetchDevices();
+    }
   };
 
   const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
