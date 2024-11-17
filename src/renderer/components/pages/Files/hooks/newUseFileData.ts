@@ -80,7 +80,6 @@ export const newUseFileData = (
     // Combine regular files and sync files
     const allFilesData = [...regularFilesData, ...sync_files];
     
-    console.log('sync_files', sync_files);
 
     setAllFiles(allFilesData);
 
@@ -95,8 +94,6 @@ export const newUseFileData = (
       }
 
       if (global_file_path === "Core/Cloud Sync") {
-        console.log('inside if statement')
-        console.log('sync_files', sync_files);
         setFileRows(sync_files);
         // Show any file that contains "Cloud Sync" in its path
         return sync_files;

@@ -494,24 +494,15 @@ export default function Files() {
     return 0;
   }
 
-  const handlePriorityChange = async (fileId: number, newValue: number | null) => {
+  const handlePriorityChange = async (row : any, newValue: number | null) => {
     if (newValue === null) return;
+
+    console.log('fileId: ', row._id, 'newValue: ', newValue);
+    console.log('row: ', row);
+    const newPriority = newValue;
+
+    neuranet.files.updateFilePriority(row._id, username ?? '', newPriority);
     
-    try {
-      // Update the priority in your database/backend
-      const response = await axios.post('/api/update-priority', {
-        fileId,
-        priority: newValue,
-        username: username
-      });
-      
-      if (response.data.success) {
-        // Trigger a refresh of the file data
-        setUpdates(updates + 1);
-      }
-    } catch (error) {
-      console.error('Error updating priority:', error);
-    }
   };
 
   const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
@@ -849,7 +840,7 @@ export default function Files() {
                                         name={`priority-${row.id}`}
                                         value={Number(row.file_priority)}
                                         max={5}
-                                        onChange={(event, newValue) => handlePriorityChange(row.id as number, newValue)}
+                                        onChange={(event, newValue) => handlePriorityChange(row, newValue)}
                                         sx={{
                                           '& .MuiRating-iconFilled': {
                                             color: (theme) => {
