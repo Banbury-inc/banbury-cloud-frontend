@@ -77,6 +77,8 @@ export default function FileTreeView() {
 
 
 
+
+
   useEffect(() => {
     const fetchAndUpdateFiles = async () => {
       const new_files = await fetchFileData(
@@ -120,6 +122,48 @@ export default function FileTreeView() {
         } else {
           updatedFiles = [...fetchedFiles, ...new_files];
         }
+        setFetchedFiles(updatedFiles);
+        
+        const treeData = buildTree(updatedFiles);
+        setFileRows(treeData);
+        if (!disableFetch) {
+          setAllFiles(treeData);
+        }
+        set_Files(updatedFiles);
+      }
+    };
+
+    fetchAndUpdateFiles();
+  }, []);
+
+
+
+
+
+  useEffect(() => {
+    const fetchAndUpdateFiles = async () => {
+      const new_files = await fetchFileData(
+        username || '',
+        disableFetch,
+        snapshot_json,
+        global_file_path || '',
+        {
+          setFirstname,
+          setLastname,
+          setFileRows,
+          setAllFiles,
+          set_Files,
+          setIsLoading,
+          cache,
+        },
+      );
+
+
+
+
+      if (new_files) {
+        let updatedFiles: DatabaseData[] = [];
+        updatedFiles = [...fetchedFiles, ...new_files];
         setFetchedFiles(updatedFiles);
         
         const treeData = buildTree(updatedFiles);
