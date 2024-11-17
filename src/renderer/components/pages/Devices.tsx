@@ -15,6 +15,7 @@ import DevicesIcon from '@mui/icons-material/Devices';
 import MemoryIcon from '@mui/icons-material/Memory';
 import SpeedIcon from '@mui/icons-material/Speed';
 import TableCell from '@mui/material/TableCell';
+import CloudIcon from '@mui/icons-material/Cloud';
 import TableContainer from '@mui/material/TableContainer';
 import { Skeleton } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
@@ -30,6 +31,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LineChart } from '@mui/x-charts/LineChart';
+import StarIcon from '@mui/icons-material/Star';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
@@ -645,7 +647,11 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
+  const handleSyncStorageChange = (value: string) => {
+    console.log(value);
+  };
 
+  const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -879,69 +885,61 @@ export default function Devices() {
                   <Stack direction="column" spacing={3}>
                     <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
                       <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
-                        {/* Device Status Section */}
+                        {/* Cloud Sync Section */}
                         <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
                           <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                            <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                            <Typography variant="h6">Device Status</Typography>
-                          </Stack>
-                          <Stack spacing={2}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Chip
-                                icon={<GrainIcon />}
-                                label={selectedDevice.available}
-                                color={selectedDevice.available === "Available" ? "success" : "error"}
-                                size="small"
-                                sx={{ minWidth: 100 }}
-                              />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <DeviceHubIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{selectedDevice.device_model}</Typography>
-                            </Box>
-                          </Stack>
-                        </Box>
-
-                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
-
-                        {/* System Stats Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                            <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                            <Typography variant="h6">System Stats</Typography>
+                            <CloudIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                            <Typography variant="h6">Cloud Sync</Typography>
                           </Stack>
                           <Stack spacing={2}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <MemoryIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                              <Typography noWrap>Predicted CPU Usage: {}%</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'success.main' }} />
-                              <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Predicted RAM Usage: {}%</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MemoryIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Predicted GPU Usage: {}%</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <SpeedIcon sx={{ color: 'info.main' }} />
-                              <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                              <Typography noWrap>Predicted Download Speed: {}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'success.main' }} />
+                              <Typography noWrap>Predicted Upload Speed: {}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <StorageIcon sx={{ color: 'text.secondary' }} />
+                              <Typography noWrap>Sync Storage Capacity: {} GB</Typography>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                type="number"
+                                value={syncStorageValue}
+                                onChange={(e) => setSyncStorageValue(e.target.value)}
+                                sx={{ width: 100 }}
+                              />
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleSyncStorageChange(syncStorageValue)}
+                                sx={{ ml: 1 }}
+                              >
+                                Submit
+                              </Button>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <StarIcon sx={{ color: 'warning.main' }} />
+                              <Typography noWrap>Score: {}</Typography>
                             </Box>
                           </Stack>
                         </Box>
                       </Stack>
                     </Card>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    <Typography variant="h5" gutterBottom>
-                      Scanned Folders
-                    </Typography>
-                    <ScannedFoldersChips
-                      scanned_folders={selectedDevice.scanned_folders}
-                      username={username ?? ''}
-                      onFoldersUpdate={handleFoldersUpdate}
-                    />
                   </Stack>
 
                 ) : selectedTab === 2 ? (
