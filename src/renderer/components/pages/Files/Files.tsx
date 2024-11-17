@@ -426,7 +426,6 @@ export default function Files() {
     }
   };
   const handleSyncClick = async () => {
-    console.log('handling sync click');
     // let result = handlers.files.addFile(username ?? '');
     let task_description = 'Scanning filesystem';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
@@ -438,7 +437,6 @@ export default function Files() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       setUpdates(updates + 1);
     }
-    console.log(result);
   };
 
   const [deleteloading, setdeleteLoading] = useState<boolean>(false);
@@ -497,11 +495,21 @@ export default function Files() {
   const handlePriorityChange = async (row : any, newValue: number | null) => {
     if (newValue === null) return;
 
-    console.log('fileId: ', row._id, 'newValue: ', newValue);
-    console.log('row: ', row);
+
+    let task_description = 'Updating File Priority';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
     const newPriority = newValue;
 
-    neuranet.files.updateFilePriority(row._id, username ?? '', newPriority);
+    const result = await neuranet.files.updateFilePriority(row._id, username ?? '', newPriority);
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+    }
+
+
     
   };
 

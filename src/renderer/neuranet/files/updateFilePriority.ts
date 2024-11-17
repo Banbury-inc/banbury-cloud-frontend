@@ -31,32 +31,25 @@ export async function updateFilePriority(
 
     }
 
-    
-
     const response = await axios.post<{ result: string; username: string; }>(url, {
       file_id: file_id,
       priority: priority,
     });
     const result = response.data.result;
-    console.log(result);
 
     if (result === 'success') {
 
-      console.log("update file priority success");
 
       return result;
     }
     if (result === 'fail') {
-      console.log("update file priority failed with result: ", result);
       return 'failed';
     }
     if (result === 'task_already_exists') {
-      console.log("update file priority failed with result: ", result);
       return 'exists';
     }
 
     else {
-      console.log("update file priority failed with result: ", result);
       return 'task_add failed';
     }
   } catch (error) {
