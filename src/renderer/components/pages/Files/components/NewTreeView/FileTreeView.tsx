@@ -95,25 +95,8 @@ export default function FileTreeView() {
         },
       );
 
-      if (new_files) {
-        const updatedFiles = [...fetchedFiles, ...new_files];
-        setFetchedFiles(updatedFiles);
-        
-        const treeData = buildTree(updatedFiles);
-        setFileRows(treeData);
-        if (!disableFetch) {
-          setAllFiles(treeData);
-        }
-        set_Files(updatedFiles);
-      }
-    };
 
-    fetchAndUpdateFiles();
-  }, [username, disableFetch, updates, global_file_path]);
-
-useEffect(() => {
-  const fetchAndUpdateFiles = async () => {
-    const new_files = await fetchFileSyncData(
+    const new_synced_files = await fetchFileSyncData(
       username || '',
       disableFetch,
       snapshot_json,
@@ -129,21 +112,28 @@ useEffect(() => {
       },
     );
 
-    if (new_files) {
-      const updatedFiles = [...fetchedFiles, ...new_files];
-      setFetchedFiles(updatedFiles);
-      
-      const treeData = buildTree(updatedFiles);
-      setFileRows(treeData);
-      if (!disableFetch) {
-        setAllFiles(treeData);
-      }
-      set_Files(updatedFiles);
-    }
-  };
 
-  fetchAndUpdateFiles();
-}, [username, disableFetch, updates, global_file_path]);
+      if (new_files) {
+        let updatedFiles: DatabaseData[] = [];
+        if (new_synced_files) { 
+          updatedFiles = [...fetchedFiles, ...new_files, ...new_synced_files];
+        } else {
+          updatedFiles = [...fetchedFiles, ...new_files];
+        }
+        setFetchedFiles(updatedFiles);
+        
+        const treeData = buildTree(updatedFiles);
+        setFileRows(treeData);
+        if (!disableFetch) {
+          setAllFiles(treeData);
+        }
+        set_Files(updatedFiles);
+      }
+    };
+
+    fetchAndUpdateFiles();
+  }, [username, disableFetch, updates, global_file_path]);
+
 
   useEffect(() => {
     const handleFileChange = async () => {
