@@ -9,6 +9,7 @@ export interface DatabaseData {
   device_name: string;
   helpers: number;
   available: string;
+  file_priority: string;
 }
 
 export type Order = 'asc' | 'desc';
@@ -19,6 +20,7 @@ export interface HeadCell {
   label: string;
   numeric: boolean;
   isVisibleOnSmallScreen: boolean;
+  isVisibleNotOnCloudSync: boolean;
 }
 
 export interface EnhancedTableProps {

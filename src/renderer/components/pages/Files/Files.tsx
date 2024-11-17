@@ -9,8 +9,7 @@ import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlin
 import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
 import { CardContent, Container, Divider, Skeleton, useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Button from '@mui/material/Button';
+import Breadcrumbs from '@mui/material/Breadcrumbs'; import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -47,10 +46,9 @@ import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
 import TaskBox from '../../TaskBox';
 import TaskBoxButton from '../../TaskBoxButton';
-import { DatabaseData, Order } from './types';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
-
+import { DatabaseData, Order } from './types/index';
 
 
 import SyncIcon from '@mui/icons-material/Sync';
@@ -58,15 +56,17 @@ import AddFileToSyncButton from '../../common/add_file_to_sync_button';
 import { EnhancedTableProps, HeadCell } from './types';
 import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
+import Rating from '@mui/material/Rating';
 
 
-const headCells: HeadCell[] = [
-  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true },
-  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true },
-  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false },
-  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false },
+const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
+  { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
 ];
 
 
@@ -74,6 +74,9 @@ const headCells: HeadCell[] = [
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const isSmallScreen = useMediaQuery('(max-width:960px)');
+  const { global_file_path } = useAuth();
+  const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
+  const headCells = getHeadCells(isCloudSync);
   const createSortHandler = (property: keyof DatabaseData) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
@@ -98,8 +101,18 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           />
         </TableCell>
         {headCells
-          .filter((headCell) => !isSmallScreen || headCell.isVisibleOnSmallScreen)
-          .map((headCell, index) => (
+          .filter((headCell: HeadCell) => {
+            // Check screen size visibility
+            const isVisibleOnCurrentScreen = !isSmallScreen || headCell.isVisibleOnSmallScreen;
+            
+            // Show appropriate columns based on context
+            const isVisibleInCurrentContext = isCloudSync 
+              ? headCell.id !== 'device_name'  // Hide only location in Cloud Sync
+              : headCell.id !== 'file_priority'; // Hide priority outside Cloud Sync
+            
+            return isVisibleOnCurrentScreen && isVisibleInCurrentContext;
+          })
+          .map((headCell: HeadCell, index: number) => (
             <TableCell
               key={`${headCell.id}-${index}`}
               align={headCell.numeric ? 'right' : 'left'}
@@ -481,6 +494,29 @@ export default function Files() {
     return 0;
   }
 
+  const handlePriorityChange = async (fileId: number, newValue: number | null) => {
+    if (newValue === null) return;
+    
+    try {
+      // Update the priority in your database/backend
+      const response = await axios.post('/api/update-priority', {
+        fileId,
+        priority: newValue,
+        username: username
+      });
+      
+      if (response.data.success) {
+        // Trigger a refresh of the file data
+        setUpdates(updates + 1);
+      }
+    } catch (error) {
+      console.error('Error updating priority:', error);
+    }
+  };
+
+  const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
+  const headCells = getHeadCells(isCloudSync);
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -759,8 +795,8 @@ export default function Files() {
                                     {row.kind}
                                   </TableCell>
 
-                                  {(!isSmallScreen ||
-                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleOnSmallScreen) && (
+                                  {(!isCloudSync &&
+                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleNotOnCloudSync) && (
                                     <TableCell
                                       align="left"
                                       sx={{
@@ -793,6 +829,38 @@ export default function Files() {
                                       }}
                                     >
                                       {row.available}
+                                    </TableCell>
+                                  )}
+
+                                  {(isCloudSync ||
+                                    headCells.find((cell) => cell.id === 'file_priority')?.isVisibleNotOnCloudSync) && (
+                                    <TableCell
+                                      align="left"
+                                      padding="normal"
+                                      onClick={(e) => e.stopPropagation()} 
+                                      sx={{
+                                        borderBottomColor: '#424242',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      <Rating
+                                        name={`priority-${row.id}`}
+                                        value={Number(row.file_priority)}
+                                        max={5}
+                                        onChange={(event, newValue) => handlePriorityChange(row.id as number, newValue)}
+                                        sx={{
+                                          '& .MuiRating-iconFilled': {
+                                            color: (theme) => {
+                                              const priority = Number(row.file_priority);
+                                              if (priority >= 4) return '#FF9500';
+                                              if (priority === 3) return '#FFCC00';
+                                              return '#1DB954';
+                                            }
+                                          }
+                                        }}
+                                      />
                                     </TableCell>
                                   )}
 

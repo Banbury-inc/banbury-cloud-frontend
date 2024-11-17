@@ -46,6 +46,7 @@ export const newUseFileData = (
         device_name: device.device_name,
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
+        priority: file.priority,
       }));
     });
   };
