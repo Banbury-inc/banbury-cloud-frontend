@@ -666,6 +666,27 @@ export default function Devices() {
 
   const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
 
+
+  const handleGetDownloadQueue = async (value: string) => {
+    console.log(value);
+    
+    let task_description = 'Getting Download Queue';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await neuranet.files.getDownloadQueue(username ?? '');
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+      fetchDevices();
+    }
+
+  };
+
+
+
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -948,6 +969,17 @@ export default function Devices() {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <StarIcon sx={{ color: 'warning.main' }} />
                               <Typography noWrap>Score: {}</Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleGetDownloadQueue(selectedDevice.device_name)}
+                                sx={{ ml: 1 }}
+                              >
+                                Get Download Queue
+                              </Button>
                             </Box>
                           </Stack>
                         </Box>
