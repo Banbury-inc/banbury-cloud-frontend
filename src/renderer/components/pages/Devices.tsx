@@ -685,7 +685,7 @@ export default function Devices() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       setUpdates(updates + 1);
       fetchDevices();
-      let downloadResult = await neuranet.files.downloadFileSyncFiles(download_queue, allDevices);
+      let downloadResult = await neuranet.files.downloadFileSyncFiles(username ?? '', download_queue, allDevices, taskInfo);
     }
 
 

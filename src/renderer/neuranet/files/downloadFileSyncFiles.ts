@@ -3,11 +3,13 @@ import { neuranet } from '..'
 import * as DateUtils from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import { CONFIG } from '../../config/config';
-
+import { handlers } from '../../handlers';
 
 export async function downloadFileSyncFiles(
+  username: string,
   download_queue: any[],
   devices: any[],
+  taskInfo: any,
 ) {
   console.log('downloadFileSyncFiles download_queue: ', download_queue);
 
@@ -30,6 +32,21 @@ export async function downloadFileSyncFiles(
         if (is_online) {
           console.log(`Device ID ${device_id} is online, sending download request for file: ${file_name}`);
           // Add your download request logic here
+
+          // let result = await handlers.files.downloadFile(username, [file_name], [device.name], taskInfo);
+
+          let result = 'success';
+
+          if (result === 'success') {
+            downloaded_files.push(file_name);
+          } else {
+            console.log(`Download failed for file: ${file_name} from device ID ${device_id}`);
+            // If the download failed, try the next device in the list
+            continue;
+          }
+          }
+
+
         }
       }
     }
