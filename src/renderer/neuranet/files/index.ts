@@ -3,4 +3,4 @@ export * from './removeFiles';
 export * from './searchFile';
 export * from './updateFilePriority';
 export * from './getDownloadQueue';
-
+export * from './downloadFileSyncFiles';

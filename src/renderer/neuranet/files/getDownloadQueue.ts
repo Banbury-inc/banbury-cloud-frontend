@@ -27,10 +27,11 @@ export async function getDownloadQueue(
     });
     const result = response.data.result;
 
-    console.log('getDownloadQueue response: ', response.data);
+    console.log('getDownloadQueue response: ', response);
 
     if (result === 'success') {
-      return result;
+      return response.data;
+
     }
     if (result === 'fail') {
       return 'failed';
