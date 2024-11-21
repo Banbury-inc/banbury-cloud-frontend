@@ -220,9 +220,9 @@ export default function SignIn() {
         result: string;
         token: string;
         username: string;
-        // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-      }>('https://website2-389236221119.us-central1.run.app/getuserinfo4/' + username + '/' + password + '/');
-      // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/');
+        // }>(CONFIG.url + 'getuserinfo2/' + username + '/');
+      }>(CONFIG.url + 'getuserinfo4/' + username + '/' + password + '/');
+      // }>(CONFIG.url + 'getuserinfo/');
       const result = response.data.result;
       if (result === 'success') {
         console.log("login success");

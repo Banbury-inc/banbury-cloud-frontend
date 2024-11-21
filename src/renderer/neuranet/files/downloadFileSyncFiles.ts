@@ -27,9 +27,14 @@ export async function downloadFileSyncFiles(
   // Array to track successfully downloaded files
   let downloaded_files = [];
 
+  // Create a single task for the entire download process
+  let task_description = `Downloading file 1 of ${download_queue.length}`;
+  taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+  setTaskbox_expanded(true);
+
   // Iterate through each file in the download queue
   for (let i = 0; i < download_queue.length; i++) {
-    console.log('Processing file: ', i + ' of ' + download_queue.length);
+    console.log('Processing file: ', i + 1, ' of ', download_queue.length);
     let file = download_queue[i];
     console.log('file: ', file);
     
@@ -52,27 +57,22 @@ export async function downloadFileSyncFiles(
         if (is_online) {
           console.log(`Device ID ${device_id} is online, sending download request for file: ${file_name}`);
 
-
-          let task_description = 'Downloading file: ' + file_name;
-          let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-          setTaskbox_expanded(true);
-
-
           // Note: Actual download logic is currently commented out
           // let result = await handlers.files.downloadFile(username, [file_name], [device.name], taskInfo);
 
           // Temporary success placeholder
           let result = 'success';
 
-
           if (result === 'success') {
             // If download successful, add to downloaded files array
             downloaded_files.push(file_name);
-            let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
 
+            // Update task description to reflect progress
+            taskInfo.task_description = `Downloading file ${i + 1} of ${download_queue.length}`;
+            await neuranet.sessions.updateTask(username ?? '', taskInfo);
 
-
-
+            // Break out of the device loop once the file is successfully downloaded
+            break;
           } else {
             // If download fails, try the next device in device_ids array
             console.log(`Download failed for file: ${file_name} from device ID ${device_id}`);
@@ -82,6 +82,9 @@ export async function downloadFileSyncFiles(
       }
     }
   }
+
+  // Mark the task as completed once all files are downloaded
+  await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
 
   // Return array of successfully downloaded files
   return downloaded_files;
