@@ -5,6 +5,7 @@ import { fileWatcherEmitter } from '../../../../neuranet/device/watchdog';
 import { DatabaseData } from '../types';
 import path from 'path';
 import os from 'os';
+import { CONFIG } from '../../../../config/config';
 
 const file_name: string = 'mmills_database_snapshot.json';
 const directory_name: string = 'BCloud';
@@ -32,7 +33,7 @@ export const useFileData = (
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -95,7 +96,7 @@ export const useFileData = (
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
