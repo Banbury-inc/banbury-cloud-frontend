@@ -685,10 +685,16 @@ export default function Devices() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       setUpdates(updates + 1);
       fetchDevices();
-      let downloadResult = await neuranet.files.downloadFileSyncFiles(username ?? '', download_queue, allDevices, taskInfo);
+      let downloadResult = await neuranet.files.downloadFileSyncFiles(
+        username ?? '', 
+        download_queue ?? [],
+        allDevices,
+        taskInfo,
+        tasks ?? [],
+        setTasks,
+        setTaskbox_expanded
+      );
     }
-
-
 
   };
 

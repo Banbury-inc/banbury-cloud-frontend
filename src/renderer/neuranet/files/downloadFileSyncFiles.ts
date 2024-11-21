@@ -5,52 +5,84 @@ import { useAuth } from '../../context/AuthContext';
 import { CONFIG } from '../../config/config';
 import { handlers } from '../../handlers';
 
+/**
+ * Downloads files from available online devices in the sync queue
+ * @param username - The username of the current user
+ * @param download_queue - Array of files that need to be downloaded
+ * @param devices - Array of available devices in the network
+ * @param taskInfo - Information about the current download task
+ * @returns Array of successfully downloaded file names
+ */
 export async function downloadFileSyncFiles(
   username: string,
   download_queue: any[],
   devices: any[],
   taskInfo: any,
+  tasks: any[] | undefined,
+  setTasks: any,
+  setTaskbox_expanded: any,
 ) {
   console.log('downloadFileSyncFiles download_queue: ', download_queue);
 
-
+  // Array to track successfully downloaded files
   let downloaded_files = [];
 
+  // Iterate through each file in the download queue
   for (let i = 0; i < download_queue.length; i++) {
     console.log('Processing file: ', i + ' of ' + download_queue.length);
     let file = download_queue[i];
     console.log('file: ', file);
+    
+    // Each file can potentially be downloaded from two devices:
+    // - device_id: The primary device where the file is stored
+    // - proposed_device_id: A backup device that also has the file
     let device_ids = [file.device_id, file.proposed_device_id];
     let file_name = file.file_name;
 
+    // Try downloading from each potential device
     for (let j = 0; j < device_ids.length; j++) {
       let device_id = device_ids[j];
+      
+      // Check if devices array exists and find the specific device
       if (devices) {
         let device = devices.find(d => d.id === device_id);
+        // Check if the device is currently online
         let is_online = device ? device.online : false;
 
         if (is_online) {
           console.log(`Device ID ${device_id} is online, sending download request for file: ${file_name}`);
-          // Add your download request logic here
 
+
+          let task_description = 'Downloading file: ' + file_name;
+          let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+          setTaskbox_expanded(true);
+
+
+          // Note: Actual download logic is currently commented out
           // let result = await handlers.files.downloadFile(username, [file_name], [device.name], taskInfo);
 
+          // Temporary success placeholder
           let result = 'success';
 
+
           if (result === 'success') {
+            // If download successful, add to downloaded files array
             downloaded_files.push(file_name);
+            let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+
+
+
+
           } else {
+            // If download fails, try the next device in device_ids array
             console.log(`Download failed for file: ${file_name} from device ID ${device_id}`);
-            // If the download failed, try the next device in the list
             continue;
           }
-          }
-
-
         }
       }
     }
   }
 
+  // Return array of successfully downloaded files
+  return downloaded_files;
 }
-
