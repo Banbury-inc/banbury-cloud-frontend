@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
-
+import { CONFIG } from '../../config/config';
 
 export async function addDevice(username: string) {
 
@@ -29,7 +29,7 @@ export async function addDevice(username: string) {
 
 
   try {
-    const url = `https://website2-389236221119.us-central1.run.app/add_device/${username}/${device_name}/`;
+    const url = `${CONFIG.url}add_device/${username}/${device_name}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       user: user,
       device_number: device_number,
