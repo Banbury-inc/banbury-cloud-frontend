@@ -10,6 +10,7 @@ import { neuranet } from '../neuranet';
 import { useEffect } from 'react';
 import Stack from '@mui/material/Stack';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import { CONFIG } from '../config/config';
 
 export default function TaskBoxButton() {
   const { username, tasks, setTasks, taskbox_expanded, setTaskbox_expanded } = useAuth();
@@ -47,7 +48,7 @@ export default function TaskBoxButton() {
     const fetchData = async () => {
       try {
         let task_device = neuranet.device.name();
-        const url = `https://website2-389236221119.us-central1.run.app/get_recent_session/${username}/`;
+        const url = `${CONFIG.url}get_recent_session/${username}/`;
         const response = await axios.post<{
           result: string;
           sessions: any[];

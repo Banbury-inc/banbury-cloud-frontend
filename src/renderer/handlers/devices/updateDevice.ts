@@ -1,7 +1,7 @@
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import axios from 'axios'
-import CONFIG from '../../config/config'  
+import { CONFIG } from '../../config/config'  
 
 export async function updateDevice(username: any) {
   return new Promise(async (resolve, reject) => {
