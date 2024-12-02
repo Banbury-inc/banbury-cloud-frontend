@@ -18,26 +18,27 @@ export async function get_snapshot(username: any) {
 
   try {
     // Step 1: Fetch user information
+    const api_url = CONFIG.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app' : 'http://localhost:8080';
     const userInfoResponse = await axios.get<{
       first_name: string;
       last_name: string;
       phone_number: string;
       email: string;
-    }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+    }>(`${api_url}/getuserinfo/${username}/`);
 
     const { first_name, last_name } = userInfoResponse.data;
 
     // Step 2: Fetch device information
     const deviceInfoResponse = await axios.get<{
       devices: any[];
-    }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+    }>(`${api_url}/getdeviceinfo/${username}/`);
 
     const { devices } = deviceInfoResponse.data;
 
     // Step 3: Fetch files for all devices
     const fileInfoResponse = await axios.get<{
       files: any[];
-    }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
+    }>(`${api_url}/getfileinfo/${username}/`);
 
     const { files } = fileInfoResponse.data;
 

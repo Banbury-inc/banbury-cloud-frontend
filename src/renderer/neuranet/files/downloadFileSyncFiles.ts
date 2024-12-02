@@ -4,6 +4,8 @@ import * as DateUtils from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import { CONFIG } from '../../config/config';
 import { handlers } from '../../handlers';
+import { downloadFile } from '../../handlers/files/downloadFile';
+
 
 /**
  * Downloads files from available online devices in the sync queue
@@ -21,16 +23,31 @@ export async function downloadFileSyncFiles(
   },
   devices: any[],
   taskInfo: any,
-  tasks: any[] | undefined,
+  tasks: any[] | null,
   setTasks: any,
   setTaskbox_expanded: any,
 ) {
   console.log('downloadFileSyncFiles download_queue: ', download_queue);
 
+  // Check if there are no files to download
+  if (download_queue.files_available_for_download === 0) {
+    // Create a task to show completion
+    const task_name = 'Checking for files to download';
+    const download_task = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
+    
+    if (download_task && typeof download_task !== 'string') {
+      download_task.task_progress = 100;
+      download_task.task_status = 'complete';
+      await neuranet.sessions.updateTask(username ?? '', download_task);
+      console.log('No files available for download');
+    }
+    
+    return [];
+  }
+
   // Array to track successfully downloaded files
   let downloaded_files = [];
-  let files_available_for_download = download_queue.files_available_for_download;
-  let download_task: typeof taskInfo;
+  let download_task: any;
   // Iterate through each file in the download queue
   for (let i = 0; i < download_queue.files.length; i++) {
     // Create a single task for the entire download process
@@ -39,11 +56,17 @@ export async function downloadFileSyncFiles(
 
     if (i === 0) {
       download_task = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
+      if (!download_task) {
+        console.error('Failed to create download task');
+        return downloaded_files;
+      }
     } else {
-      download_task.task_name = task_name;
-      download_task.task_progress = i / download_queue.files.length * 100;
-      const update_response = await neuranet.sessions.updateTask(username ?? '', download_task);
-      console.log('update_response: ', update_response);
+      if (download_task) {
+        download_task.task_name = task_name;
+        download_task.task_progress = i / download_queue.files.length * 100;
+        const update_response = await neuranet.sessions.updateTask(username ?? '', download_task);
+        console.log('update_response: ', update_response);
+      }
     }
 
     setTaskbox_expanded(true);
@@ -57,26 +80,62 @@ export async function downloadFileSyncFiles(
 
     // Attempt to download file from source device
     try {
-      // TODO: Implement actual file download logic here
-      // For now using placeholder success/fail
-      let result = 'success';
+      const result = await downloadFile(username, [file_name], [source_device], download_task);
 
       if (result === 'success') {
-        // If download successful, add to downloaded files array
         downloaded_files.push(file_name);
         console.log(`Successfully downloaded ${file_name} from ${source_device}`);
-      } else {
-        console.log(`Download failed for file: ${file_name} from device ${source_device}`);
       }
     } catch (error) {
       console.error(`Error downloading ${file_name} from ${source_device}:`, error);
+      
+      // Update task info for failure
+      if (download_task) {
+        download_task.task_progress = (i / download_queue.files.length * 100);
+        download_task.task_status = 'error';
+        
+        // Call failTask with the specific error
+        await neuranet.sessions.failTask(
+          username ?? '', 
+          download_task, 
+          error, // Pass the specific error message
+          tasks, 
+          setTasks
+        );
+
+        switch (error) {
+          case 'file_not_found':
+            console.log(`File ${file_name} not found on ${source_device}`);
+            break;
+          case 'device_offline':
+            console.log(`Device ${source_device} is offline`);
+            break;
+          case 'permission_denied':
+            console.log(`Permission denied to download ${file_name}`);
+            break;
+          case 'transfer_failed':
+            console.log(`Transfer failed for ${file_name}`);
+            break;
+          case 'connection_error':
+            console.log(`Connection error with ${source_device}`);
+            break;
+          case 'timeout':
+            console.log(`Download timeout for ${file_name}`);
+            break;
+          default:
+            console.log(`Unknown error occurred while downloading ${file_name}`);
+        }
+      }
     }
   }
 
-  download_task.task_progress = 100;
-  download_task.task_status = 'complete';
-  const update_response = await neuranet.sessions.updateTask(username ?? '', download_task);
-  console.log('update_response: ', update_response);
+  // Only mark as complete if we have a task and it didn't encounter errors
+  if (download_task && typeof download_task !== 'string') {
+    download_task.task_progress = 100;
+    download_task.task_status = 'complete';
+    const update_response = await neuranet.sessions.updateTask(username ?? '', download_task);
+    console.log('update_response: ', update_response);
+  }
 
   // Return array of successfully downloaded files
   return downloaded_files;

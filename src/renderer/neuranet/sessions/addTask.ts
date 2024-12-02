@@ -3,19 +3,14 @@ import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import os from 'os';
+import { CONFIG } from '../../config/config';
 
-interface TaskInfo {
-  task_id?: string;
-  task_name: string;
-  task_device: string;
-  task_status: string;
-}
 
 export async function addTask(
   username: string,
   task_description: string,
-  tasks: any,
-  setTasks: any
+  tasks: any[] | null,
+  setTasks: (tasks: any[]) => void
 ) {
 
 
@@ -23,13 +18,14 @@ export async function addTask(
 
   // let device_name = neuranet.device.name();
   let device_name = os.hostname();
-  let taskInfo: TaskInfo = {
+  let taskInfo: any = {
     task_name: task_description,
     task_device: device_name,
     task_status: 'pending',
+    task_progress: 0,
   };
   try {
-    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/add_task/${username}/`;
+    const url = `${CONFIG.url}add_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; task_id: string; }>(url, {
       user: user,
       task_name: task_description,
@@ -46,6 +42,7 @@ export async function addTask(
         task_name: task_description,
         task_device: device_name,
         task_status: 'pending',
+        task_progress: 0,
       };
       setTasks([...(tasks || []), taskInfo]);
       console.log("task add success");
