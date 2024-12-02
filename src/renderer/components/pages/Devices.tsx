@@ -670,14 +670,15 @@ export default function Devices() {
   const handleGetDownloadQueue = async (value: string) => {
     console.log(value);
     
-    let task_description = 'Getting Download Queue';
-    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    let task_name = 'Getting Download Queue';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
     setTaskbox_expanded(true);
 
     let response = await neuranet.files.getDownloadQueue(username ?? '');
 
+    console.log('response: ', response);
+
     let result = (response as any).result;
-    console.log('result: ', result);
     let download_queue = (response as any).download_queue;
 
 
@@ -687,7 +688,7 @@ export default function Devices() {
       fetchDevices();
       let downloadResult = await neuranet.files.downloadFileSyncFiles(
         username ?? '', 
-        download_queue ?? [],
+        download_queue ?? {files: [], files_available_for_download: 0},
         allDevices,
         taskInfo,
         tasks ?? [],

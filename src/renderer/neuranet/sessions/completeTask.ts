@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
+import { CONFIG } from '../../config/config';
 
 /**
  *
@@ -18,21 +19,19 @@ export async function completeTask(
 ) {
 
 
-  const user = username;
-
   try {
-    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/update_task/${username}/`;
-    const response = await axios.post<{ result: string; username: string; }>(url, {
-      user: user,
+    const url = `${CONFIG.url}update_task/${username}/`;
+    const response = await axios.post<{ result: string; username: string; task_id: string; }>(url, {
+      task_id: taskInfo.task_id,
       task_name: taskInfo.task_name,
-      task_device: taskInfo.task_device,
+      task_progress: 100,
       task_status: 'complete',
     });
     const result = response.data.result;
 
     if (result === 'success') {
       setTasks([...(tasks || []), taskInfo]);
-      return 'success';
+      return response.data;
     }
     if (result === 'fail') {
       return 'failed';
