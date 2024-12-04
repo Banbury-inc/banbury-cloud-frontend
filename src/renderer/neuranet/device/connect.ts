@@ -75,12 +75,15 @@ export function createWebSocketConnection(username: string, device_name: string,
 
   // Message event: When a message or file is received from the server
   socket.onmessage = async function(event: any) {
+    console.log('I received a message: ', event.data);
+
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
       handleReceivedFileChunk(event.data);
     } else {
       try {
         const data = JSON.parse(event.data);
+        console.log('I parsed the data: ', data);
         
         switch (data.message) {
           case 'File transfer complete':
@@ -112,6 +115,31 @@ export function createWebSocketConnection(username: string, device_name: string,
             return 'transfer_failed';
         }
 
+
+        if (data.request_type === 'device_info') {
+          console.log('I was asked for device info')
+          let device_info = await neuranet.device.getDeviceInfo();
+          console.log('I retrieved the device info: ', device_info)
+          const message = {
+                message: `device_info_response`,
+                username: username,
+                sending_device_name: device_name,
+                requesting_device_name: data.requesting_device_name,
+                device_info: device_info,
+          };
+          socket.send(JSON.stringify(message));
+          console.log(`Sent: ${JSON.stringify(message)}`);
+        }
+
+
+
+        if (data.request_type === 'file_sync_request') {
+          console.log('I was asked to initiate file sync')
+          let response = await neuranet.files.getDownloadQueue(username ?? '');
+          console.log('I completed the file sync: ', response)
+        }
+
+
         // Handle existing request types
         if (data.request_type === 'file_request') {
           const directory_name: string = 'BCloud';
@@ -131,7 +159,7 @@ export function createWebSocketConnection(username: string, device_name: string,
             return 'file_not_found';
           });
 
-          // Rest of file request handling...
+
         }
       } catch (error) {
         console.error('Invalid message format:', error);
