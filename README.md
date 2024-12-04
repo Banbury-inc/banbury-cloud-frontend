@@ -52,7 +52,7 @@ Setting up local environment is extremely easy and straight forward. Follow the 
    ```
 2. Switch to the code folder:
    ```
-   cd Banbury-Cloud
+   cd banbury-cloud-frontend
    ```
 3. Install npm packages:
    ```
