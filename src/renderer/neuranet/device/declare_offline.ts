@@ -2,6 +2,7 @@ import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
+import { CONFIG } from '../../config/config';
 
 
 export async function declare_offline(
@@ -14,7 +15,7 @@ export async function declare_offline(
   let device_name = neuranet.device.name();
 
   try {
-    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/declare_offline/${username}/`;
+    const url = `${CONFIG.url}/declare_offline/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       device_name: device_name,
     });

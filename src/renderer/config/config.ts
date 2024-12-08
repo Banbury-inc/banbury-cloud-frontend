@@ -11,7 +11,8 @@ export const CONFIG = {
     if (this.prod) {
       return 'http://54.224.116.254:8080';
     } else if (this.dev) {
-      return 'http://54.197.4.251:8080';
+      // return 'http://54.197.4.251:8080';
+      return 'http://3.84.158.138:8080';
     } else {
       return 'http://localhost:8080/';
     }

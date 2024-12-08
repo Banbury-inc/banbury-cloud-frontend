@@ -29,12 +29,10 @@ export async function fetchData(
       callbacks.setFileRows(buildTree(files));
     }
 
-    // Step 2: Fetch fresh data from API
-    const api_url = CONFIG.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app' : 'http://localhost:8080';
     const [userInfoResponse, deviceInfoResponse, fileInfoResponse] = await Promise.all([
-      axios.get<{ first_name: string; last_name: string; }>(`${api_url}/getuserinfo/${username}/`),
-      axios.get<{ devices: any[]; }>(`${api_url}/getdeviceinfo/${username}/`),
-      axios.get<{ files: any[]; }>(`${api_url}/getfileinfo/${username}/`)
+      axios.get<{ first_name: string; last_name: string; }>(`${CONFIG.url}/getuserinfo/${username}/`),
+      axios.get<{ devices: any[]; }>(`${CONFIG.url}/getdeviceinfo/${username}/`),
+      axios.get<{ files: any[]; }>(`${CONFIG.url}/getfileinfo/${username}/`)
     ]);
 
     // Update user info

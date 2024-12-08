@@ -25,11 +25,10 @@ export const fetchFileSyncData = async (
 
 
   try {
-    const api_url = CONFIG.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app' : 'http://localhost:8080';
 
     // Fetch fresh data from API
     const [fileInfoResponse] = await Promise.all([
-      axios.post<{ files: any[]; }>(`${api_url}/get_files_to_sync/${username}/`, {
+      axios.post<{ files: any[]; }>(`${CONFIG.url}/get_files_to_sync/${username}/`, {
         global_file_path: global_file_path
       })
     ]);

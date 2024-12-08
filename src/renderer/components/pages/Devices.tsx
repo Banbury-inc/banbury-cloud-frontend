@@ -252,12 +252,6 @@ export default function Devices() {
     setSelectedTab(newValue);
   };
 
-  let url: string;
-  if (CONFIG.prod) {
-    url = 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app';
-  } else {
-    url = 'http://localhost:8080';
-  }
 
   const getSelectedDeviceNames = () => {
     return selected.map(id => {
@@ -277,7 +271,7 @@ export default function Devices() {
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -286,7 +280,7 @@ export default function Devices() {
       // Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`${url}/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
 
       const { devices } = deviceInfoResponse.data;
 

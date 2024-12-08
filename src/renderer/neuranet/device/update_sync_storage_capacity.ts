@@ -19,12 +19,7 @@ export async function update_sync_storage_capacity(
 
   try {
 
-    if (CONFIG.prod) {
-      url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/update_sync_storage_capacity/${username}/`;
-    } else {
-      url = `http://localhost:8080/update_sync_storage_capacity/${username}/`;
-
-    }
+      url = `${CONFIG.url}/update_sync_storage_capacity/${username}/`;
 
     
 

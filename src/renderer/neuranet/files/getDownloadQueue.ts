@@ -16,11 +16,7 @@ export async function getDownloadQueue(
 
   try {
 
-    if (CONFIG.prod) {
-      url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/get_download_queue/${username}/`;
-    } else {
-      url = `http://localhost:8080/get_download_queue/${username}/`;
-    }
+      url = `${CONFIG.url}/get_download_queue/${username}/`;
 
     const response = await axios.post<{ result: string; username: string; }>(url, {
       device_name: device_name,

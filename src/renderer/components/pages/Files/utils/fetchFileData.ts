@@ -8,39 +8,43 @@ import { CONFIG } from '../../../../config/config';
 
 
 export const fetchFileData = async (
-  username: string,
-  disableFetch: boolean,
-  snapshot_json: string,
-  global_file_path: string,
-  options: {
-    setFirstname: (value: string) => void;
-    setLastname: (value: string) => void;
-    setFileRows: (value: DatabaseData[]) => void;
-    setAllFiles: (value: DatabaseData[]) => void;
-    set_Files: (value: any[]) => void;
-    setIsLoading: (value: boolean) => void;
-    cache: Map<string, DatabaseData[]>;
-  },
+    username: string,
+    disableFetch: boolean,
+    snapshot_json: string,
+    global_file_path: string,
+    options: {
+        setFirstname: (value: string) => void;
+        setLastname: (value: string) => void;
+        setFileRows: (value: DatabaseData[]) => void;
+        setAllFiles: (value: DatabaseData[]) => void;
+        set_Files: (value: any[]) => void;
+        setIsLoading: (value: boolean) => void;
+        cache: Map<string, DatabaseData[]>;
+    },
 ) => {
 
+    const url = `${CONFIG.url}/get_files_from_filepath/${username}/`
 
-  try {
-    // Fetch fresh data from API
-    const [fileInfoResponse] = await Promise.all([
-      axios.post<{ files: any[]; }>(`${CONFIG.url}/get_files_from_filepath/${username}/`, {
-        global_file_path: global_file_path
-      })
-    ]);
-
-    console.log(fileInfoResponse)
+    console.log(url)
 
 
-    return fileInfoResponse.data.files;
+    try {
+        // Fetch fresh data from API
+        const [fileInfoResponse] = await Promise.all([
+            axios.post<{ files: any[]; }>(`${CONFIG.url}/get_files_from_filepath/${username}/`, {
+                global_file_path: global_file_path
+            })
+        ]);
+
+        console.log(fileInfoResponse)
 
 
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  } finally {
-    options.setIsLoading(false);
-  }
+        return fileInfoResponse.data.files;
+
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    } finally {
+        options.setIsLoading(false);
+    }
 } 
