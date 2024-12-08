@@ -29,7 +29,7 @@ export async function addDevice(username: string) {
 
 
   try {
-    const url = `${CONFIG.url}add_device/${username}/${device_name}/`;
+    const url = `${CONFIG.url}/add_device/${username}/${device_name}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       user: user,
       device_number: device_number,

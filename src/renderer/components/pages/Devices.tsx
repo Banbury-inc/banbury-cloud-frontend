@@ -668,7 +668,8 @@ export default function Devices() {
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
     setTaskbox_expanded(true);
 
-    let response = await neuranet.files.getDownloadQueue(username ?? '');
+    // let response = await neuranet.files.getDownloadQueue(username ?? '');
+    let response = await neuranet.files.runPipeline(username ?? '');
 
     console.log('response: ', response);
 

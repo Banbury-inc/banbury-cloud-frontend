@@ -24,7 +24,7 @@ export async function failTask(
   const task_response = response;
 
   try {
-    const url = `${CONFIG.url}fail_task/${username}/`;
+    const url = `${CONFIG.url}/fail_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       task_id: taskInfo.task_id,
       task_name: taskInfo.task_name,

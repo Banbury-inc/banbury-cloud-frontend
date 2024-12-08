@@ -29,6 +29,12 @@ export async function downloadFileSyncFiles(
 ) {
   console.log('downloadFileSyncFiles download_queue: ', download_queue);
 
+  // Add validation for download_queue and its properties
+  if (!download_queue || !Array.isArray(download_queue.files)) {
+    console.error('Invalid download queue structure');
+    return [];
+  }
+
   // Check if there are no files to download
   if (download_queue.files_available_for_download === 0) {
     // Create a task to show completion

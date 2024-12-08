@@ -49,12 +49,9 @@ export function createWebSocketConnection(username: string, device_name: string,
 
   let socket: WebSocket;
 
+  const url_ws = CONFIG.url_ws;
   // Replace the URL with your WebSocket endpoint
-  if (CONFIG.prod) {  
-    socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
-  } else {
-    socket = new WebSocketClient('ws://0.0.0.0:8082/ws/live_data/');
-  }
+  socket = new WebSocketClient(url_ws);
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';

@@ -18,7 +18,7 @@ export async function updateTask(
 
 
   try {
-    const url = `${CONFIG.url}update_task/${username}/`;
+    const url = `${CONFIG.url}/update_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; task_id: string; }>(url, {
       task_id: taskInfo.task_id,
       task_name: taskInfo.task_name,
