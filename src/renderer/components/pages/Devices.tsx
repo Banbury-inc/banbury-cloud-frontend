@@ -93,6 +93,8 @@ interface DeviceData {
   predicted_gpu_usage: number;
   predicted_download_speed: number;
   predicted_upload_speed: number;
+  files_available_for_download: number;
+  files_needed: number;
   sync_storage_capacity_gb: number;
   predicted_performance_score: number;
 }
@@ -327,6 +329,8 @@ export default function Devices() {
           predicted_download_speed: 0,
           predicted_upload_speed: 0,
           sync_storage_capacity_gb: 0,
+          files_available_for_download: 0,
+          files_needed: 0,
           score: 0
         };
 
@@ -374,6 +378,8 @@ export default function Devices() {
           predicted_download_speed: devicePrediction.predicted_download_speed,
           predicted_upload_speed: devicePrediction.predicted_upload_speed,
           predicted_performance_score: devicePrediction.score,
+          files_available_for_download: devicePrediction.files_available_for_download,
+          files_needed: devicePrediction.files_needed
         };
       });
 
@@ -1026,6 +1032,18 @@ export default function Devices() {
                               <SpeedIcon sx={{ color: 'success.main' }} />
                               <Typography noWrap>
                                 Predicted Upload Speed: {formatSpeed(selectedDevice.predicted_upload_speed || 0)}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'info.main' }} />
+                              <Typography noWrap>
+                                Files Needed: {(selectedDevice.files_needed|| 0)}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedIcon sx={{ color: 'success.main' }} />
+                              <Typography noWrap>
+                                Files Available for Download: {(selectedDevice.files_available_for_download|| 0)}
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
