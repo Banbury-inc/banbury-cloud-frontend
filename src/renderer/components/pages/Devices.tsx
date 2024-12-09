@@ -88,7 +88,13 @@ interface DeviceData {
   ram_total: string;
   ram_free: string;
   scanned_folders: string[];
-
+  predicted_cpu_usage: number;
+  predicted_ram_usage: number;
+  predicted_gpu_usage: number;
+  predicted_download_speed: number;
+  predicted_upload_speed: number;
+  sync_storage_capacity_gb: number;
+  predicted_performance_score: number;
 }
 
 const headCells: HeadCell[] = [
@@ -282,48 +288,97 @@ export default function Devices() {
         devices: any[];
       }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
 
+      const devicePredictionsResponse = await axios.get<{
+        data: {
+          device_predictions: Array<{
+            device_id: string;
+            device_name: string;
+            files_available_for_download: number;
+            files_needed: number;
+            predicted_cpu_usage: number;
+            predicted_download_speed: number;
+            predicted_gpu_usage: number;
+            predicted_ram_usage: number;
+            predicted_upload_speed: number;
+            score: number;
+            score_timestamp: string;
+            sync_storage_capacity_gb: number;
+            timestamp: string;
+          }>;
+          result: string;
+        };
+      }>(`${CONFIG.url}/get_device_prediction_data/${username}/`);
+
+      console.log('devicePredictionsResponse: ', devicePredictionsResponse);
+
       const { devices } = deviceInfoResponse.data;
+      const { device_predictions } = devicePredictionsResponse.data.data;
 
       // Transform device data
-      const transformedDevices: DeviceData[] = devices.map((device, index) => ({
-        id: index + 1,
-        device_name: device.device_name,
-        device_manufacturer: device.device_manufacturer,
-        device_model: device.device_model,
-        storage_capacity_gb: device.storage_capacity_gb,
-        total_storage: device.total_storage,
-        upload_speed: Array.isArray(device.upload_speed)
-          ? device.upload_speed[0] || 'N/A'
-          : device.upload_speed || 'N/A',
-        download_speed: Array.isArray(device.download_speed)
-          ? device.download_speed[0] || 'N/A'
-          : device.download_speed || 'N/A',
-        battery_status: Array.isArray(device.battery_status)
-          ? device.battery_status[0] || 'N/A'
-          : device.battery_status || 'N/A',
-        battery_time_remaining: device.battery_time_remaining,
-        available: device.online ? "Available" : "Unavailable",
-        cpu_info_manufacturer: device.cpu_info_manufacturer,
-        cpu_info_brand: device.cpu_info_brand,
-        cpu_info_speed: device.cpu_info_speed,
-        cpu_info_cores: device.cpu_info_cores,
-        cpu_info_physical_cores: device.cpu_info_physical_cores,
-        cpu_info_processors: device.cpu_info_processors,
-        cpu_info_socket: device.cpu_info_socket,
-        cpu_info_vendor: device.cpu_info_vendor,
-        cpu_info_family: device.cpu_info_family,
-        cpu_usage: device.cpu_usage,
-        gpu_usage: Array.isArray(device.gpu_usage)
-          ? device.gpu_usage
-          : [device.gpu_usage],
-        ram_usage: device.ram_usage,
-        ram_total: device.ram_total,
-        ram_free: device.ram_free,
-        scanned_folders: Array.isArray(device.scanned_folders) ? device.scanned_folders : [], // Ensure it's always an array
+      const transformedDevices: DeviceData[] = devices.map((device, index) => {
 
-      }));
+        // Find matching predictions for this device with default values
+        const devicePrediction = device_predictions?.find(
+          pred => pred.device_name === device.device_name
+        ) || {
+          predicted_cpu_usage: 0,
+          predicted_ram_usage: 0, 
+          predicted_gpu_usage: 0,
+          predicted_download_speed: 0,
+          predicted_upload_speed: 0,
+          sync_storage_capacity_gb: 0,
+          score: 0
+        };
+
+        console.log('devicePrediction: ', devicePrediction);
+
+        return {
+          id: index + 1,
+          device_name: device.device_name,
+          device_manufacturer: device.device_manufacturer,
+          device_model: device.device_model,
+          storage_capacity_gb: device.storage_capacity_gb,
+          total_storage: device.total_storage,
+          upload_speed: Array.isArray(device.upload_speed)
+            ? device.upload_speed[0] || 'N/A'
+            : device.upload_speed || 'N/A',
+          download_speed: Array.isArray(device.download_speed)
+            ? device.download_speed[0] || 'N/A'
+            : device.download_speed || 'N/A',
+          battery_status: Array.isArray(device.battery_status)
+            ? device.battery_status[0] || 'N/A'
+            : device.battery_status || 'N/A',
+          battery_time_remaining: device.battery_time_remaining,
+          available: device.online ? "Available" : "Unavailable",
+          cpu_info_manufacturer: device.cpu_info_manufacturer,
+          cpu_info_brand: device.cpu_info_brand,
+          cpu_info_speed: device.cpu_info_speed,
+          cpu_info_cores: device.cpu_info_cores,
+          cpu_info_physical_cores: device.cpu_info_physical_cores,
+          cpu_info_processors: device.cpu_info_processors,
+          cpu_info_socket: device.cpu_info_socket,
+          cpu_info_vendor: device.cpu_info_vendor,
+          cpu_info_family: device.cpu_info_family,
+          cpu_usage: device.cpu_usage,
+          gpu_usage: Array.isArray(device.gpu_usage)
+            ? device.gpu_usage
+            : [device.gpu_usage],
+          ram_usage: device.ram_usage,
+          ram_total: device.ram_total,
+          ram_free: device.ram_free,
+          scanned_folders: Array.isArray(device.scanned_folders) ? device.scanned_folders : [],
+          sync_storage_capacity_gb: devicePrediction.sync_storage_capacity_gb,
+          predicted_cpu_usage: devicePrediction.predicted_cpu_usage,
+          predicted_ram_usage: devicePrediction.predicted_ram_usage,
+          predicted_gpu_usage: devicePrediction.predicted_gpu_usage,
+          predicted_download_speed: devicePrediction.predicted_download_speed,
+          predicted_upload_speed: devicePrediction.predicted_upload_speed,
+          predicted_performance_score: devicePrediction.score,
+        };
+      });
 
       setAllDevices(transformedDevices);
+
 
       // Restore the previously selected device if it exists in the new list
       const restoredDevice = transformedDevices.find(device => device.device_name === previousSelectedDeviceName);
@@ -658,7 +713,6 @@ export default function Devices() {
 
   };
 
-  const [syncStorageValue, setSyncStorageValue] = useState<string>('0');
 
 
   const handleGetDownloadQueue = async (value: string) => {
@@ -694,8 +748,16 @@ export default function Devices() {
 
   };
 
+  const [syncStorageValue, setSyncStorageValue] = useState<string>('');
 
-
+  // Update syncStorageValue when selectedDevice changes
+  useEffect(() => {
+    if (selectedDevice && selectedDevice.sync_storage_capacity_gb != null) {
+      setSyncStorageValue(selectedDevice.sync_storage_capacity_gb.toString());
+    } else {
+      setSyncStorageValue('0'); // Set a default value when null
+    }
+  }, [selectedDevice]);
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -938,23 +1000,33 @@ export default function Devices() {
                           <Stack spacing={2}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <MemoryIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>Predicted CPU Usage: {}%</Typography>
+                              <Typography noWrap>
+                                Predicted CPU Usage: {selectedDevice.predicted_cpu_usage || 0}%
+                              </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <MemoryIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>Predicted RAM Usage: {}%</Typography>
+                              <Typography noWrap>
+                                Predicted RAM Usage: {selectedDevice.predicted_ram_usage || 0}%
+                              </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <MemoryIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>Predicted GPU Usage: {}%</Typography>
+                              <Typography noWrap>
+                                Predicted GPU Usage: {selectedDevice.predicted_gpu_usage || 0}%
+                              </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <SpeedIcon sx={{ color: 'info.main' }} />
-                              <Typography noWrap>Predicted Download Speed: {}</Typography>
+                              <Typography noWrap>
+                                Predicted Download Speed: {formatSpeed(selectedDevice.predicted_download_speed || 0)}
+                              </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <SpeedIcon sx={{ color: 'success.main' }} />
-                              <Typography noWrap>Predicted Upload Speed: {}</Typography>
+                              <Typography noWrap>
+                                Predicted Upload Speed: {formatSpeed(selectedDevice.predicted_upload_speed || 0)}
+                              </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <StorageIcon sx={{ color: 'text.secondary' }} />
@@ -964,7 +1036,7 @@ export default function Devices() {
                                 size="small"
                                 type="number"
                                 value={syncStorageValue}
-                                onChange={(e) => setSyncStorageValue(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
                                 sx={{ width: 100 }}
                               />
                               <Button
