@@ -66,10 +66,9 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
-  // { id: 'deviceID', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
-  { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
-  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
-  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
 
@@ -105,15 +104,16 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         </TableCell>
         {headCells
           .filter((headCell: HeadCell) => {
-            // Check screen size visibility
             const isVisibleOnCurrentScreen = !isSmallScreen || headCell.isVisibleOnSmallScreen;
             
-            // Show appropriate columns based on context
-            const isVisibleInCurrentContext = isCloudSync 
-              ? headCell.id !== 'device_name'  // Hide only location in Cloud Sync
-              : headCell.id !== 'file_priority'; // Hide priority outside Cloud Sync
-            
-            return isVisibleOnCurrentScreen && isVisibleInCurrentContext;
+            if (isCloudSync) {
+              // Show only these specific columns in Cloud Sync view
+              const cloudSyncColumns = ['file_name', 'file_size', 'device_ids', 'file_priority'];
+              return isVisibleOnCurrentScreen && cloudSyncColumns.includes(headCell.id);
+            } else {
+              // In regular view, show all except Cloud Sync specific columns
+              return isVisibleOnCurrentScreen && headCell.isVisibleNotOnCloudSync;
+            }
           })
           .map((headCell: HeadCell, index: number) => (
             <TableCell
@@ -807,20 +807,21 @@ export default function Files() {
                                     {row.file_size}
                                   </TableCell>
 
-                                  <TableCell
-                                    align="left"
-                                    sx={{
-                                      borderBottomColor: '#424242',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }}
-                                  >
-                                    {row.kind}
-                                  </TableCell>
+                                  {(!isCloudSync) && (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        borderBottomColor: '#424242',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      {row.kind}
+                                    </TableCell>
+                                  )}
 
-                                  {(!isCloudSync &&
-                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleNotOnCloudSync) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       align="left"
                                       sx={{
@@ -834,8 +835,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-                                  {(!isSmallScreen ||
-                                    headCells.find((cell) => cell.id === 'available')?.isVisibleOnSmallScreen) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       align="left"
                                       padding="normal"
@@ -856,9 +856,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-
-                                  {(isCloudSync ||
-                                    headCells.find((cell) => cell.id === 'device_ids')?.isVisibleNotOnCloudSync) && (
+                                  {isCloudSync && (
                                     <TableCell
                                       align="left"
                                       padding="normal"
@@ -915,9 +913,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-
-                                  {(isCloudSync ||
-                                    headCells.find((cell) => cell.id === 'file_priority')?.isVisibleNotOnCloudSync) && (
+                                  {isCloudSync && (
                                     <TableCell
                                       align="left"
                                       padding="normal"
@@ -949,8 +945,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-                                  {(!isSmallScreen ||
-                                    headCells.find((cell) => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       padding="normal"
                                       align="right"
