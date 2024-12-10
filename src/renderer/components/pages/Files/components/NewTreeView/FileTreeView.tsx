@@ -94,6 +94,7 @@ export default function FileTreeView() {
                 set_Files,
                 setIsLoading,
                 cache,
+                existingFiles: fetchedFiles,
             },
         );
 
@@ -171,6 +172,7 @@ export default function FileTreeView() {
           set_Files,
           setIsLoading,
           cache,
+          existingFiles: fetchedFiles,
         },
       );
 
@@ -210,6 +212,7 @@ export default function FileTreeView() {
           set_Files,
           setIsLoading,
           cache,
+          existingFiles: fetchedFiles,
         },
       );
 

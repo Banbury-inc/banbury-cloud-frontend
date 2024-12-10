@@ -10,15 +10,25 @@ export const fetchFileData = async (
     disableFetch: boolean,
     snapshot_json: string,
     global_file_path: string,
-    options: {
-        setFirstname: (value: string) => void;
-        setLastname: (value: string) => void;
-        setFileRows: (value: DatabaseData[]) => void;
-        setAllFiles: (value: DatabaseData[]) => void;
-        set_Files: (value: any[]) => void;
-        setIsLoading: (value: boolean) => void;
+    {
+        setFirstname,
+        setLastname,
+        setFileRows,
+        setAllFiles,
+        set_Files,
+        setIsLoading,
+        cache,
+        existingFiles,
+    }: {
+        setFirstname: (name: string) => void;
+        setLastname: (name: string) => void;
+        setFileRows: (rows: DatabaseData[]) => void;
+        setAllFiles: (files: DatabaseData[]) => void;
+        set_Files: (files: any[]) => void;
+        setIsLoading: (loading: boolean) => void;
         cache: Map<string, DatabaseData[]>;
-    },
+        existingFiles: DatabaseData[];
+    }
 ) => {
     try {
         const fileInfoResponse = await axios.post<{ files: DatabaseData[]; }>(
@@ -28,26 +38,21 @@ export const fetchFileData = async (
             }
         );
 
-        // Create a Map of existing files using a unique identifier
-        const uniqueFiles = new Map<string, DatabaseData>();
-        
-        // Use combination of file_path and device_name as unique identifier
-        fileInfoResponse.data.files.forEach(file => {
-            const uniqueKey = `${file.file_path}-${file.device_name}`;
-            if (!uniqueFiles.has(uniqueKey)) {
-                uniqueFiles.set(uniqueKey, file);
-            }
-        });
+        // Filter out files that already exist before returning
+        const existingFileKeys = new Set(
+            existingFiles.map(file => `${file.file_path}-${file.device_name}`)
+        );
 
-        // Convert Map back to array
-        const dedupedFiles = Array.from(uniqueFiles.values());
+        const uniqueNewFiles = fileInfoResponse.data.files.filter(file => 
+            !existingFileKeys.has(`${file.file_path}-${file.device_name}`)
+        );
 
-        return dedupedFiles;
+        return uniqueNewFiles;
 
     } catch (error) {
         console.error('Error fetching data:', error);
         return [];
     } finally {
-        options.setIsLoading(false);
+        setIsLoading(false);
     }
 } 
