@@ -1059,13 +1059,29 @@ export default function Devices() {
                                 type="number"
                                 value={syncStorageValue}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
-                                sx={{ width: 100, fontSize: '12px' }}
+                                sx={{
+                                  width: 60,
+                                  '& .MuiOutlinedInput-root': {
+                                    height: '24px',
+                                    fontSize: '12px',
+                                  },
+                                  '& .MuiOutlinedInput-input': {
+                                    padding: '2px 8px',
+                                    textAlign: 'right',
+                                  }
+                                }}
                               />
                               <Button
                                 variant="contained"
                                 size="small"
                                 onClick={() => handleSyncStorageChange(syncStorageValue)}
-                                sx={{ ml: 1, fontSize: '12px' }}
+                                sx={{ 
+                                  ml: 1,
+                                  fontSize: '12px',
+                                  padding: '2px 8px',
+                                  minHeight: '24px',
+                                  minWidth: 'unset'
+                                }}
                               >
                                 Submit
                               </Button>
@@ -1080,7 +1096,12 @@ export default function Devices() {
                                 variant="contained"
                                 size="small"
                                 onClick={() => handleGetDownloadQueue(selectedDevice.device_name)}
-                                sx={{ ml: 1, fontSize: '12px' }}
+                                sx={{ 
+                                  fontSize: '12px',
+                                  padding: '2px 8px',
+                                  minHeight: '24px',
+                                  minWidth: 'unset'
+                                }}
                               >
                                 Get Download Queue
                               </Button>
