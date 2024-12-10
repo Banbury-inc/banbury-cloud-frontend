@@ -57,6 +57,7 @@ import { EnhancedTableProps, HeadCell } from './types';
 import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
+import { CONFIG } from '../../../config/config';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -515,6 +516,28 @@ export default function Files() {
 
   const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
   const headCells = getHeadCells(isCloudSync);
+
+  const fetchUserInfo = async () => {
+    try {
+      const userInfoResponse = await axios.get<{
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+
+      const { first_name, last_name } = userInfoResponse.data;
+      setFirstname(first_name);
+      setLastname(last_name);
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [username]);
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
