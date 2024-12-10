@@ -1052,11 +1052,11 @@ export default function Devices() {
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <StorageIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>Sync Storage Capacity: {} GB</Typography>
+                              <Typography variant="caption" noWrap>Sync Storage Capacity: {}</Typography>
                               <TextField
                                 variant="outlined"
                                 size="small"
-                                type="number"
+                                // type="number"
                                 value={syncStorageValue}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
                                 sx={{
@@ -1071,6 +1071,8 @@ export default function Devices() {
                                   }
                                 }}
                               />
+
+                              <Typography variant="caption" noWrap>GB</Typography>
                               <Button
                                 variant="contained"
                                 size="small"
@@ -1088,7 +1090,7 @@ export default function Devices() {
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <StarIcon sx={{ color: 'warning.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>Score: {}</Typography>
+                              <Typography variant="caption" noWrap>Score: {selectedDevice.predicted_performance_score}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
