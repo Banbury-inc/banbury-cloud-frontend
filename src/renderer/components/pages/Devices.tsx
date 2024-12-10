@@ -929,7 +929,7 @@ export default function Devices() {
                 {selectedTab === 0 ? (
                   <Stack direction="column" spacing={3}>
                     {/* Details Card */}
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>Device Info</Typography>
                       <Grid container spacing={3}>
                         {/* Left Column */}
@@ -970,7 +970,7 @@ export default function Devices() {
                       </Grid>
                     </Card>
 
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>Scanned Folders</Typography>
                       <Box>
                         <ScannedFoldersChips
@@ -984,7 +984,7 @@ export default function Devices() {
                 ) : selectedTab === 1 ? (
                   <Stack direction="column" spacing={2}>
                     {/* Details Card */}
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>Cloud Sync Details</Typography>
                       <Grid container spacing={3}>
                         {/* Left Column */}
@@ -1078,7 +1078,7 @@ export default function Devices() {
                       </Grid>
                     </Card>
                     {/* Status Overview Card */}
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Grid container spacing={4}>
                         <Grid item>
                           <Button variant="outlined" size="small" sx={{ fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}>
@@ -1093,7 +1093,7 @@ export default function Devices() {
                   // Performance tab content
                   <Stack direction="column" spacing={3}>
                     {/* Performance Card */}
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
                       <Grid container spacing={3}>
                         {/* Left Column */}
@@ -1172,7 +1172,7 @@ export default function Devices() {
 
 
                     {/* Charts section */}
-                    <Card sx={{ p: 3 }}>
+                    <Card variant='outlined' sx={{ p: 3 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                         <Typography variant="h6">Performance Metrics</Typography>
                         <FormControl sx={{ minWidth: 150 }}>
