@@ -149,6 +149,7 @@ export const useFileData = (
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
         file_priority: file.file_priority,
+        device_ids: device.device_ids,
       }));
     });
   };

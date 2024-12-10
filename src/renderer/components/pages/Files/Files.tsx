@@ -7,7 +7,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import GrainIcon from '@mui/icons-material/Grain';
 import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
 import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
-import { CardContent, Container, Divider, Skeleton, useMediaQuery } from '@mui/material';
+import { CardContent, Container, Divider, Skeleton, useMediaQuery, LinearProgress } from '@mui/material';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs'; import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -66,6 +66,8 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  // { id: 'deviceID', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
+  { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
   { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
   { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
 ];
@@ -854,6 +856,66 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
+
+                                  {(isCloudSync ||
+                                    headCells.find((cell) => cell.id === 'device_ids')?.isVisibleNotOnCloudSync) && (
+                                    <TableCell
+                                      align="left"
+                                      padding="normal"
+                                      onClick={(e) => e.stopPropagation()} 
+                                      sx={{
+                                        borderBottomColor: '#424242',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        width: '75%', 
+                                        position: 'relative',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
+                                        borderRadius: '2px',  // Optional: slight rounding of corners
+                                      }}>
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
+                                          sx={{ 
+                                            flexGrow: 1,
+                                            height: 16,
+                                            backgroundColor: 'transparent',
+                                            borderRadius: '1px',  // Match the outer border radius
+                                            '& .MuiLinearProgress-bar': {
+                                              backgroundColor: (theme) => {
+                                                const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
+                                                if (percentage >= 80) return '#1DB954';
+                                                if (percentage >= 50) return '#CD853F';
+                                                return '#FF4444';
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        <Typography 
+                                          variant="body2" 
+                                          sx={{ 
+                                            position: 'absolute',
+                                            width: '100%',
+                                            textAlign: 'center',
+                                            color: '#ffffff',
+                                            mixBlendMode: 'normal'
+                                          }}
+                                        >
+                                          {Array.isArray(row.device_ids) ? 
+                                            `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` : 
+                                            '0%'
+                                          }
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                  )}
+
+
                                   {(isCloudSync ||
                                     headCells.find((cell) => cell.id === 'file_priority')?.isVisibleNotOnCloudSync) && (
                                     <TableCell
@@ -873,6 +935,7 @@ export default function Files() {
                                         max={5}
                                         onChange={(event, newValue) => handlePriorityChange(row, newValue)}
                                         sx={{
+                                          fontSize: '16px',
                                           '& .MuiRating-iconFilled': {
                                             color: (theme) => {
                                               const priority = Number(row.file_priority);
