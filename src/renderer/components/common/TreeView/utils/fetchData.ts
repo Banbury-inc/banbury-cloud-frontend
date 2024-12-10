@@ -1,6 +1,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import { DatabaseData } from '../types';
+import { CONFIG } from '../../../../config/config';
 
 export async function fetchData(
   username: string | null,
@@ -28,11 +29,10 @@ export async function fetchData(
       callbacks.setFileRows(buildTree(files));
     }
 
-    // Step 2: Fetch fresh data from API
     const [userInfoResponse, deviceInfoResponse, fileInfoResponse] = await Promise.all([
-      axios.get<{ first_name: string; last_name: string; }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`),
-      axios.get<{ devices: any[]; }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`),
-      axios.get<{ files: any[]; }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`)
+      axios.get<{ first_name: string; last_name: string; }>(`${CONFIG.url}/getuserinfo/${username}/`),
+      axios.get<{ devices: any[]; }>(`${CONFIG.url}/getdeviceinfo/${username}/`),
+      axios.get<{ files: any[]; }>(`${CONFIG.url}/getfileinfo/${username}/`)
     ]);
 
     // Update user info

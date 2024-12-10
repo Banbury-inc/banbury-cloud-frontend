@@ -20,11 +20,9 @@ export const fetchDeviceData = async (
 
 
   try {
-    const api_url = CONFIG.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app' : 'http://localhost:8080';
-
     // Fetch fresh data from API
     const [deviceInfoResponse] = await Promise.all([
-      axios.get<{ devices: any[]; }>(`${api_url}/getdeviceinfo/${username}/`)
+      axios.get<{ devices: any[]; }>(`${CONFIG.url}/getdeviceinfo/${username}/`)
     ]);
 
 

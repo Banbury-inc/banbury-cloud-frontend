@@ -49,12 +49,9 @@ export function createWebSocketConnection(username: string, device_name: string,
 
   let socket: WebSocket;
 
+  const url_ws = CONFIG.url_ws;
   // Replace the URL with your WebSocket endpoint
-  if (CONFIG.prod) {  
-    socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
-  } else {
-    socket = new WebSocketClient('ws://0.0.0.0:8082/ws/live_data/');
-  }
+  socket = new WebSocketClient(url_ws);
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
@@ -75,90 +72,95 @@ export function createWebSocketConnection(username: string, device_name: string,
 
   // Message event: When a message or file is received from the server
   socket.onmessage = async function(event: any) {
+    console.log('I received a message: ', event.data);
+
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      // Handle binary data (e.g., save it to a file)
-      const result =  handleReceivedFileChunk(event.data);
+      handleReceivedFileChunk(event.data);
     } else {
-      const data = JSON.parse(event.data);
-      const message = data.message;
-      const request_type = data.request_type;
-      const file_name = data.file_name;
-      const requesting_device_name = data.requesting_device_name;
-      const sending_device_name = data.sending_device_name;
+      try {
+        const data = JSON.parse(event.data);
+        console.log('I parsed the data: ', data);
+        
+        switch (data.message) {
+          case 'File transfer complete':
+            saveFile(data.file_name || 'received_file.png');
+            const final_message = {
+              message: 'File transaction complete',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              sending_device_name: data.sending_device_name,
+            };
+            socket.send(JSON.stringify(final_message));
+            console.log(`Sent: ${JSON.stringify(final_message)}`);
+            return 'success';
 
-      // Handle text-based messages (e.g., JSON data)
+          case 'File not found':
+            console.log(`File not found: ${data.file_name}`);
+            return 'file_not_found';
 
-      // When the server indicates that the file transfer is complete, save the file
-      if (data.message === 'File transfer complete') {
-        saveFile(data.file_name || 'received_file.png'); // Save file with correct name
-        const final_message = {
-          message: `File transaction complete`,
-          username: username,
-          requesting_device_name: requesting_device_name,
-          sending_device_name: sending_device_name,
-        };
-        socket.send(JSON.stringify(final_message));
-        console.log(`Sent: ${JSON.stringify(final_message)}`);
-        return 'success';
-      }
+          case 'Device offline':
+            console.log(`Device offline: ${data.sending_device_name}`);
+            return 'device_offline';
 
-      if (request_type === 'file_request') {
-        const directory_name: string = 'BCloud';
-        const directory_path: string = path.join(os.homedir(), directory_name);
-        const file_save_path: string = path.join(directory_path, file_name);
+          case 'Permission denied':
+            console.log(`Permission denied for file: ${data.file_name}`);
+            return 'permission_denied';
 
-        // If the file exists, read the file and send it chunk by chunk
-        const fileStream = fs.createReadStream(file_save_path);
+          case 'Transfer failed':
+            console.log(`Transfer failed for file: ${data.file_name}`);
+            return 'transfer_failed';
+        }
 
-        fileStream.on('data', (chunk) => {
-          socket.send(chunk); // Send the chunk as bytes
-        });
 
-        fileStream.on('end', () => {
+        if (data.request_type === 'device_info') {
+          console.log('I was asked for device info')
+          let device_info = await neuranet.device.getDeviceInfo();
+          console.log('I retrieved the device info: ', device_info)
           const message = {
-            message: `File sent successfully`,
-            file_name: file_name,
-            username: username,
-            requesting_device_name: requesting_device_name,
-            sending_device_name: sending_device_name,
+                message: `device_info_response`,
+                username: username,
+                sending_device_name: device_name,
+                requesting_device_name: data.requesting_device_name,
+                device_info: device_info,
           };
           socket.send(JSON.stringify(message));
+          console.log(`Sent: ${JSON.stringify(message)}`);
+        }
 
 
-          const newTaskInfo = {
-            name: 'Downloading ' + file_name,
-            device: sending_device_name,
-            status: 'complete',
-          }
 
-          neuranet.sessions.updateTask(username, newTaskInfo);
+        if (data.request_type === 'file_sync_request') {
+          console.log('I was asked to initiate file sync')
+          let response = await neuranet.files.getDownloadQueue(username ?? '');
+          console.log('I completed the file sync: ', response)
+        }
 
-          let result = 'success';
-          return result;
-        });
 
-        fileStream.on('error', (err: any) => {
-          console.log(`File not found: ${file_name}`);
-          const message = {
-            message: `File not found`,
-            username: username,
-            requesting_device_name: requesting_device_name,
-            file_name: file_name,
-          };
-          socket.send(JSON.stringify(message));
-        });
-      }
-      if (request_type === 'device_info') {
-        let device_info = await neuranet.device.getDeviceInfo();
-        const message = {
-          message: `device_info_response`,
-          username: username,
-          sending_device_name: device_name,
-          requesting_device_name: device_name,
-          device_info: device_info,
-        };
-        socket.send(JSON.stringify(message));
+        // Handle existing request types
+        if (data.request_type === 'file_request') {
+          const directory_name: string = 'BCloud';
+          const directory_path: string = path.join(os.homedir(), directory_name);
+          const file_save_path: string = path.join(directory_path, data.file_name);
+
+          const fileStream = fs.createReadStream(file_save_path);
+
+          fileStream.on('error', () => {
+            const message = {
+              message: 'File not found',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              file_name: data.file_name,
+            };
+            socket.send(JSON.stringify(message));
+            return 'file_not_found';
+          });
+
+
+        }
+      } catch (error) {
+        console.error('Invalid message format:', error);
+        return 'invalid_response';
       }
     }
   };
@@ -166,16 +168,13 @@ export function createWebSocketConnection(username: string, device_name: string,
   // Close event: When the WebSocket connection is closed
   socket.onclose = function() {
     console.log('WebSocket connection closed');
-
-    // Declare the device offline
-    //commenting out as url doesnt exist I don't think
-    //neuranet.device.declare_offline(username);
-    console.log('Device declared offline');
+    return 'connection_closed';
   };
 
   // Error event: When an error occurs with the WebSocket connection
   socket.onerror = function(error: any) {
     console.error('WebSocket error: ', error);
+    return 'connection_error';
   };
 }
 

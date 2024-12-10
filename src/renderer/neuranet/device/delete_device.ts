@@ -14,11 +14,7 @@ export async function delete_device(
 
   let url
 
-  if (CONFIG.prod) {
-    url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/delete_device/${username}/`;
-  } else {
-    url = `http://localhost:8080/delete_device/${username}/`;
-  }
+    url = `${CONFIG.url}/delete_device/${username}/`;
 
   let device_name = neuranet.device.name();
 

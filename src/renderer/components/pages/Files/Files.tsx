@@ -7,7 +7,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import GrainIcon from '@mui/icons-material/Grain';
 import NavigateBeforeOutlinedIcon from '@mui/icons-material/NavigateBeforeOutlined';
 import NavigateNextOutlinedIcon from '@mui/icons-material/NavigateNextOutlined';
-import { CardContent, Container, Divider, Skeleton, useMediaQuery } from '@mui/material';
+import { CardContent, Container, Divider, Skeleton, useMediaQuery, LinearProgress } from '@mui/material';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs'; import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -57,6 +57,7 @@ import { EnhancedTableProps, HeadCell } from './types';
 import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
+import { CONFIG } from '../../../config/config';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -65,8 +66,9 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'device_name', numeric: false, label: 'Location', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
-  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: false },
-  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
 
@@ -102,15 +104,16 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         </TableCell>
         {headCells
           .filter((headCell: HeadCell) => {
-            // Check screen size visibility
             const isVisibleOnCurrentScreen = !isSmallScreen || headCell.isVisibleOnSmallScreen;
             
-            // Show appropriate columns based on context
-            const isVisibleInCurrentContext = isCloudSync 
-              ? headCell.id !== 'device_name'  // Hide only location in Cloud Sync
-              : headCell.id !== 'file_priority'; // Hide priority outside Cloud Sync
-            
-            return isVisibleOnCurrentScreen && isVisibleInCurrentContext;
+            if (isCloudSync) {
+              // Show only these specific columns in Cloud Sync view
+              const cloudSyncColumns = ['file_name', 'file_size', 'device_ids', 'file_priority'];
+              return isVisibleOnCurrentScreen && cloudSyncColumns.includes(headCell.id);
+            } else {
+              // In regular view, show all except Cloud Sync specific columns
+              return isVisibleOnCurrentScreen && headCell.isVisibleNotOnCloudSync;
+            }
           })
           .map((headCell: HeadCell, index: number) => (
             <TableCell
@@ -516,6 +519,28 @@ export default function Files() {
   const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
   const headCells = getHeadCells(isCloudSync);
 
+  const fetchUserInfo = async () => {
+    try {
+      const userInfoResponse = await axios.get<{
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+
+      const { first_name, last_name } = userInfoResponse.data;
+      setFirstname(first_name);
+      setLastname(last_name);
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [username]);
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -782,20 +807,21 @@ export default function Files() {
                                     {row.file_size}
                                   </TableCell>
 
-                                  <TableCell
-                                    align="left"
-                                    sx={{
-                                      borderBottomColor: '#424242',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }}
-                                  >
-                                    {row.kind}
-                                  </TableCell>
+                                  {(!isCloudSync) && (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        borderBottomColor: '#424242',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      {row.kind}
+                                    </TableCell>
+                                  )}
 
-                                  {(!isCloudSync &&
-                                    headCells.find((cell) => cell.id === 'device_name')?.isVisibleNotOnCloudSync) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       align="left"
                                       sx={{
@@ -809,8 +835,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-                                  {(!isSmallScreen ||
-                                    headCells.find((cell) => cell.id === 'available')?.isVisibleOnSmallScreen) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       align="left"
                                       padding="normal"
@@ -831,8 +856,64 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-                                  {(isCloudSync ||
-                                    headCells.find((cell) => cell.id === 'file_priority')?.isVisibleNotOnCloudSync) && (
+                                  {isCloudSync && (
+                                    <TableCell
+                                      align="left"
+                                      padding="normal"
+                                      onClick={(e) => e.stopPropagation()} 
+                                      sx={{
+                                        borderBottomColor: '#424242',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        width: '75%', 
+                                        position: 'relative',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
+                                        borderRadius: '2px',  // Optional: slight rounding of corners
+                                      }}>
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
+                                          sx={{ 
+                                            flexGrow: 1,
+                                            height: 16,
+                                            backgroundColor: 'transparent',
+                                            borderRadius: '1px',  // Match the outer border radius
+                                            '& .MuiLinearProgress-bar': {
+                                              backgroundColor: (theme) => {
+                                                const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
+                                                if (percentage >= 80) return '#1DB954';
+                                                if (percentage >= 50) return '#CD853F';
+                                                return '#FF4444';
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        <Typography 
+                                          variant="body2" 
+                                          sx={{ 
+                                            position: 'absolute',
+                                            width: '100%',
+                                            textAlign: 'center',
+                                            color: '#ffffff',
+                                            mixBlendMode: 'normal'
+                                          }}
+                                        >
+                                          {Array.isArray(row.device_ids) ? 
+                                            `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` : 
+                                            '0%'
+                                          }
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                  )}
+
+                                  {isCloudSync && (
                                     <TableCell
                                       align="left"
                                       padding="normal"
@@ -850,6 +931,7 @@ export default function Files() {
                                         max={5}
                                         onChange={(event, newValue) => handlePriorityChange(row, newValue)}
                                         sx={{
+                                          fontSize: '16px',
                                           '& .MuiRating-iconFilled': {
                                             color: (theme) => {
                                               const priority = Number(row.file_priority);
@@ -863,8 +945,7 @@ export default function Files() {
                                     </TableCell>
                                   )}
 
-                                  {(!isSmallScreen ||
-                                    headCells.find((cell) => cell.id === 'date_uploaded')?.isVisibleOnSmallScreen) && (
+                                  {(!isCloudSync) && (
                                     <TableCell
                                       padding="normal"
                                       align="right"

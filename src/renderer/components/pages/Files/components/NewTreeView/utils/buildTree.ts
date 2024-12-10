@@ -90,13 +90,18 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
   const devicesMap = new Map<string, DatabaseData>();
 
   files.forEach((file, index) => {
+    // Skip files without a device name
+    if (!file.device_name) {
+      return;
+    }
+
     // Check if the file belongs to Cloud Sync
     if (file.file_path.startsWith('Core/Cloud Sync/')) {
       // Create a file node directly under Cloud Sync
       const fileNode: DatabaseData = {
         id: `cloud-sync-file-${index}`,
         file_type: file.file_type,
-        file_name: file.file_path.split('/').pop() || '', // Get the last part of the path as filename
+        file_name: file.file_path.split('/').pop() || '',
         file_size: file.file_size,
         file_path: file.file_path,
         kind: file.kind,
@@ -109,7 +114,7 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
         original_device: file.original_device,
       };
       cloudSyncNode.children!.push(fileNode);
-      return; // Skip the rest of the loop for this file
+      return;
     }
 
     // Original device handling logic continues...

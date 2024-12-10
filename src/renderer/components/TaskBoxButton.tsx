@@ -10,6 +10,16 @@ import { neuranet } from '../neuranet';
 import { useEffect } from 'react';
 import Stack from '@mui/material/Stack';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import { CONFIG } from '../config/config';
+
+// Add this interface near the top of the file
+interface Task {
+  task_id: string;
+  task_name: string;
+  task_device: string;
+  task_status: string;
+  task_progress: string;
+}
 
 export default function TaskBoxButton() {
   const { username, tasks, setTasks, taskbox_expanded, setTaskbox_expanded } = useAuth();
@@ -47,15 +57,16 @@ export default function TaskBoxButton() {
     const fetchData = async () => {
       try {
         let task_device = neuranet.device.name();
-        const url = `https://website2-389236221119.us-central1.run.app/get_recent_session/${username}/`;
+        const url = `${CONFIG.url}/get_recent_session/${username}/`;
         const response = await axios.post<{
           result: string;
-          sessions: any[];
+          sessions: Task[];
         }>(url, {
           task_device: task_device,
         });
         const result = response.data.result;
         const sessions = response.data.sessions;
+        console.log(sessions);
 
         if (JSON.stringify(sessions) !== JSON.stringify(tasks)) {
           setTasks(sessions); // Only update tasks if sessions are different
@@ -117,6 +128,9 @@ export default function TaskBoxButton() {
                 <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
                   <Typography variant="body2" color="textPrimary" sx={{ marginRight: '8px' }}>
                     {task.task_name}
+                  </Typography>
+                  <Typography variant="body2" color="textPrimary" sx={{ marginRight: '8px' }}>
+                    {task.task_progress ? Math.round(task.task_progress).toString() : '0'}%
                   </Typography>
                   {/* Render the status icon */}
                   {getStatusIcon(task.task_status)}

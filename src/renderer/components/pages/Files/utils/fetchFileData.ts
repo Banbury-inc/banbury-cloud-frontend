@@ -5,42 +5,54 @@ import { useState } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import { CONFIG } from '../../../../config/config';
 
-
-
 export const fetchFileData = async (
-  username: string,
-  disableFetch: boolean,
-  snapshot_json: string,
-  global_file_path: string,
-  options: {
-    setFirstname: (value: string) => void;
-    setLastname: (value: string) => void;
-    setFileRows: (value: DatabaseData[]) => void;
-    setAllFiles: (value: DatabaseData[]) => void;
-    set_Files: (value: any[]) => void;
-    setIsLoading: (value: boolean) => void;
-    cache: Map<string, DatabaseData[]>;
-  },
+    username: string,
+    disableFetch: boolean,
+    snapshot_json: string,
+    global_file_path: string,
+    {
+        setFirstname,
+        setLastname,
+        setFileRows,
+        setAllFiles,
+        set_Files,
+        setIsLoading,
+        cache,
+        existingFiles,
+    }: {
+        setFirstname: (name: string) => void;
+        setLastname: (name: string) => void;
+        setFileRows: (rows: DatabaseData[]) => void;
+        setAllFiles: (files: DatabaseData[]) => void;
+        set_Files: (files: any[]) => void;
+        setIsLoading: (loading: boolean) => void;
+        cache: Map<string, DatabaseData[]>;
+        existingFiles: DatabaseData[];
+    }
 ) => {
+    try {
+        const fileInfoResponse = await axios.post<{ files: DatabaseData[]; }>(
+            `${CONFIG.url}/get_files_from_filepath/${username}/`,
+            {
+                global_file_path: global_file_path
+            }
+        );
 
+        // Filter out files that already exist before returning
+        const existingFileKeys = new Set(
+            existingFiles.map(file => `${file.file_path}-${file.device_name}`)
+        );
 
-  try {
-    const api_url = CONFIG.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app' : 'http://localhost:8080';
+        const uniqueNewFiles = fileInfoResponse.data.files.filter(file => 
+            !existingFileKeys.has(`${file.file_path}-${file.device_name}`)
+        );
 
-    // Fetch fresh data from API
-    const [fileInfoResponse] = await Promise.all([
-      axios.post<{ files: any[]; }>(`${api_url}/get_files_from_filepath/${username}/`, {
-        global_file_path: global_file_path
-      })
-    ]);
+        return uniqueNewFiles;
 
-
-    return fileInfoResponse.data.files;
-
-
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  } finally {
-    options.setIsLoading(false);
-  }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return [];
+    } finally {
+        setIsLoading(false);
+    }
 } 

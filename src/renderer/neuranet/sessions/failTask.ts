@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import * as DateUtils from '../../utils/dateUtils';
+import { CONFIG } from '../../config/config';
 
 /**
  *
@@ -23,12 +24,13 @@ export async function failTask(
   const task_response = response;
 
   try {
-    const url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/fail_task/${username}/`;
+    const url = `${CONFIG.url}/fail_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
-      user: user,
+      task_id: taskInfo.task_id,
       task_name: taskInfo.task_name,
       result: task_response,
       task_device: taskInfo.task_device,
+      task_progress: taskInfo.task_progress,
       task_status: 'error',
     });
     const result = response.data.result;

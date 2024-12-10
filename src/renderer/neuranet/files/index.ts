@@ -4,3 +4,4 @@ export * from './searchFile';
 export * from './updateFilePriority';
 export * from './getDownloadQueue';
 export * from './downloadFileSyncFiles';
+export * from './runPipeline';

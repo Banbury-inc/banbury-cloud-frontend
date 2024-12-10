@@ -10,6 +10,7 @@ export interface DatabaseData {
   helpers: number;
   available: string;
   file_priority: string;
+  device_ids: string[];
 }
 
 export type Order = 'asc' | 'desc';

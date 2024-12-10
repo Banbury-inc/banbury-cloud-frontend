@@ -19,12 +19,7 @@ export async function remove_scanned_folder(
 
   try {
 
-    if (CONFIG.prod) {
-      url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/add_scanned_folder/${username}/`;
-    } else {
-      url = `http://localhost:8080/remove_scanned_folder/${username}/`;
-
-    }
+      url = `${CONFIG.url}/remove_scanned_folder/${username}/`;
 
 
 

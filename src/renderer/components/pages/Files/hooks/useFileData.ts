@@ -5,6 +5,7 @@ import { fileWatcherEmitter } from '../../../../neuranet/device/watchdog';
 import { DatabaseData } from '../types';
 import path from 'path';
 import os from 'os';
+import { CONFIG } from '../../../../config/config';
 
 const file_name: string = 'mmills_database_snapshot.json';
 const directory_name: string = 'BCloud';
@@ -27,12 +28,13 @@ export const useFileData = (
   const fetchData_with_api = async () => {
     try {
       // Step 1: Fetch user information
+        //
       const userInfoResponse = await axios.get<{
         first_name: string;
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -41,7 +43,7 @@ export const useFileData = (
       // Step 2: Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
 
       const { devices } = deviceInfoResponse.data;
 
@@ -68,7 +70,7 @@ export const useFileData = (
       // Step 3: Fetch files for all devices
       const fileInfoResponse = await axios.get<{
         files: any[];
-      }>(`https://website2-389236221119.us-central1.run.app/getfileinfo/${username}/`);
+      }>(`${CONFIG.url}/getfileinfo/${username}/`);
 
       files = fileInfoResponse.data.files;
 
@@ -95,7 +97,7 @@ export const useFileData = (
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`https://website2-389236221119.us-central1.run.app/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -104,7 +106,7 @@ export const useFileData = (
       // Step 2: Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`https://website2-389236221119.us-central1.run.app/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
 
       const { devices } = deviceInfoResponse.data;
 
@@ -147,6 +149,7 @@ export const useFileData = (
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
         file_priority: file.file_priority,
+        device_ids: device.device_ids,
       }));
     });
   };

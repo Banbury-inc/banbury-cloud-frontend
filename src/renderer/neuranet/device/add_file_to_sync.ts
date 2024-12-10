@@ -15,16 +15,8 @@ export async function add_file_to_sync(
 
   let device_name = neuranet.device.name();
 
-  let url = ''
 
-  try {
-
-    if (CONFIG.prod) {
-      url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/add_file_to_sync/${username}/`;
-    } else {
-      url = `http://localhost:8080/add_file_to_sync/${username}/`;
-
-    }
+    let url = `${CONFIG.url}/add_file_to_sync/${username}/`;
 
     
 
@@ -55,9 +47,5 @@ export async function add_file_to_sync(
       console.log(result);
       return 'task_add failed';
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return 'error'; // Ensure an error is returned if the request fails
-  }
 }
 
