@@ -81,65 +81,79 @@ export default function FileTreeView() {
 
   useEffect(() => {
     const fetchAndUpdateFiles = async () => {
-      const new_files = await fetchFileData(
-        username || '',
-        disableFetch,
-        snapshot_json,
-        global_file_path || '',
-        {
-          setFirstname,
-          setLastname,
-          setFileRows,
-          setAllFiles,
-          set_Files,
-          setIsLoading,
-          cache,
-        },
-      );
+        const new_files = await fetchFileData(
+            username || '',
+            disableFetch,
+            snapshot_json,
+            global_file_path || '',
+            {
+                setFirstname,
+                setLastname,
+                setFileRows,
+                setAllFiles,
+                set_Files,
+                setIsLoading,
+                cache,
+            },
+        );
 
+        const new_synced_files = await fetchFileSyncData(
+            username || '',
+            disableFetch,
+            snapshot_json,
+            global_file_path || '',
+            {
+                setFirstname,
+                setLastname,
+                setFileRows,
+                setAllFiles,
+                set_Files,
+                setIsLoading,
+                cache,
+            },
+        );
 
-    const new_synced_files = await fetchFileSyncData(
-      username || '',
-      disableFetch,
-      snapshot_json,
-      global_file_path || '',
-      {
-        setFirstname,
-        setLastname,
-        setFileRows,
-        setAllFiles,
-        set_Files,
-        setIsLoading,
-        cache,
-      },
-    );
+        setSyncFiles(new_synced_files || []);
 
-      setSyncFiles(new_synced_files || []);
+        if (new_files) {
+            // Create a Map to store unique files
+            const uniqueFilesMap = new Map<string, DatabaseData>();
+            
+            // Add existing fetched files to the Map
+            fetchedFiles.forEach(file => {
+                const uniqueKey = `${file.file_path}-${file.device_name}`;
+                uniqueFilesMap.set(uniqueKey, file);
+            });
+            
+            // Add new files to the Map (will automatically overwrite duplicates)
+            new_files.forEach(file => {
+                const uniqueKey = `${file.file_path}-${file.device_name}`;
+                uniqueFilesMap.set(uniqueKey, file);
+            });
+            
+            // Add synced files to the Map
+            if (new_synced_files) {
+                new_synced_files.forEach(file => {
+                    const uniqueKey = `${file.file_path}-${file.device_name}`;
+                    uniqueFilesMap.set(uniqueKey, file);
+                });
+            }
 
-
-      if (new_files) {
-        let updatedFiles: DatabaseData[] = [];
-        if (new_synced_files) { 
-          updatedFiles = [...fetchedFiles, ...new_files, ...new_synced_files];
-        } else {
-          updatedFiles = [...fetchedFiles, ...new_files];
+            // Convert Map back to array
+            const updatedFiles = Array.from(uniqueFilesMap.values());
+            
+            setFetchedFiles(updatedFiles);
+            const treeData = buildTree(updatedFiles);
+            setFileRows(treeData);
+            if (!disableFetch) {
+                setAllFiles(treeData);
+            }
+            set_Files(updatedFiles);
         }
-        setFetchedFiles(updatedFiles);
-        
-        const treeData = buildTree(updatedFiles);
-        setFileRows(treeData);
-        if (!disableFetch) {
-          setAllFiles(treeData);
-        }
-        set_Files(updatedFiles);
-      }
     };
 
     fetchAndUpdateFiles();
-  }, []);
-
-
-
+}, [username, disableFetch, updates, global_file_path]);
 
 
   useEffect(() => {
