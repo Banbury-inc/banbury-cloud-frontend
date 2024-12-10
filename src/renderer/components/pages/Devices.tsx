@@ -58,6 +58,12 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import LaunchIcon from '@mui/icons-material/Launch';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import PendingIcon from '@mui/icons-material/Pending';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 import { CONFIG } from '../../config/config';
 
@@ -103,7 +109,6 @@ interface DeviceData {
 
 const headCells: HeadCell[] = [
   { id: 'device_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true },
-  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: true },
 ];
 
 type Order = 'asc' | 'desc';
@@ -326,7 +331,7 @@ export default function Devices() {
           pred => pred.device_name === device.device_name
         ) || {
           predicted_cpu_usage: 0,
-          predicted_ram_usage: 0, 
+          predicted_ram_usage: 0,
           predicted_gpu_usage: 0,
           predicted_download_speed: 0,
           predicted_upload_speed: 0,
@@ -678,7 +683,7 @@ export default function Devices() {
     order: Order,
     orderBy: Key,
   ): (
-    a: { [key in Key]: number | string | string[] }, 
+    a: { [key in Key]: number | string | string[] },
     b: { [key in Key]: number | string | string[] }
   ) => number {
     return order === 'desc'
@@ -706,7 +711,7 @@ export default function Devices() {
 
   const handleSyncStorageChange = async (value: string) => {
     console.log(value);
-    
+
     let task_description = 'Updating Sync Storage Capacity';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
@@ -725,7 +730,7 @@ export default function Devices() {
 
   const handleGetDownloadQueue = async (value: string) => {
     console.log(value);
-    
+
     let task_name = 'Getting Download Queue';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
     setTaskbox_expanded(true);
@@ -744,8 +749,8 @@ export default function Devices() {
       setUpdates(updates + 1);
       fetchDevices();
       let downloadResult = await neuranet.files.downloadFileSyncFiles(
-        username ?? '', 
-        download_queue ?? {files: [], files_available_for_download: 0},
+        username ?? '',
+        download_queue ?? { files: [], files_available_for_download: 0 },
         allDevices,
         taskInfo,
         tasks ?? [],
@@ -879,14 +884,6 @@ export default function Devices() {
                             <TableCell component="th" id={labelId} scope="row" padding="normal">
                               {row.device_name}
                             </TableCell>
-                            <TableCell align="left">
-                              <Chip
-                                label={row.available}
-                                color={row.available === "Available" ? "success" : "error"}
-                                size="small"
-                                sx={{ fontSize: '12px', minWidth: 100 }}
-                              />
-                            </TableCell>
                           </TableRow>
                         );
                       })
@@ -931,352 +928,306 @@ export default function Devices() {
                 {/* Conditional rendering based on selected tab */}
                 {selectedTab === 0 ? (
                   <Stack direction="column" spacing={3}>
-                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
-                        {/* Device Status Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 1, md: 0 } }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                            <DevicesIcon sx={{ fontSize: 24, color: 'primary.main' }} />
-                            <Typography variant="caption">Device Status</Typography>
-                          </Stack>
-                          <Stack spacing={1}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Chip
-                                icon={<GrainIcon />}
-                                label={selectedDevice.available}
-                                color={selectedDevice.available === "Available" ? "success" : "error"}
-                                size="small"
-                                sx={{ minWidth: 100, fontSize: '12px' }}
-                              />
+                    {/* Details Card */}
+                    <Card sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Device Info</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Status</Typography>
+                              <Typography variant="body2">{selectedDevice.available || 'N/A'}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <PrecisionManufacturingIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>{selectedDevice.device_manufacturer}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Manufacturer</Typography>
+                              <Typography variant="body2">{selectedDevice.device_manufacturer || 'N/A'}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <DeviceHubIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>{selectedDevice.device_model}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Model</Typography>
+                              <Typography variant="body2">{selectedDevice.device_model || 'N/A'}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
+                        </Grid>
 
-                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
-
-                        {/* System Stats Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 1, md: 0 } }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                            <StorageIcon sx={{ fontSize: 24, color: 'primary.main' }} />
-                            <Typography variant="caption">System Stats</Typography>
-                          </Stack>
-                          <Stack spacing={1}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <MemoryIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                        {/* Right Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Upload Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.upload_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'success.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Download Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.download_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'info.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Storage Capacity</Typography>
+                              <Typography variant="body2">{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
-                      </Stack>
+                        </Grid>
+                      </Grid>
                     </Card>
 
-                    <Divider sx={{ my: 1 }} />
-
-                    <Typography variant="caption" gutterBottom>
-                      Scanned Folders
-                    </Typography>
-                    <ScannedFoldersChips
-                      scanned_folders={selectedDevice.scanned_folders}
-                      username={username ?? ''}
-                      onFoldersUpdate={handleFoldersUpdate}
-                    />
+                    <Card sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Scanned Folders</Typography>
+                      <Box>
+                        <ScannedFoldersChips
+                          scanned_folders={selectedDevice.scanned_folders}
+                          username={username ?? ''}
+                          onFoldersUpdate={handleFoldersUpdate}
+                        />
+                      </Box>
+                    </Card>
                   </Stack>
                 ) : selectedTab === 1 ? (
-                  <Stack direction="column" spacing={1}>
-                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
-                        {/* Cloud Sync Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 1, md: 0 } }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                            <CloudIcon sx={{ fontSize: 24, color: 'primary.main' }} />
-                            <Typography variant="caption">Cloud Sync</Typography>
+                  <Stack direction="column" spacing={2}>
+                    {/* Details Card */}
+                    <Card sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Cloud Sync Details</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted CPU Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_cpu_usage || 0}%</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted RAM Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_ram_usage || 0}%</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted GPU Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_gpu_usage || 0}%</Typography>
+                            </Box>
                           </Stack>
-                          <Stack spacing={1}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <MemoryIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Predicted CPU Usage: {selectedDevice.predicted_cpu_usage || 0}%
-                              </Typography>
+                        </Grid>
+
+                        {/* Middle Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted Download Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.predicted_download_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <MemoryIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Predicted RAM Usage: {selectedDevice.predicted_ram_usage || 0}%
-                              </Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted Upload Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.predicted_upload_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <MemoryIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Predicted GPU Usage: {selectedDevice.predicted_gpu_usage || 0}%
-                              </Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Score</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_performance_score || 0}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'info.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Predicted Download Speed: {formatSpeed(selectedDevice.predicted_download_speed || 0)}
-                              </Typography>
+                          </Stack>
+                        </Grid>
+
+                        {/* Right Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Files Needed</Typography>
+                              <Typography variant="body2">{selectedDevice.files_needed || 0}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'success.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Predicted Upload Speed: {formatSpeed(selectedDevice.predicted_upload_speed || 0)}
-                              </Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Files Available for Download</Typography>
+                              <Typography variant="body2">{selectedDevice.files_available_for_download || 0}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <FolderSpecialIcon sx={{ color: 'info.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Files Needed: {(selectedDevice.files_needed|| 0)}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CloudDownloadIcon sx={{ color: 'success.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>
-                                Files Available for Download: {(selectedDevice.files_available_for_download|| 0)}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <StorageIcon sx={{ color: 'text.secondary', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>Sync Storage Capacity: {}</Typography>
-                              <TextField
-                                variant="outlined"
-                                size="small"
-                                // type="number"
-                                value={syncStorageValue}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
-                                sx={{
-                                  width: 60,
-                                  '& .MuiOutlinedInput-root': {
-                                    height: '24px',
+                            <Box>
+                              <Stack spacing={4}>
+                                <Typography color="textSecondary" variant="caption">Sync Storage Capacity</Typography>
+                              </Stack>
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                <TextField
+                                  variant="outlined"
+                                  size="small"
+                                  // type="number"
+                                  value={syncStorageValue}
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
+                                  sx={{
+                                    width: 60,
+                                    '& .MuiOutlinedInput-root': {
+                                      height: '24px',
+                                      fontSize: '12px',
+                                    },
+                                    '& .MuiOutlinedInput-input': {
+                                      padding: '2px 8px',
+                                      textAlign: 'right',
+                                    }
+                                  }}
+                                />
+                                <Typography variant="caption" noWrap>GB</Typography>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => handleSyncStorageChange(syncStorageValue)}
+                                  sx={{
                                     fontSize: '12px',
-                                  },
-                                  '& .MuiOutlinedInput-input': {
                                     padding: '2px 8px',
-                                    textAlign: 'right',
-                                  }
-                                }}
-                              />
-
-                              <Typography variant="caption" noWrap>GB</Typography>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => handleSyncStorageChange(syncStorageValue)}
-                                sx={{ 
-                                  ml: 1,
-                                  fontSize: '12px',
-                                  padding: '2px 8px',
-                                  minHeight: '24px',
-                                  minWidth: 'unset'
-                                }}
-                              >
-                                Submit
-                              </Button>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <StarIcon sx={{ color: 'warning.main', fontSize: '12px' }} />
-                              <Typography variant="caption" noWrap>Score: {selectedDevice.predicted_performance_score}</Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => handleGetDownloadQueue(selectedDevice.device_name)}
-                                sx={{ 
-                                  fontSize: '12px',
-                                  padding: '2px 8px',
-                                  minHeight: '24px',
-                                  minWidth: 'unset'
-                                }}
-                              >
-                                Get Download Queue
-                              </Button>
+                                    height: '24px',
+                                    minWidth: 'unset'
+                                  }}
+                                >
+                                  Submit
+                                </Button>
+                              </Stack>
                             </Box>
                           </Stack>
-                        </Box>
-                      </Stack>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                    {/* Status Overview Card */}
+                    <Card sx={{ p: 3 }}>
+                      <Grid container spacing={4}>
+                        <Grid item>
+                          <Button variant="outlined" size="small" sx={{ fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}>
+                            Get Download Queue
+                          </Button>
+                        </Grid>
+
+                      </Grid>
                     </Card>
                   </Stack>
-
                 ) : selectedTab === 2 ? (
-
                   // Performance tab content
-                  <Stack direction="column" spacing={0} sx={{ p: 0 }}>
-                    {/* Performance metrics section */}
-                    <Stack direction="row" spacing={4}>
-                      <Card sx={{ flex: 1, p: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <MemoryIcon sx={{ fontSize: 24, color: 'primary.main' }} />
-                          <Typography variant="h6" color="primary">CPU Information</Typography>
-                        </Stack>
-
-                        <Box sx={{ mt: 2 }}>
-                          <Stack spacing={1.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Chip
-                                label={`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
-                                color={parseFloat(selectedDevice.cpu_usage) > 80 ? 'error' : 'success'}
-                                size="small"
-                                sx={{ mr: 1, fontSize: '12px' }}
-                              />
-                              <Typography variant="caption">Current Usage</Typography>
+                  <Stack direction="column" spacing={3}>
+                    {/* Performance Card */}
+                    <Card sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
+                                  color={parseFloat(selectedDevice.cpu_usage) > 80 ? 'error' : 'success'}
+                                  size="small"
+                                  sx={{ mr: 1, fontSize: '12px' }}
+                                />
+                              </Box>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <PrecisionManufacturingIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Model</Typography>
+                              <Typography variant="body2">
                                 {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}
                               </Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <SpeedIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">{selectedDevice.cpu_info_speed}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Speed</Typography>
+                              <Typography variant="body2">{selectedDevice.cpu_info_speed}</Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <DeviceHubIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Cores</Typography>
+                              <Typography variant="body2">
                                 {selectedDevice.cpu_info_cores} Cores (Physical: {selectedDevice.cpu_info_physical_cores})
                               </Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <SettingsIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">{selectedDevice.cpu_info_processors} Processors</Typography>
-                            </Box>
                           </Stack>
-                        </Box>
-                      </Card>
+                        </Grid>
 
-                      <Card sx={{ flex: 1, p: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <MemoryIcon sx={{ fontSize: 24, color: 'primary.main' }} />
-                          <Typography variant="caption" color="primary">Memory & GPU</Typography>
-                        </Stack>
-
-                        <Box sx={{ mt: 2 }}>
-                          <Stack spacing={1.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography variant="caption">
-                                GPU Usage: <Chip
-                                  // label={'${selectedDevice.gpu_usage[0]}%'}
-                                label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
+                        {/* Right Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">GPU Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
                                   size="small"
-                                  sx={{ fontSize: '12px'}}
+                                  sx={{ fontSize: '12px' }}
                                   color={parseFloat(selectedDevice.gpu_usage[0]) > 80 ? 'error' : 'success'}
                                 />
-                              </Typography>
+                              </Box>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <MemoryIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">
-                                RAM Usage: <Chip
-                                  // label={selectedDevice.ram_usage[0]}
-                                label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">RAM Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
                                   size="small"
-                                  sx={{ fontSize: '12px'}}
+                                  sx={{ fontSize: '12px' }}
                                   color={parseFloat(selectedDevice.ram_usage[0]) > 80 ? 'error' : 'success'}
                                 />
-                              </Typography>
+                              </Box>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">Total RAM: {formatRAM(selectedDevice.ram_total[0])}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Total RAM</Typography>
+                              <Typography variant="body2">{formatRAM(selectedDevice.ram_total[0])}</Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography variant="caption">Free RAM: {formatRAM(selectedDevice.ram_free[0])}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Free RAM</Typography>
+                              <Typography variant="body2">{formatRAM(selectedDevice.ram_free[0])}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
-                      </Card>
-                    </Stack>
+                        </Grid>
+                      </Grid>
+                    </Card>
 
 
                     <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
 
 
                     {/* Charts section */}
-                    <Stack direction="column" alignItems="flex-end" sx={{ p: 0 }}>
-                      <FormControl sx={{ maxWidth: 150 }}>
-                        <InputLabel id="chart-select-label">Select Metric</InputLabel>
-                        <Select
-                          variant="outlined"
-                          size="small"
-                          labelId="chart-select-label"
-                          value={selectedMetric}
-                          label="Select Metric"
-                          sx={{ fontSize: '12px' }}
-                          onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
-                        >
-                          <MenuItem sx={{ fontSize: '12px' }} value="gpu">GPU Usage</MenuItem>
-                          <MenuItem sx={{ fontSize: '12px' }} value="ram">RAM Usage</MenuItem>
-                          <MenuItem sx={{ fontSize: '12px' }} value="cpu">CPU Usage</MenuItem>
-                        </Select>
-                      </FormControl>
+                    <Card sx={{ p: 3 }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="h6">Performance Metrics</Typography>
+                        <FormControl sx={{ minWidth: 150 }}>
+                          <InputLabel id="chart-select-label">Select Metric</InputLabel>
+                          <Select
+                            variant="outlined"
+                            size="small"
+                            labelId="chart-select-label"
+                            value={selectedMetric}
+                            label="Select Metric"
+                            sx={{ fontSize: '12px' }}
+                            onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
+                          >
+                            <MenuItem sx={{ fontSize: '12px' }} value="gpu">GPU Usage</MenuItem>
+                            <MenuItem sx={{ fontSize: '12px' }} value="ram">RAM Usage</MenuItem>
+                            <MenuItem sx={{ fontSize: '12px' }} value="cpu">CPU Usage</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Stack>
 
-                    </Stack>
-                    <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 600px)' }}>
-                      <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
-                        <Typography variant="caption" color="primary" gutterBottom>
-                          {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
-                        </Typography>
-                        <Box sx={{ pb: 0, width: '100%', height: '100%' }}>
-                          <LineChart
-                            sx={{
-                              flex: 1,
-                              width: '100%',
-                              height: '100%'
-                            }}
-                            xAxis={[{
-                              data: Array.from(
-                                {
-                                  length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                    selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length
-                                },
-                                (_, i) => i + 1
-                              )
-                            }]}
-                            series={[{
-                              data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
-                                ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
-                                : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
-                              valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
-                              color: selectedMetric === 'gpu' ? '#4CAF50'
-                                : selectedMetric === 'ram' ? '#2196F3'
-                                  : '#FF5722',
-                              showMark: false
-                            }]}
-                            margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                          />
-                        </Box>
+                      <Box sx={{ height: 300, width: '100%' }}>
+                        <LineChart
+                          sx={{
+                            width: '100%',
+                            height: '100%'
+                          }}
+                          xAxis={[{
+                            data: Array.from(
+                              {
+                                length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length
+                              },
+                              (_, i) => i + 1
+                            )
+                          }]}
+                          series={[{
+                            data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                              selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
+                              ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
+                              : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
+                            valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                            color: selectedMetric === 'gpu' ? '#4CAF50'
+                              : selectedMetric === 'ram' ? '#2196F3'
+                                : '#FF5722',
+                            showMark: false
+                          }]}
+                          margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                        />
                       </Box>
-                    </Stack>
+                    </Card>
 
                   </Stack>
+
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 5 }}>
                     <DevicesIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
@@ -1303,6 +1254,6 @@ export default function Devices() {
           </CardContent>
         </Card>
       </Stack>
-    </Box>
+    </Box >
   );
 }
