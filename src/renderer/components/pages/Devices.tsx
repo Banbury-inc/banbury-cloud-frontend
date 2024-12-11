@@ -1077,6 +1077,47 @@ export default function Devices() {
                         </Grid>
                       </Grid>
                     </Card>
+                    {/* Include in File Sync Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <Box sx={{ pr: 3 }}>
+                                <Typography variant="h6" gutterBottom>Include in Cloud Sync</Typography>
+                                <Typography color="textSecondary" variant="caption">Include this device in Cloud Sync. This device will take part in downloading files from your other devices.
+                                  This device will also be able to upload files to your other devices. Banbury will predict device performance and allocate the highest priority files to the
+                                  highest performing devices.
+                                </Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                mt: 1,
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
+                          >
+                            Save
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Card>
                     {/* Score Configuration Card */}
                     <Card variant='outlined' sx={{ p: 3 }}>
                       <Grid container spacing={2}>
@@ -1227,7 +1268,7 @@ export default function Devices() {
                             size="small"
                             sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
                           >
-                            Save Configuration
+                            Save
                           </Button>
                         </Grid>
                       </Grid>
