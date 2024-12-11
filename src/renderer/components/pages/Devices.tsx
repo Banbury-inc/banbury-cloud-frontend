@@ -1038,7 +1038,7 @@ export default function Devices() {
                               <Stack spacing={4}>
                                 <Typography color="textSecondary" variant="caption">Sync Storage Capacity</Typography>
                               </Stack>
-                              <Stack direction="row" spacing={1} alignItems="center">
+                              <Stack paddingTop={1} direction="row" spacing={1} alignItems="center">
                                 <TextField
                                   variant="outlined"
                                   size="small"
@@ -1158,7 +1158,7 @@ export default function Devices() {
                                   backgroundColor: '#fff',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
+                                  backgroundColor: '#4caf50',
                                 },
                               }} />
                             </Box>
@@ -1177,7 +1177,7 @@ export default function Devices() {
                                   backgroundColor: '#fff',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
+                                  backgroundColor: '#4caf50',
                                 },
                               }} />
                             </Box>
@@ -1196,7 +1196,7 @@ export default function Devices() {
                                   backgroundColor: '#fff',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
+                                  backgroundColor: '#4caf50',
                                 },
                               }} />
                             </Box>
@@ -1215,7 +1215,7 @@ export default function Devices() {
                                   backgroundColor: '#fff',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
+                                  backgroundColor: '#4caf50',
                                 },
                               }} />
                             </Box>
