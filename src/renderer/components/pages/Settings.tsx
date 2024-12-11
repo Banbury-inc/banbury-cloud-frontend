@@ -9,23 +9,28 @@ import AccountMenuIcon from '../common/AccountMenuIcon';
 import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import TaskBoxButton from '../TaskBoxButton';
+import { List, ListItemButton, ListItemText } from '@mui/material';
 
+interface Section {
+  id: string;
+  title: string;
+}
 
-
-
-
-
-
-
-
+const sections: Section[] = [
+  { id: 'app', title: 'App' },
+  { id: 'cloud-sync', title: 'Cloud Sync' }
+];
 
 export default function Settings() {
+  const [activeSection, setActiveSection] = useState('app');
 
-
-
-
-
-
+  const handleSectionClick = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -57,13 +62,31 @@ export default function Settings() {
         {/* Left panel: Device table */}
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '30%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
+            <List component="nav">
+              {sections.map((section) => (
+                <ListItemButton
+                  key={section.id}
+                  selected={activeSection === section.id}
+                  onClick={() => handleSectionClick(section.id)}
+                  sx={{
+                    borderRadius: 1,
+                    mb: 1,
+                    '&.Mui-selected': {
+                      backgroundColor: 'action.selected',
+                    },
+                  }}
+                >
+                  <ListItemText primary={section.title} />
+                </ListItemButton>
+              ))}
+            </List>
           </CardContent>
         </Card>
 
         {/* Right panel: Device details */}
         <Card variant="outlined" sx={{ p: 2, height: '100%', width: '70%', overflow: 'auto' }}>
           <CardContent>
-            <Typography paddingBottom={2} variant="h4" gutterBottom>
+            <Typography id="app" paddingBottom={2} variant="h4" gutterBottom>
               App
             </Typography>
 
@@ -138,7 +161,7 @@ export default function Settings() {
               </Card>
 
 
-              <Typography paddingBottom={2} variant="h4" gutterBottom>
+              <Typography id="cloud-sync" paddingBottom={2} variant="h4" gutterBottom>
                 Cloud Sync
               </Typography>
 
