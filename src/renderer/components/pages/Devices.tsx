@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import { join } from 'path';
 import { shell } from 'electron';
 import axios from 'axios';
-import { useMediaQuery } from '@mui/material';
+import { FormControlLabel, FormGroup, Switch, useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
@@ -1074,6 +1074,161 @@ export default function Devices() {
                               </Stack>
                             </Box>
                           </Stack>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                    {/* Score Configuration Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Typography variant="h6" gutterBottom>Score Configuration</Typography>
+                          <Typography color="textSecondary" variant="caption">Include the following metrics in performance score calculation</Typography>
+
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted CPU Usage</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted RAM Usage</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted GPU Usage</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted Download Speed</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted Upload Speed</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Files Available for Download</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Files Needed</Typography>
+                              </Box>
+                              <Switch defaultChecked size="small" sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
+                          >
+                            Save Configuration
+                          </Button>
                         </Grid>
                       </Grid>
                     </Card>
