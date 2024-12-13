@@ -35,7 +35,7 @@
     "@mui/lab": "^5.0.0-alpha.169",
     "@mui/material": "^5.15.16",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
-    "@mui/x-charts": "^6.19.4",
+    "@mui/x-charts": "^7.23.2",
     "@mui/x-data-grid": "^6.19.11",
     "@mui/x-tree-view": "^6.17.0",
     "@types/luxon": "^3.4.2",
