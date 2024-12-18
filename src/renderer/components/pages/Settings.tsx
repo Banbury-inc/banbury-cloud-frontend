@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import Card from '@mui/material/Card';
 import TaskBoxButton from '../TaskBoxButton';
 import { List, ListItemButton, ListItemText } from '@mui/material';
+import { neuranet } from '../../neuranet'
 
 interface Section {
   id: string;
@@ -22,7 +23,14 @@ const sections: Section[] = [
 ];
 
 export default function Settings() {
+
+  const { username } = useAuth();
   const [activeSection, setActiveSection] = useState('app');
+  const [predicted_cpu_usage_weighting, setPredictedCpuUsageWeighting] = useState(10);
+  const [predicted_ram_usage_weighting, setPredictedRamUsageWeighting] = useState(10);
+  const [predicted_gpu_usage_weighting, setPredictedGpuUsageWeighting] = useState(10);
+  const [predicted_download_speed_weighting, setPredictedDownloadSpeedWeighting] = useState(10);
+  const [predicted_upload_speed_weighting, setPredictedUploadSpeedWeighting] = useState(10);
 
   const handleSectionClick = (sectionId: string) => {
     setActiveSection(sectionId);
@@ -31,6 +39,30 @@ export default function Settings() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const handleSave = (
+    predicted_cpu_usage_weighting: number,
+    predicted_ram_usage_weighting: number,
+    predicted_gpu_usage_weighting: number,
+    predicted_upload_speed_weighting: number,
+    predicted_download_speed_weighting: number) => {
+
+    neuranet.settings.updatePerformanceScoreWeightings(
+      username,
+      predicted_cpu_usage_weighting,
+      predicted_ram_usage_weighting,
+      predicted_gpu_usage_weighting,
+      predicted_download_speed_weighting,
+      predicted_upload_speed_weighting
+    );
+
+    console.log('predicted upload speed weighting:', predicted_upload_speed_weighting);
+    console.log('predicted download speed weighting:', predicted_download_speed_weighting);
+    console.log('predicted gpu usage weighting:', predicted_gpu_usage_weighting);
+    console.log('predicted ram usage weighting:', predicted_ram_usage_weighting);
+    console.log('predicted cpu usage weighting:', predicted_cpu_usage_weighting);
+    console.log('Save');
+  }
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -188,7 +220,8 @@ export default function Settings() {
                               <TextField
                                 size="small"
                                 label="Weight"
-                                value={10}
+                                value={predicted_cpu_usage_weighting}
+                                onChange={(e) => setPredictedCpuUsageWeighting(Number(e.target.value))}
                                 fullWidth
                               />
                             </Box>
@@ -205,7 +238,8 @@ export default function Settings() {
                           <TextField
                             size="small"
                             label="Weight"
-                            value={10}
+                            value={predicted_ram_usage_weighting}
+                            onChange={(e) => setPredictedRamUsageWeighting(Number(e.target.value))}
                             fullWidth
                           />
                         </Box>
@@ -221,7 +255,8 @@ export default function Settings() {
                           <TextField
                             size="small"
                             label="Weight"
-                            value={10}
+                            value={predicted_gpu_usage_weighting}
+                            onChange={(e) => setPredictedGpuUsageWeighting(Number(e.target.value))}
                             fullWidth
                           />
                         </Box>
@@ -237,7 +272,8 @@ export default function Settings() {
                           <TextField
                             size="small"
                             label="Weight"
-                            value={10}
+                            value={predicted_download_speed_weighting}
+                            onChange={(e) => setPredictedDownloadSpeedWeighting(Number(e.target.value))}
                             fullWidth
                           />
                         </Box>
@@ -253,7 +289,8 @@ export default function Settings() {
                           <TextField
                             size="small"
                             label="Weight"
-                            value={10}
+                            value={predicted_upload_speed_weighting}
+                            onChange={(e) => setPredictedUploadSpeedWeighting(Number(e.target.value))}
                             fullWidth
                           />
                         </Box>
@@ -266,6 +303,13 @@ export default function Settings() {
                     <Button
                       variant="outlined"
                       size="small"
+                      onClick={() => { handleSave(
+                        predicted_cpu_usage_weighting,
+                        predicted_ram_usage_weighting,
+                        predicted_gpu_usage_weighting,
+                        predicted_upload_speed_weighting, 
+                        predicted_download_speed_weighting
+                      ) }}
                       sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
                     >
                       Save
