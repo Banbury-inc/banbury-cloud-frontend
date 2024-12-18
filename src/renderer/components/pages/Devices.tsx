@@ -772,7 +772,7 @@ export default function Devices() {
   ) => {
 
 
-    let task_description = 'Scanning filesystem';
+    let task_description = 'Updating prediction preferences';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
 
@@ -1174,7 +1174,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted CPU Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedCPUUsage} size="small" sx={{
+                              <Switch checked={usePredictedCPUUsage} size="small" onChange={() => setUsePredictedCPUUsage(!usePredictedCPUUsage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1193,7 +1193,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted RAM Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedRAMUsage} size="small" sx={{
+                              <Switch checked={usePredictedRAMUsage} size="small" onChange={() => setUsePredictedRAMUsage(!usePredictedRAMUsage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1212,7 +1212,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted GPU Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedGPUUsage} size="small" sx={{
+                              <Switch checked={usePredictedGPUUsage} size="small" onChange={() => setUsePredictedGPUUsage(!usePredictedGPUUsage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1231,7 +1231,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Download Speed</Typography>
                               </Box>
-                              <Switch checked={usePredictedDownloadSpeed} size="small" sx={{
+                              <Switch checked={usePredictedDownloadSpeed} size="small" onChange={() => setUsePredictedDownloadSpeed(!usePredictedDownloadSpeed)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1250,7 +1250,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Upload Speed</Typography>
                               </Box>
-                              <Switch checked={usePredictedUploadSpeed} size="small" sx={{
+                              <Switch checked={usePredictedUploadSpeed} size="small" onChange={() => setUsePredictedUploadSpeed(!usePredictedUploadSpeed)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1269,7 +1269,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Available for Download</Typography>
                               </Box>
-                              <Switch checked={useFilesAvailableForDownload} size="small" sx={{
+                              <Switch checked={useFilesAvailableForDownload} size="small" onChange={() => setUseFilesAvailableForDownload(!useFilesAvailableForDownload)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1288,7 +1288,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Needed</Typography>
                               </Box>
-                              <Switch checked={useFilesNeeded} size="small" sx={{
+                              <Switch checked={useFilesNeeded} size="small" onChange={() => setUseFilesNeeded(!useFilesNeeded)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
