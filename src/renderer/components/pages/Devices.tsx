@@ -770,6 +770,9 @@ export default function Devices() {
     useFilesNeeded: boolean,
     useFilesAvailableForDownload: boolean
   ) => {
+
+
+
     console.log('Getting prediction preferences...');
     console.log('usePredictedCPUUsage: ', usePredictedCPUUsage);
     console.log('usePredictedRAMUsage: ', usePredictedRAMUsage);
@@ -778,6 +781,23 @@ export default function Devices() {
     console.log('usePredictedUploadSpeed: ', usePredictedUploadSpeed);
     console.log('useFilesNeeded: ', useFilesNeeded);
     console.log('useFilesAvailableForDownload: ', useFilesAvailableForDownload);
+
+
+
+    const result = await neuranet.device.updateScoreConfigurationPreferences(
+      username ?? '',
+      usePredictedCPUUsage,
+      usePredictedRAMUsage,
+      usePredictedGPUUsage,
+      usePredictedDownloadSpeed,
+      usePredictedUploadSpeed,
+      useFilesNeeded,
+      useFilesAvailableForDownload,
+      neuranet.device.name()
+    );
+
+    console.log('result: ', result);
+
   };
 
   const [syncStorageValue, setSyncStorageValue] = useState<string>('');
