@@ -846,6 +846,19 @@ export default function Devices() {
     }
   }, [selectedDevice]);
 
+  // Initialize state values when selectedDevice changes
+  useEffect(() => {
+    if (selectedDevice) {
+      setUsePredictedCPUUsage(selectedDevice.use_predicted_cpu_usage);
+      setUsePredictedRAMUsage(selectedDevice.use_predicted_ram_usage);
+      setUsePredictedGPUUsage(selectedDevice.use_predicted_gpu_usage);
+      setUsePredictedDownloadSpeed(selectedDevice.use_predicted_download_speed);
+      setUsePredictedUploadSpeed(selectedDevice.use_predicted_upload_speed);
+      setUseFilesAvailableForDownload(selectedDevice.use_files_available_for_download);
+      setUseFilesNeeded(selectedDevice.use_files_needed);
+    }
+  }, [selectedDevice]);
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -1206,133 +1219,161 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted CPU Usage</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_predicted_cpu_usage} size="small" onChange={() => setUsePredictedCPUUsage(!selectedDevice.use_predicted_cpu_usage)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={usePredictedCPUUsage}
+                                size="small" 
+                                onChange={(e) => setUsePredictedCPUUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Predicted RAM Usage</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_predicted_ram_usage} size="small" onChange={() => setUsePredictedRAMUsage(!selectedDevice.use_predicted_ram_usage)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={usePredictedRAMUsage}
+                                size="small" 
+                                onChange={(e) => setUsePredictedRAMUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Predicted GPU Usage</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_predicted_gpu_usage} size="small" onChange={() => setUsePredictedGPUUsage(!selectedDevice.use_predicted_gpu_usage)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={usePredictedGPUUsage}
+                                size="small" 
+                                onChange={(e) => setUsePredictedGPUUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Predicted Download Speed</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_predicted_download_speed} size="small" onChange={() => setUsePredictedDownloadSpeed(!selectedDevice.use_predicted_download_speed)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={usePredictedDownloadSpeed}
+                                size="small" 
+                                onChange={(e) => setUsePredictedDownloadSpeed(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#4caf50',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Predicted Upload Speed</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_predicted_upload_speed} size="small" onChange={() => setUsePredictedUploadSpeed(!selectedDevice.use_predicted_upload_speed)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={usePredictedUploadSpeed}
+                                size="small" 
+                                onChange={(e) => setUsePredictedUploadSpeed(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#4caf50',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Files Available for Download</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_files_available_for_download} size="small" onChange={() => setUseFilesAvailableForDownload(!selectedDevice.use_files_available_for_download)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={useFilesAvailableForDownload}
+                                size="small" 
+                                onChange={(e) => setUseFilesAvailableForDownload(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#4caf50',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
                             </Box>
                             <Divider />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box>
                                 <Typography variant="body2">Files Needed</Typography>
                               </Box>
-                              <Switch checked={selectedDevice.use_files_needed} size="small" onChange={() => setUseFilesNeeded(!selectedDevice.use_files_needed)} sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch 
+                                checked={useFilesNeeded}
+                                size="small" 
+                                onChange={(e) => setUseFilesNeeded(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#4caf50',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
                             </Box>
                           </Stack>
                         </Grid>
