@@ -772,17 +772,9 @@ export default function Devices() {
   ) => {
 
 
-
-    console.log('Getting prediction preferences...');
-    console.log('usePredictedCPUUsage: ', usePredictedCPUUsage);
-    console.log('usePredictedRAMUsage: ', usePredictedRAMUsage);
-    console.log('usePredictedGPUUsage: ', usePredictedGPUUsage);
-    console.log('usePredictedDownloadSpeed: ', usePredictedDownloadSpeed);
-    console.log('usePredictedUploadSpeed: ', usePredictedUploadSpeed);
-    console.log('useFilesNeeded: ', useFilesNeeded);
-    console.log('useFilesAvailableForDownload: ', useFilesAvailableForDownload);
-
-
+    let task_description = 'Scanning filesystem';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
 
     const result = await neuranet.device.updateScoreConfigurationPreferences(
       username ?? '',
@@ -796,7 +788,11 @@ export default function Devices() {
       neuranet.device.name()
     );
 
-    console.log('result: ', result);
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      // setUpdates(updates + 1);
+    }
+
 
   };
 

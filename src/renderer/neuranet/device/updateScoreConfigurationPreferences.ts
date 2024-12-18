@@ -43,7 +43,7 @@ export async function updateScoreConfigurationPreferences(
 
     if (result === 'success') {
       console.log("settings update success");
-      return response.data;
+      return response.data.result;
     }
     if (result === 'fail') {
       console.log("settings update failed");
