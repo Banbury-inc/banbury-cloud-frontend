@@ -23,6 +23,7 @@ export async function updatePerformanceScoreWeightings(
 
 
   try {
+
     const url = `${CONFIG.url}/update_settings/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       predicted_cpu_usage_weighting: predicted_cpu_usage_weighting,
@@ -33,9 +34,10 @@ export async function updatePerformanceScoreWeightings(
     });
     const result = response.data.result;
 
+
     if (result === 'success') {
       console.log("settings update success");
-      return response.data;
+      return response.data.result;
     }
     if (result === 'fail') {
       console.log("settings update failed");

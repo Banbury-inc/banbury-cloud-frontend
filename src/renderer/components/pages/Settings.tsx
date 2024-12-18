@@ -24,7 +24,7 @@ const sections: Section[] = [
 
 export default function Settings() {
 
-  const { username } = useAuth();
+  const { username, tasks, setTasks, setTaskbox_expanded } = useAuth();
   const [activeSection, setActiveSection] = useState('app');
   const [predicted_cpu_usage_weighting, setPredictedCpuUsageWeighting] = useState(10);
   const [predicted_ram_usage_weighting, setPredictedRamUsageWeighting] = useState(10);
@@ -40,14 +40,18 @@ export default function Settings() {
     }
   };
 
-  const handleSave = (
+  const handleSave = async (
     predicted_cpu_usage_weighting: number,
     predicted_ram_usage_weighting: number,
     predicted_gpu_usage_weighting: number,
     predicted_upload_speed_weighting: number,
     predicted_download_speed_weighting: number) => {
 
-    neuranet.settings.updatePerformanceScoreWeightings(
+    let task_description = 'Updating Settings';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let response = await neuranet.settings.updatePerformanceScoreWeightings(
       username,
       predicted_cpu_usage_weighting,
       predicted_ram_usage_weighting,
@@ -56,12 +60,13 @@ export default function Settings() {
       predicted_upload_speed_weighting
     );
 
-    console.log('predicted upload speed weighting:', predicted_upload_speed_weighting);
-    console.log('predicted download speed weighting:', predicted_download_speed_weighting);
-    console.log('predicted gpu usage weighting:', predicted_gpu_usage_weighting);
-    console.log('predicted ram usage weighting:', predicted_ram_usage_weighting);
-    console.log('predicted cpu usage weighting:', predicted_cpu_usage_weighting);
-    console.log('Save');
+    console.log('response: ', response);
+
+    if (response === 'success') {
+      console.log('settings update success');
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+    }
+
   }
 
   return (
