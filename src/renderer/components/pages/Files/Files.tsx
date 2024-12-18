@@ -526,7 +526,7 @@ export default function Files() {
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);

@@ -41,7 +41,7 @@ export async function updateDevice(username: any) {
     console.log(device_info_json);
 
     try {
-      const response = await axios.post(`${CONFIG.url}update_devices/${username}/`, device_info_json);
+      const response = await axios.post(`${CONFIG.url}devices/update_devices/${username}/`, device_info_json);
 
       if (response.status === 200) {
         if (response.data.response === 'success') {

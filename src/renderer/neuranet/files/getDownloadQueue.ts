@@ -16,7 +16,7 @@ export async function getDownloadQueue(
 
   try {
 
-      url = `${CONFIG.url}/get_download_queue/${username}/`;
+      url = `${CONFIG.url}/predictions/get_download_queue/${username}/`;
 
     const response = await axios.post<{ result: string; username: string; }>(url, {
       device_name: device_name,

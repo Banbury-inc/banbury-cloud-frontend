@@ -34,7 +34,7 @@ export const useFileData = (
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -43,7 +43,7 @@ export const useFileData = (
       // Step 2: Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`);
 
       const { devices } = deviceInfoResponse.data;
 
@@ -70,7 +70,7 @@ export const useFileData = (
       // Step 3: Fetch files for all devices
       const fileInfoResponse = await axios.get<{
         files: any[];
-      }>(`${CONFIG.url}/getfileinfo/${username}/`);
+      }>(`${CONFIG.url}/files/getfileinfo/${username}/`);
 
       files = fileInfoResponse.data.files;
 
@@ -97,7 +97,7 @@ export const useFileData = (
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -106,7 +106,7 @@ export const useFileData = (
       // Step 2: Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`);
 
       const { devices } = deviceInfoResponse.data;
 

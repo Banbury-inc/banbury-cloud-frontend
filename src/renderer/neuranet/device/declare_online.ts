@@ -15,7 +15,7 @@ export async function declare_online(
   let device_name = neuranet.device.name();
 
   try {
-    const url = `${CONFIG.url}/declare_online/${username}/`;
+    const url = `${CONFIG.url}/devices/declare_online/${username}/`;
     const response = await axios.post<{ result: string; user: string; }>(url, {
       device_name: device_name,
     });

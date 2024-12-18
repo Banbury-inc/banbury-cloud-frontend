@@ -23,21 +23,21 @@ export async function get_snapshot(username: any) {
       last_name: string;
       phone_number: string;
       email: string;
-    }>(`${CONFIG.url}/getuserinfo/${username}/`);
+    }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
     const { first_name, last_name } = userInfoResponse.data;
 
     // Step 2: Fetch device information
     const deviceInfoResponse = await axios.get<{
       devices: any[];
-    }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
+    }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`);
 
     const { devices } = deviceInfoResponse.data;
 
     // Step 3: Fetch files for all devices
     const fileInfoResponse = await axios.get<{
       files: any[];
-    }>(`${CONFIG.url}/getfileinfo/${username}/`);
+    }>(`${CONFIG.url}/files/getfileinfo/${username}/`);
 
     const { files } = fileInfoResponse.data;
 

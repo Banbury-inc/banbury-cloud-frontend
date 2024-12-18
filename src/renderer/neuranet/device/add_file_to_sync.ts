@@ -16,7 +16,7 @@ export async function add_file_to_sync(
   let device_name = neuranet.device.name();
 
 
-    let url = `${CONFIG.url}/add_file_to_sync/${username}/`;
+    let url = `${CONFIG.url}/predictions/add_file_to_sync/${username}/`;
 
     
 

@@ -23,7 +23,7 @@ export default function TaskBox() {
     const fetchData = async () => {
       try {
         let task_device = neuranet.device.name();
-        const url = `${CONFIG.url}get_session/${username}/`;
+        const url = `${CONFIG.url}/sessions/get_session/${username}/`;
         const response = await axios.post<{
           result: string;
           sessions: any[];

@@ -10,7 +10,7 @@ export async function runPipeline(
   username: string,
 ) {
   let device_name = neuranet.device.name();
-  let url = `${CONFIG.url}/run_pipeline/${username}/`;
+  let url = `${CONFIG.url}/predictions/run_pipeline/${username}/`;
 
   try {
     const response = await axios.get<{ result: string; username: string; }>(url);

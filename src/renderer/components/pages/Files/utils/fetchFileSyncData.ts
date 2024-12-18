@@ -28,7 +28,7 @@ export const fetchFileSyncData = async (
 
     // Fetch fresh data from API
     const [fileInfoResponse] = await Promise.all([
-      axios.post<{ files: any[]; }>(`${CONFIG.url}/get_files_to_sync/${username}/`, {
+      axios.post<{ files: any[]; }>(`${CONFIG.url}/predictions/get_files_to_sync/${username}/`, {
         global_file_path: global_file_path
       })
     ]);

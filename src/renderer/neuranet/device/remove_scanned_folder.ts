@@ -19,7 +19,7 @@ export async function remove_scanned_folder(
 
   try {
 
-      url = `${CONFIG.url}/remove_scanned_folder/${username}/`;
+      url = `${CONFIG.url}/files/remove_scanned_folder/${username}/`;
 
 
 

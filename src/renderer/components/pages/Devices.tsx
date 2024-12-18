@@ -293,7 +293,7 @@ export default function Devices() {
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${CONFIG.url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -302,7 +302,7 @@ export default function Devices() {
       // Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`${CONFIG.url}/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`);
 
       const devicePredictionsResponse = await axios.get<{
         data: {
@@ -330,7 +330,7 @@ export default function Devices() {
           }>;
           result: string;
         };
-      }>(`${CONFIG.url}/get_device_prediction_data/${username}/`);
+      }>(`${CONFIG.url}/predictions/get_device_prediction_data/${username}/`);
 
       console.log('devicePredictionsResponse: ', devicePredictionsResponse);
 

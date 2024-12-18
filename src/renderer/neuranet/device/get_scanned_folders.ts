@@ -15,7 +15,7 @@ export async function get_scanned_folders(
   let device_name = neuranet.device.name();
 
 
-    let url = `${CONFIG.url}/get_scanned_folders/${username}/`;
+    let url = `${CONFIG.url}/files/get_scanned_folders/${username}/`;
 
 
 

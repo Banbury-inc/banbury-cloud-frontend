@@ -25,7 +25,7 @@ export async function addTask(
     task_progress: 0,
   };
   try {
-    const url = `${CONFIG.url}/add_task/${username}/`;
+    const url = `${CONFIG.url}/tasks/add_task/${username}/`;
     const response = await axios.post<{ result: string; username: string; task_id: string; }>(url, {
       user: user,
       task_name: task_description,

@@ -9,7 +9,7 @@ export async function searchFile(username: string, fileName: string) {
 
   try {
     const deviceName = os.hostname();
-    const response = await axios.post(`${CONFIG.url}/search_file/${username}/`, {
+    const response = await axios.post(`${CONFIG.url}/files/search_file/${username}/`, {
       device_name: deviceName,
       file_name: fileName
     });

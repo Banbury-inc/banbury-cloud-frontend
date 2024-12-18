@@ -32,7 +32,7 @@ export const fetchFileData = async (
 ) => {
     try {
         const fileInfoResponse = await axios.post<{ files: DatabaseData[]; }>(
-            `${CONFIG.url}/get_files_from_filepath/${username}/`,
+            `${CONFIG.url}/files/get_files_from_filepath/${username}/`,
             {
                 global_file_path: global_file_path
             }

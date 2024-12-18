@@ -14,7 +14,7 @@ export async function delete_device(
 
   let url
 
-    url = `${CONFIG.url}/delete_device/${username}/`;
+    url = `${CONFIG.url}/devices/delete_device/${username}/`;
 
   let device_name = neuranet.device.name();
 

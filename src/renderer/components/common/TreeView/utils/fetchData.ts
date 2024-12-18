@@ -30,9 +30,9 @@ export async function fetchData(
     }
 
     const [userInfoResponse, deviceInfoResponse, fileInfoResponse] = await Promise.all([
-      axios.get<{ first_name: string; last_name: string; }>(`${CONFIG.url}/getuserinfo/${username}/`),
-      axios.get<{ devices: any[]; }>(`${CONFIG.url}/getdeviceinfo/${username}/`),
-      axios.get<{ files: any[]; }>(`${CONFIG.url}/getfileinfo/${username}/`)
+      axios.get<{ first_name: string; last_name: string; }>(`${CONFIG.url}/users/getuserinfo/${username}/`),
+      axios.get<{ devices: any[]; }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`),
+      axios.get<{ files: any[]; }>(`${CONFIG.url}/files/getfileinfo/${username}/`)
     ]);
 
     // Update user info

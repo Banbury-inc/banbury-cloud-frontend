@@ -19,7 +19,7 @@ export async function add_scanned_folder(
 
   try {
 
-      url = `${CONFIG.url}/add_scanned_folder/${username}/`;
+      url = `${CONFIG.url}/files/add_scanned_folder/${username}/`;
 
 
 

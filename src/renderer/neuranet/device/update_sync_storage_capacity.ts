@@ -19,7 +19,7 @@ export async function update_sync_storage_capacity(
 
   try {
 
-      url = `${CONFIG.url}/update_sync_storage_capacity/${username}/`;
+      url = `${CONFIG.url}/predictions/update_sync_storage_capacity/${username}/`;
 
     
 

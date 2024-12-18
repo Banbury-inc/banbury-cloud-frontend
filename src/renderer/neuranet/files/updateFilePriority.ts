@@ -24,7 +24,7 @@ export async function updateFilePriority(
 
     try {
 
-        url = `${CONFIG.url}/update_file_priority/${username}/`;
+        url = `${CONFIG.url}/predictions/update_file_priority/${username}/`;
 
 
         const response = await axios.post<{ result: string; username: string; }>(url, {

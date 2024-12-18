@@ -15,7 +15,7 @@ export async function declare_offline(
   let device_name = neuranet.device.name();
 
   try {
-    const url = `${CONFIG.url}/declare_offline/${username}/`;
+    const url = `${CONFIG.url}/devices/declare_offline/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       device_name: device_name,
     });

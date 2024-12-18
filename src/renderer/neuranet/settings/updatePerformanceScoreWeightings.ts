@@ -24,7 +24,7 @@ export async function updatePerformanceScoreWeightings(
 
   try {
 
-    const url = `${CONFIG.url}/update_settings/${username}/`;
+    const url = `${CONFIG.url}/settings/update_settings/${username}/`;
     const response = await axios.post<{ result: string; username: string; }>(url, {
       predicted_cpu_usage_weighting: predicted_cpu_usage_weighting,
       predicted_ram_usage_weighting: predicted_ram_usage_weighting,

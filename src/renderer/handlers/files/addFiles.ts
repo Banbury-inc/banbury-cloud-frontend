@@ -12,7 +12,7 @@ export async function addFiles(
     const response = await axios.post<{
       result: string;
       // }>('https://website2-389236221119.us-central1.run.app/add_files/' + username + '/', {
-    }>('' + CONFIG.url + '/add_files/' + username + '/', {
+    }>('' + CONFIG.url + '/files/add_files/' + username + '/', {
 
       // }>('http://localhost:8080/add_files/' + username + '/', {
       files: filesInfo,
