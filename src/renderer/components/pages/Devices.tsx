@@ -761,7 +761,33 @@ export default function Devices() {
 
   };
 
+  const handleSavePredictionPreferences = async (
+    usePredictedCPUUsage: boolean, 
+    usePredictedRAMUsage: boolean,
+    usePredictedGPUUsage: boolean,
+    usePredictedDownloadSpeed: boolean,
+    usePredictedUploadSpeed: boolean,
+    useFilesNeeded: boolean,
+    useFilesAvailableForDownload: boolean
+  ) => {
+    console.log('Getting prediction preferences...');
+    console.log('usePredictedCPUUsage: ', usePredictedCPUUsage);
+    console.log('usePredictedRAMUsage: ', usePredictedRAMUsage);
+    console.log('usePredictedGPUUsage: ', usePredictedGPUUsage);
+    console.log('usePredictedDownloadSpeed: ', usePredictedDownloadSpeed);
+    console.log('usePredictedUploadSpeed: ', usePredictedUploadSpeed);
+    console.log('useFilesNeeded: ', useFilesNeeded);
+    console.log('useFilesAvailableForDownload: ', useFilesAvailableForDownload);
+  };
+
   const [syncStorageValue, setSyncStorageValue] = useState<string>('');
+  const [usePredictedUploadSpeed, setUsePredictedUploadSpeed] = useState(true);
+  const [usePredictedDownloadSpeed, setUsePredictedDownloadSpeed] = useState(true);
+  const [usePredictedCPUUsage, setUsePredictedCPUUsage] = useState(true);
+  const [usePredictedRAMUsage, setUsePredictedRAMUsage] = useState(true);
+  const [usePredictedGPUUsage, setUsePredictedGPUUsage] = useState(true);
+  const [useFilesNeeded, setUseFilesNeeded] = useState(true);
+  const [useFilesAvailableForDownload, setUseFilesAvailableForDownload] = useState(true);
 
   // Update syncStorageValue when selectedDevice changes
   useEffect(() => {
@@ -1132,7 +1158,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted CPU Usage</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={usePredictedCPUUsage} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1151,7 +1177,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted RAM Usage</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={usePredictedRAMUsage} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1170,7 +1196,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted GPU Usage</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={usePredictedGPUUsage} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1189,7 +1215,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Download Speed</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={usePredictedDownloadSpeed} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1208,7 +1234,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Upload Speed</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={usePredictedUploadSpeed} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1227,7 +1253,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Available for Download</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={useFilesAvailableForDownload} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1246,7 +1272,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Needed</Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch checked={useFilesNeeded} size="small" sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1266,6 +1292,15 @@ export default function Devices() {
                           <Button
                             variant="outlined"
                             size="small"
+                            onClick={() => handleSavePredictionPreferences(
+                              usePredictedCPUUsage,
+                              usePredictedRAMUsage,
+                              usePredictedGPUUsage,
+                              usePredictedDownloadSpeed, 
+                              usePredictedUploadSpeed, 
+                              useFilesNeeded, 
+                              useFilesAvailableForDownload
+                            )}
                             sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
                           >
                             Save
