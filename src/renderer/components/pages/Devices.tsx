@@ -105,6 +105,13 @@ interface DeviceData {
   files_needed: number;
   sync_storage_capacity_gb: number;
   predicted_performance_score: number;
+  use_predicted_cpu_usage: boolean;
+  use_predicted_download_speed: boolean;
+  use_predicted_gpu_usage: boolean;
+  use_predicted_ram_usage: boolean;
+  use_predicted_upload_speed: boolean;
+  use_files_available_for_download: boolean;
+  use_files_needed: boolean;
 }
 
 const headCells: HeadCell[] = [
@@ -309,6 +316,13 @@ export default function Devices() {
             predicted_gpu_usage: number;
             predicted_ram_usage: number;
             predicted_upload_speed: number;
+            use_predicted_cpu_usage: boolean;
+            use_predicted_download_speed: boolean;
+            use_predicted_gpu_usage: boolean;
+            use_predicted_ram_usage: boolean;
+            use_predicted_upload_speed: boolean;
+            use_files_available_for_download: boolean;
+            use_files_needed: boolean;
             score: number;
             score_timestamp: string;
             sync_storage_capacity_gb: number;
@@ -335,6 +349,13 @@ export default function Devices() {
           predicted_gpu_usage: 0,
           predicted_download_speed: 0,
           predicted_upload_speed: 0,
+          use_predicted_cpu_usage: false,
+          use_predicted_download_speed: false,
+          use_predicted_gpu_usage: false,
+          use_predicted_ram_usage: false,
+          use_predicted_upload_speed: false,
+          use_files_available_for_download: false,
+          use_files_needed: false,
           sync_storage_capacity_gb: 0,
           files_available_for_download: 0,
           files_needed: 0,
@@ -386,7 +407,14 @@ export default function Devices() {
           predicted_upload_speed: devicePrediction.predicted_upload_speed,
           predicted_performance_score: devicePrediction.score,
           files_available_for_download: devicePrediction.files_available_for_download,
-          files_needed: devicePrediction.files_needed
+          files_needed: devicePrediction.files_needed,
+          use_predicted_cpu_usage: devicePrediction.use_predicted_cpu_usage,
+          use_predicted_download_speed: devicePrediction.use_predicted_download_speed,
+          use_predicted_gpu_usage: devicePrediction.use_predicted_gpu_usage,
+          use_predicted_ram_usage: devicePrediction.use_predicted_ram_usage,
+          use_predicted_upload_speed: devicePrediction.use_predicted_upload_speed,
+          use_files_available_for_download: devicePrediction.use_files_available_for_download,
+          use_files_needed: devicePrediction.use_files_needed,
         };
       });
 
@@ -679,19 +707,23 @@ export default function Devices() {
       .map(({ el }) => el); // Extract the sorted elements
   }
 
-  function getComparator<Key extends keyof any>(
+  function getComparator<Key extends keyof DeviceData>(
     order: Order,
     orderBy: Key,
   ): (
-    a: { [key in Key]: number | string | string[] },
-    b: { [key in Key]: number | string | string[] }
+    a: DeviceData,
+    b: DeviceData,
   ) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
-  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+  function descendingComparator<T extends DeviceData>(
+    a: T,
+    b: T,
+    orderBy: keyof T,
+  ) {
     if (b[orderBy] < a[orderBy]) {
       return -1;
     }
@@ -1174,7 +1206,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted CPU Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedCPUUsage} size="small" onChange={() => setUsePredictedCPUUsage(!usePredictedCPUUsage)} sx={{
+                              <Switch checked={selectedDevice.use_predicted_cpu_usage} size="small" onChange={() => setUsePredictedCPUUsage(!selectedDevice.use_predicted_cpu_usage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1193,7 +1225,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted RAM Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedRAMUsage} size="small" onChange={() => setUsePredictedRAMUsage(!usePredictedRAMUsage)} sx={{
+                              <Switch checked={selectedDevice.use_predicted_ram_usage} size="small" onChange={() => setUsePredictedRAMUsage(!selectedDevice.use_predicted_ram_usage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1212,7 +1244,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted GPU Usage</Typography>
                               </Box>
-                              <Switch checked={usePredictedGPUUsage} size="small" onChange={() => setUsePredictedGPUUsage(!usePredictedGPUUsage)} sx={{
+                              <Switch checked={selectedDevice.use_predicted_gpu_usage} size="small" onChange={() => setUsePredictedGPUUsage(!selectedDevice.use_predicted_gpu_usage)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1231,7 +1263,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Download Speed</Typography>
                               </Box>
-                              <Switch checked={usePredictedDownloadSpeed} size="small" onChange={() => setUsePredictedDownloadSpeed(!usePredictedDownloadSpeed)} sx={{
+                              <Switch checked={selectedDevice.use_predicted_download_speed} size="small" onChange={() => setUsePredictedDownloadSpeed(!selectedDevice.use_predicted_download_speed)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1250,7 +1282,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Upload Speed</Typography>
                               </Box>
-                              <Switch checked={usePredictedUploadSpeed} size="small" onChange={() => setUsePredictedUploadSpeed(!usePredictedUploadSpeed)} sx={{
+                              <Switch checked={selectedDevice.use_predicted_upload_speed} size="small" onChange={() => setUsePredictedUploadSpeed(!selectedDevice.use_predicted_upload_speed)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1269,7 +1301,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Available for Download</Typography>
                               </Box>
-                              <Switch checked={useFilesAvailableForDownload} size="small" onChange={() => setUseFilesAvailableForDownload(!useFilesAvailableForDownload)} sx={{
+                              <Switch checked={selectedDevice.use_files_available_for_download} size="small" onChange={() => setUseFilesAvailableForDownload(!selectedDevice.use_files_available_for_download)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -1288,7 +1320,7 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Needed</Typography>
                               </Box>
-                              <Switch checked={useFilesNeeded} size="small" onChange={() => setUseFilesNeeded(!useFilesNeeded)} sx={{
+                              <Switch checked={selectedDevice.use_files_needed} size="small" onChange={() => setUseFilesNeeded(!selectedDevice.use_files_needed)} sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
                                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
