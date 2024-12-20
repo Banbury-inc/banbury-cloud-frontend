@@ -1,7 +1,6 @@
 export * from './deviceInfo'
 export * from './connect'
 export * from './scanFilesystem'
-export * from './download_file'
 export * from './declare_online'
 export * from './declare_offline'
 export * from './getDeviceInfo'

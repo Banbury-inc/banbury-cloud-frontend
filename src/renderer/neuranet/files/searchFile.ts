@@ -32,7 +32,3 @@ export async function searchFile(username: string, fileName: string) {
   }
 }
 
-// Example usage:
-searchFile('michael-ubuntu', '8641923.png').then(result => {
-  console.log(result);
-});
