@@ -1,6 +1,6 @@
 import { neuranet } from '../../neuranet'
 
-export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any): Promise<string> {
+export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any): Promise<string> {
   return new Promise((resolve, reject) => {
     if (files.length === 0 || devices.length === 0) {
       reject('No file selected');
@@ -12,8 +12,8 @@ export function downloadFile(username: string, files: string[], devices: string[
 
     files.forEach((file_name) => {
       devices.forEach((device_name) => {
-        neuranet.device.createWebSocketConnection(username, device_name, taskInfo, (socket) => {
-          socket.onmessage = (event) => {
+        neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
+          socket.onmessage = (event: any) => {
             try {
               const data = JSON.parse(event.data);
               

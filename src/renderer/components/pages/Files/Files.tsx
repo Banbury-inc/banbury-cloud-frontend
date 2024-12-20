@@ -322,6 +322,9 @@ export default function Files() {
           selectedFileNames,
           selectedDeviceNames,
           taskInfo,
+          tasks || [],
+          setTasks,
+          setTaskbox_expanded,
         );
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
@@ -397,7 +400,7 @@ export default function Files() {
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
 
-    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo);
+    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo, tasks || [], setTasks, setTaskbox_expanded);
 
     if (response === 'No file selected') {
       let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);

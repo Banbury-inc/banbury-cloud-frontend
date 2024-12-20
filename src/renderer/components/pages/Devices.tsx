@@ -557,7 +557,7 @@ export default function Devices() {
         let task_description = 'Opening ' + selectedDeviceNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo);
+        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo, tasks || [], setTasks, setTaskbox_expanded);
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }

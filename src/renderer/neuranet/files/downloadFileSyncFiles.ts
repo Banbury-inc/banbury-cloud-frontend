@@ -86,7 +86,7 @@ export async function downloadFileSyncFiles(
 
     // Attempt to download file from source device
     try {
-      const result = await downloadFile(username, [file_name], [source_device], download_task);
+      const result = await downloadFile(username, [file_name], [source_device], download_task, tasks || [], setTasks, setTaskbox_expanded);
 
       if (result === 'success') {
         downloaded_files.push(file_name);
