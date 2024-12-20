@@ -17,7 +17,7 @@ export function downloadFile(username: string, files: string[], devices: string[
             try {
               const data = JSON.parse(event.data);
               console.log(data);
-              
+
               switch (data.message) {
                 case 'File transfer complete':
                   completedTransfers++;
@@ -26,30 +26,30 @@ export function downloadFile(username: string, files: string[], devices: string[
                   }
                   break;
                 case 'File not found':
-                  reject('file_not_found');
+                  resolve('file_not_found');
                   break;
                 case 'Device offline':
-                  reject('device_offline');
+                  resolve('device_offline');
                   break;
                 case 'Permission denied':
-                  reject('permission_denied');
+                  resolve('permission_denied');
                   break;
                 case 'Transfer failed':
-                  reject('transfer_failed');
+                  resolve('transfer_failed');
                   break;
                 // Add more cases as needed
               }
             } catch (error) {
-              reject('invalid_response');
+              resolve('invalid_response');
             }
           };
 
           socket.onerror = () => {
-            reject('connection_error');
+            resolve('connection_error');
           };
 
           socket.onclose = () => {
-            reject('connection_closed');
+            resolve('connection_closed');
           };
 
           neuranet.device.download_request(username, file_name, socket, taskInfo);
@@ -59,7 +59,7 @@ export function downloadFile(username: string, files: string[], devices: string[
 
     // Optional: Add timeout
     setTimeout(() => {
-      reject('timeout');
+      resolve('timeout');
     }, 30000); // 30 second timeout
   });
 }

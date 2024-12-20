@@ -41,12 +41,42 @@ function saveFile(fileName: string) {
   return 'success';
 }
 
+function handleTransferError(
+  errorType: 'save_error' | 'file_not_found' | 'device_offline' | 'permission_denied' | 'transfer_failed',
+  fileName: string,
+  tasks: any[] | null,
+  setTasks: ((tasks: any[]) => void) | null,
+  setTaskbox_expanded: ((expanded: boolean) => void) | null,
+  deviceName?: string
+) {
+  if (!tasks || !setTasks || !setTaskbox_expanded) {
+    console.error('Missing required parameters for error handling');
+    return;
+  }
+
+  const errorMessages = {
+    save_error: `Failed to save file: ${fileName}`,
+    file_not_found: `File not found: ${fileName}`,
+    device_offline: `Device ${deviceName} is offline`,
+    permission_denied: `Permission denied for file: ${fileName}`,
+    transfer_failed: `Transfer failed for file: ${fileName}`,
+  };
+
+  const updatedTasks = tasks.map((task: any) =>
+    task.file_name === fileName
+      ? { ...task, status: 'error', error_message: errorMessages[errorType] }
+      : task
+  );
+
+  setTasks(updatedTasks);
+  setTaskbox_expanded(true);
+}
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
 export function createWebSocketConnection(
-  username: string, 
-  device_name: string, 
-  taskInfo: any, 
+  username: string,
+  device_name: string,
+  taskInfo: any,
   tasks: any[],
   setTasks: (tasks: any[]) => void,
   setTaskbox_expanded: (expanded: boolean) => void,
@@ -65,7 +95,7 @@ export function createWebSocketConnection(
   socket.binaryType = 'arraybuffer';
 
   // Open event: When the connection is established
-  socket.onopen = function() {
+  socket.onopen = function () {
 
     const message = {
       message: `Initiate live data connection`,
@@ -79,7 +109,7 @@ export function createWebSocketConnection(
   };
 
   // Message event: When a message or file is received from the server
-  socket.onmessage = async function(event: any) {
+  socket.onmessage = async function (event: any) {
     console.log('I received a message: ', event.data);
 
     // Check if the received data is binary (ArrayBuffer)
@@ -89,7 +119,7 @@ export function createWebSocketConnection(
       try {
         const data = JSON.parse(event.data);
         console.log('I parsed the data: ', data);
-        
+
         switch (data.message) {
           case 'File transfer complete':
             saveFile(data.file_name || 'received_file.png');
@@ -117,6 +147,15 @@ export function createWebSocketConnection(
 
           case 'Transfer failed':
             console.log(`Transfer failed for file: ${data.file_name}`);
+            if (tasks && setTasks && setTaskbox_expanded) {
+              handleTransferError(
+                'transfer_failed',
+                data.file_name,
+                tasks,
+                setTasks,
+                setTaskbox_expanded
+              );
+            }
             return 'transfer_failed';
         }
 
@@ -126,11 +165,11 @@ export function createWebSocketConnection(
           let device_info = await neuranet.device.getDeviceInfo();
           console.log('I retrieved the device info: ', device_info)
           const message = {
-                message: `device_info_response`,
-                username: username,
-                sending_device_name: device_name,
-                requesting_device_name: data.requesting_device_name,
-                device_info: device_info,
+            message: `device_info_response`,
+            username: username,
+            sending_device_name: device_name,
+            requesting_device_name: data.requesting_device_name,
+            device_info: device_info,
           };
           socket.send(JSON.stringify(message));
           console.log(`Sent: ${JSON.stringify(message)}`);
@@ -142,15 +181,15 @@ export function createWebSocketConnection(
           console.log('I was asked to initiate file sync')
           const download_queue = data.download_queue?.download_queue;
           console.log('Extracted download queue: ', download_queue)
-          
+
           if (download_queue && Array.isArray(download_queue.files)) {
             const response = await neuranet.files.downloadFileSyncFiles(
-              username, 
-              download_queue, 
-              [], 
-              taskInfo, 
-              tasks, 
-              setTasks, 
+              username,
+              download_queue,
+              [],
+              taskInfo,
+              tasks,
+              setTasks,
               setTaskbox_expanded
             );
             console.log('I completed the file sync: ', response)
@@ -162,9 +201,12 @@ export function createWebSocketConnection(
 
         // Handle existing request types
         if (data.request_type === 'file_request') {
+          console.log('Received file request')
           const directory_name: string = 'BCloud';
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path, data.file_name);
+
+          console.log('File save path: ', file_save_path)
 
           const fileStream = fs.createReadStream(file_save_path);
 
@@ -189,13 +231,13 @@ export function createWebSocketConnection(
   };
 
   // Close event: When the WebSocket connection is closed
-  socket.onclose = function() {
+  socket.onclose = function () {
     console.log('WebSocket connection closed');
     return 'connection_closed';
   };
 
   // Error event: When an error occurs with the WebSocket connection
-  socket.onerror = function(error: any) {
+  socket.onerror = function (error: any) {
     console.error('WebSocket error: ', error);
     return 'connection_error';
   };
@@ -232,9 +274,9 @@ export function connect(
   setTaskbox_expanded: (expanded: boolean) => void,
 ) {
   createWebSocketConnection(
-    username, 
-    device_name, 
-    taskInfo, 
+    username,
+    device_name,
+    taskInfo,
     tasks,
     setTasks,
     setTaskbox_expanded,
