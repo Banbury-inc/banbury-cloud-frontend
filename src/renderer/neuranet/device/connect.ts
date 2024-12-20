@@ -43,7 +43,7 @@ function saveFile(fileName: string) {
 
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
-export function createWebSocketConnection(username: string, device_name: string, callback: (socket: WebSocket) => void) {
+export function createWebSocketConnection(username: string, device_name: string, taskInfo: any, callback: (socket: WebSocket) => void) {
   // Check if the native WebSocket is available (i.e., in browser)
   const WebSocketClient = typeof window !== 'undefined' ? WebSocket : require('ws');
 
@@ -132,7 +132,9 @@ export function createWebSocketConnection(username: string, device_name: string,
 
         if (data.request_type === 'file_sync_request') {
           console.log('I was asked to initiate file sync')
-          let response = await neuranet.files.getDownloadQueue(username ?? '');
+          const download_queue = data.download_queue;
+          console.log('I received the download queue: ', download_queue)
+          const response = await neuranet.files.downloadFileSyncFiles(username, download_queue, [], taskInfo, [], null, null);
           console.log('I completed the file sync: ', response)
         }
 
@@ -201,10 +203,11 @@ const taskInfo = {
   task_status: 'in_progress',
 };
 
+
 export function connect(username: string) {
 
   // Create the WebSocket connection and pass the callback to call download_request once the connection is open
-  createWebSocketConnection(username, device_name, (socket) => {
+  createWebSocketConnection(username, device_name, taskInfo, (socket) => {
     // Declare the device online
     //commenting out as url doesnt exist I don't think
     //neuranet.device.declare_online(username);

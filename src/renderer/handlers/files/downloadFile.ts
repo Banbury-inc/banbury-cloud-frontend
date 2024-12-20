@@ -12,7 +12,7 @@ export function downloadFile(username: string, files: string[], devices: string[
 
     files.forEach((file_name) => {
       devices.forEach((device_name) => {
-        neuranet.device.createWebSocketConnection(username, device_name, (socket) => {
+        neuranet.device.createWebSocketConnection(username, device_name, taskInfo, (socket) => {
           socket.onmessage = (event) => {
             try {
               const data = JSON.parse(event.data);
