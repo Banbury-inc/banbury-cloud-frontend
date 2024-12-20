@@ -16,6 +16,7 @@ export function downloadFile(username: string, files: string[], devices: string[
           socket.onmessage = (event: any) => {
             try {
               const data = JSON.parse(event.data);
+              console.log(data);
               
               switch (data.message) {
                 case 'File transfer complete':

@@ -399,10 +399,11 @@ export default function Files() {
     let task_description = 'Downloading ' + selectedFileNames.join(', ');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
+    console.log(selectedFileNames);  
 
     let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo, tasks || [], setTasks, setTaskbox_expanded);
 
-    if (response === 'No file selected') {
+    if (response === 'No file selected' || response === 'file_not_found') {
       let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
     }
     if (response === 'success') {
