@@ -126,7 +126,7 @@ export function createWebSocketConnection(
             const final_message = {
               message: 'File transaction complete',
               username: username,
-              requesting_device_name: data.requesting_device_name,
+              requesting_device_name: device_name,
               sending_device_name: data.sending_device_name,
             };
             socket.send(JSON.stringify(final_message));
