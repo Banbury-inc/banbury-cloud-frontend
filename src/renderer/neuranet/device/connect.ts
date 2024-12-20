@@ -208,6 +208,8 @@ export function createWebSocketConnection(
 
           console.log('File save path: ', file_save_path)
 
+          console.log('Creating read stream')
+
           const fileStream = fs.createReadStream(file_save_path);
 
           fileStream.on('error', () => {
@@ -221,7 +223,23 @@ export function createWebSocketConnection(
             return 'file_not_found';
           });
 
+          // Add handlers for reading and sending the file
+          fileStream.on('data', (chunk) => {
+            console.log('Sending chunk: ', chunk)
+            socket.send(chunk);
+          });
 
+          fileStream.on('end', () => {
+            console.log('File transfer complete')
+            const message = {
+              message: 'File transfer complete',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              sending_device_name: device_name,
+              file_name: data.file_name
+            };
+            socket.send(JSON.stringify(message));
+          });
         }
       } catch (error) {
         console.error('Invalid message format:', error);
