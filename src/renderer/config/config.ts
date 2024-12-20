@@ -5,7 +5,7 @@ export const CONFIG = {
   skip_dot_files: true,
   scan_selected_folders: true,
   prod: false,
-  dev: false,
+  dev: true,
   get url() {
     //return this.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/' : 'http://localhost:8080/';
     if (this.prod) {

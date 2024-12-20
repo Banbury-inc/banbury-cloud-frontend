@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
+import { CONFIG } from '../../config/config';
 
 export async function removeFiles(
   username: string,
@@ -10,7 +11,7 @@ export async function removeFiles(
   try {
     const response = await axios.post<{
       result: string;
-    }>('https://website2-389236221119.us-central1.run.app/delete_files/' + username + '/', {
+    }>(`${CONFIG.url}/files/delete_files/${username}/`, {
       files: filesInfo,
       device_name: device_name,
     });

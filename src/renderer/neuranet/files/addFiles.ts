@@ -12,7 +12,7 @@ export async function addFiles(
   try {
     const response = await axios.post<{
       result: string;
-    }>(`${CONFIG.url}files/add_files/${username}/`, {
+    }>(`${CONFIG.url}/files/add_files/${username}/`, {
       files: filesInfo,
       device_name: device_name,
     });
