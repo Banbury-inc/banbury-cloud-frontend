@@ -230,12 +230,12 @@ export function createWebSocketConnection(
           });
 
           fileStream.on('end', () => {
-            console.log('File transfer complete')
+            console.log('File transfer complete: containing data:', data)
             const message = {
               message: 'File transfer complete',
               username: username,
               requesting_device_name: data.requesting_device_name,
-              sending_device_name: device_name,
+              sending_device_name: data.device_name,
               file_name: data.file_name
             };
             socket.send(JSON.stringify(message));
