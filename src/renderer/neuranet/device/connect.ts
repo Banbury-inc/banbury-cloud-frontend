@@ -204,7 +204,8 @@ export function createWebSocketConnection(
         // Handle existing request types
         if (data.request_type === 'file_request') {
           console.log('Received file request')
-          const directory_name: string = 'BCloud';
+          // const directory_name: string = 'BCloud';
+          const directory_name: string = data.file_path;
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path, data.file_name);
 
