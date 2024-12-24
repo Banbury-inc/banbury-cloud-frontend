@@ -12,15 +12,17 @@ let accumulatedData: Buffer[] = [];
 
 // Function to handle the received file chunk in binary form
 function handleReceivedFileChunk(data: ArrayBuffer) {
+  console.log('Received file chunk: ', data)
   // Convert ArrayBuffer to Buffer
   const chunkBuffer = Buffer.from(data);
 
   // Add the chunk to the accumulated data
   accumulatedData.push(chunkBuffer);
+  console.log('Accumulated data: ', accumulatedData)
 }
 
 // Function to save the accumulated file after all chunks are received
-function saveFile(fileName: string) {
+function saveFile(fileName: string, file_path: string) {
   const userHomeDirectory = os.homedir(); // Get the user's home directory
   const filePath = path.join(userHomeDirectory, 'Downloads', fileName); // Save it in Downloads folder (or any other folder)
 
@@ -122,7 +124,7 @@ export function createWebSocketConnection(
 
         switch (data.message) {
           case 'File transfer complete':
-            saveFile(data.file_name || 'received_file.png');
+            saveFile(data.file_name || 'received_file.zip', data.file_path);
             const final_message = {
               message: 'File transaction complete',
               username: username,
@@ -236,7 +238,8 @@ export function createWebSocketConnection(
               username: username,
               requesting_device_name: data.requesting_device_name,
               sending_device_name: data.device_name,
-              file_name: data.file_name
+              file_name: data.file_name,
+              file_path: data.file_path,
             };
             socket.send(JSON.stringify(message));
           });
@@ -262,11 +265,12 @@ export function createWebSocketConnection(
 }
 
 // Function to send a download request using the provided socket
-export function download_request(username: string, file_name: string, socket: WebSocket, taskInfo: any) {
+export function download_request(username: string, file_name: string, file_path: string, socket: WebSocket, taskInfo: any) {
   const message = {
     message: `Download Request`,
     username: username,
     file_name: file_name,
+    file_path: file_path,
     requesting_device_name: os.hostname(),
   };
   socket.send(JSON.stringify(message));
@@ -277,6 +281,7 @@ export function download_request(username: string, file_name: string, socket: We
 // Usage of the functions
 const username = 'mmills';
 const file_name = 'Logo.png';
+const file_path = path.join(os.homedir(), 'Downloads', file_name);
 const device_name = os.hostname();
 const taskInfo = {
   task_name: 'download_file',
@@ -301,8 +306,8 @@ export function connect(
     (socket) => {
       // Declare the device online
       //commenting out as url doesnt exist I don't think
-      //neuranet.device.declare_online(username);
-      // download_request(username, file_name, socket);
+      neuranet.device.declare_online(username);
+      download_request(username, file_name, file_path, socket, taskInfo);
     }
   );
 }

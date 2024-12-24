@@ -1,3 +1,5 @@
+import path from 'path';
+import os from 'os';
 import { neuranet } from '../../neuranet'
 
 export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any): Promise<string> {
@@ -10,13 +12,15 @@ export function downloadFile(username: string, files: string[], devices: string[
     let completedTransfers = 0;
     const totalTransfers = files.length * devices.length;
 
-    files.forEach((file_name) => {
+    files.forEach((file_name, index) => {
+      const file_path = files[index];
       devices.forEach((device_name) => {
         neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
           socket.onmessage = (event: any) => {
             try {
               const data = JSON.parse(event.data);
               console.log(data);
+              const file_path = path.join(os.homedir(), 'Downloads', file_name);
 
               switch (data.message) {
                 case 'File transfer complete':
@@ -52,7 +56,7 @@ export function downloadFile(username: string, files: string[], devices: string[
             resolve('connection_closed');
           };
 
-          neuranet.device.download_request(username, file_name, socket, taskInfo);
+          neuranet.device.download_request(username, file_name, file_path, socket, taskInfo);
         });
       });
     });
