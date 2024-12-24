@@ -24,7 +24,7 @@ function handleReceivedFileChunk(data: ArrayBuffer) {
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
   const userHomeDirectory = os.homedir(); // Get the user's home directory
-  const filePath = path.join(userHomeDirectory, 'Downloads', fileName); // Save it in Downloads folder (or any other folder)
+  const filePath = path.join(userHomeDirectory, 'Downloads', fileName) // Save it in Downloads folder (or any other folder)
 
   const completeBuffer = Buffer.concat(accumulatedData); // Combine all chunks
 
@@ -205,7 +205,7 @@ export function createWebSocketConnection(
         if (data.request_type === 'file_request') {
           console.log('Received file request')
           // const directory_name: string = 'BCloud';
-          const directory_name: string = data.file_path;
+          const directory_name: string = 'Downloads';
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path, data.file_name);
 
@@ -268,21 +268,20 @@ export function createWebSocketConnection(
 // Function to send a download request using the provided socket
 export function download_request(username: string, file_name: string, file_path: string, socket: WebSocket, taskInfo: any) {
   const message = {
-    message: `Download Request`,
+    message: "Download Request",
     username: username,
     file_name: file_name,
-    file_path: file_path,
+    file_path: file_path,  // This will now be the actual directory path
     requesting_device_name: os.hostname(),
   };
   socket.send(JSON.stringify(message));
-
 }
 
 
 // Usage of the functions
 const username = 'mmills';
 const file_name = 'Logo.png';
-const file_path = path.join(os.homedir(), 'Downloads', file_name);
+const file_path = path.join(os.homedir(), 'Downloads');  // Use a proper path
 const device_name = os.hostname();
 const taskInfo = {
   task_name: 'download_file',

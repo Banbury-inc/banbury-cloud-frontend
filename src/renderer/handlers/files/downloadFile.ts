@@ -12,15 +12,16 @@ export function downloadFile(username: string, files: string[], devices: string[
     let completedTransfers = 0;
     const totalTransfers = files.length * devices.length;
 
-    files.forEach((file_name, index) => {
-      const file_path = files[index];
+    files.forEach((filePath, index) => {
+      const file_name = path.basename(filePath);
+      const file_path = path.join(os.homedir(), 'Downloads');
+
       devices.forEach((device_name) => {
         neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
           socket.onmessage = (event: any) => {
             try {
               const data = JSON.parse(event.data);
               console.log(data);
-              const file_path = path.join(os.homedir(), 'Downloads', file_name);
 
               switch (data.message) {
                 case 'File transfer complete':
