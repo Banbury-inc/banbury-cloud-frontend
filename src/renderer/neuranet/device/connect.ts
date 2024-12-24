@@ -205,12 +205,12 @@ export function createWebSocketConnection(
         if (data.request_type === 'file_request') {
           console.log('Received file request')
           // const directory_name: string = 'BCloud';
-          const directory_name: string = 'Downloads';
+          const file_path = data.file_path;
+          const directory_name: string = file_path;
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path, data.file_name);
 
           console.log('File save path: ', file_save_path)
-
           console.log('Creating read stream')
 
           const fileStream = fs.createReadStream(file_save_path);
