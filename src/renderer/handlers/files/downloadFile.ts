@@ -14,7 +14,7 @@ export function downloadFile(username: string, files: string[], devices: string[
 
     files.forEach((filePath, index) => {
       const file_name = path.basename(filePath);
-      const file_path = path.join(os.homedir(), 'Downloads');
+      const file_path = filePath;
 
       devices.forEach((device_name) => {
         neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
