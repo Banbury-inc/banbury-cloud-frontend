@@ -235,10 +235,11 @@ export function createWebSocketConnection(
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path);
 
-          console.log('File save path: ', file_save_path)
-          console.log('Directory path: ', directory_path)
-          console.log('Directory name: ', directory_name)
-          console.log('Creating read stream for: ', file_save_path)
+          console.log('File path 238: ', file_path)
+          console.log('File save path 240: ', file_save_path)
+          console.log('Directory path 242: ', directory_path)
+          console.log('Directory name 244: ', directory_name)
+          console.log('Creating read stream for 246: ', file_save_path)
 
           const fileStream = fs.createReadStream(file_path);
 
@@ -262,12 +263,12 @@ export function createWebSocketConnection(
           fileStream.on('end', () => {
             console.log('File transfer complete: containing data:', data)
             const message = {
-              message: 'File transfer complete',
+              message: 'File sent successfully',
               username: username,
               requesting_device_name: data.requesting_device_name,
-              sending_device_name: data.device_name,
+              sending_device_name: device_name,
               file_name: data.file_name,
-              file_path: data.file_path,
+              file_path: data.file_path
             };
             socket.send(JSON.stringify(message));
           });
