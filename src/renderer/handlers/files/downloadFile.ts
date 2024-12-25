@@ -9,63 +9,78 @@ export function downloadFile(username: string, files: string[], devices: string[
       return;
     }
 
-    let completedTransfers = 0;
-    const totalTransfers = files.length * devices.length;
+    // Track active transfers with more detail
+    const activeTransfers = new Map<string, {
+      socket: WebSocket,
+      completed: boolean
+    }>();
 
-    files.forEach((filePath, index) => {
-      const file_name = path.basename(filePath);
-      const file_path = filePath;
+    // Only create one connection to the first available device
+    const device_name = devices[0];
+    const file_name = path.basename(files[0]);
+    const transferId = `${file_name}-${device_name}`;
 
-      devices.forEach((device_name) => {
-        neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
+    if (!activeTransfers.has(transferId)) {
+      neuranet.device.createWebSocketConnection(
+        username,
+        device_name,
+        taskInfo,
+        tasks,
+        setTasks,
+        setTaskbox_expanded,
+        (socket: WebSocket) => {
+          activeTransfers.set(transferId, {
+            socket,
+            completed: false
+          });
+
           socket.onmessage = (event: any) => {
             try {
-              const data = JSON.parse(event.data);
-              console.log(data);
+              if (event.data instanceof ArrayBuffer) {
+                // Handle binary data through the existing handleReceivedFileChunk
+                neuranet.device.handleReceivedFileChunk(event.data);
+                return;
+              }
 
-              switch (data.message) {
-                case 'File transfer complete':
-                  completedTransfers++;
-                  if (completedTransfers === totalTransfers) {
-                    resolve('success');
-                  }
-                  break;
-                case 'File not found':
-                  resolve('file_not_found');
-                  break;
-                case 'Device offline':
-                  resolve('device_offline');
-                  break;
-                case 'Permission denied':
-                  resolve('permission_denied');
-                  break;
-                case 'Transfer failed':
-                  resolve('transfer_failed');
-                  break;
-                // Add more cases as needed
+              const data = JSON.parse(event.data);
+              console.log('Transfer response:', data);
+
+              if (data.message === 'File transfer complete') {
+                const transfer = activeTransfers.get(transferId);
+                if (transfer && !transfer.completed) {
+                  transfer.completed = true;
+                  transfer.socket.close();
+                  activeTransfers.delete(transferId);
+                  resolve('success');
+                }
               }
             } catch (error) {
-              resolve('invalid_response');
+              console.error('Error in transfer:', error);
+              const transfer = activeTransfers.get(transferId);
+              if (transfer) {
+                transfer.socket.close();
+                activeTransfers.delete(transferId);
+              }
+              resolve('error');
             }
           };
 
-          socket.onerror = () => {
-            resolve('connection_error');
-          };
+          // Send single file request
+          neuranet.device.download_request(username, file_name, files[0], socket, taskInfo);
+        }
+      );
+    }
 
-          socket.onclose = () => {
-            resolve('connection_closed');
-          };
-
-          neuranet.device.download_request(username, file_name, file_path, socket, taskInfo);
-        });
-      });
-    });
-
-    // Optional: Add timeout
+    // Timeout handler
     setTimeout(() => {
-      resolve('timeout');
-    }, 30000); // 30 second timeout
+      if (activeTransfers.size > 0) {
+        activeTransfers.forEach(transfer => {
+          transfer.socket.close();
+        });
+        activeTransfers.clear();
+        resolve('timeout');
+      }
+    }, 30000);
   });
 }
 

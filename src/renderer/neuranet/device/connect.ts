@@ -7,40 +7,46 @@ import { neuranet } from '../../neuranet'
 import { CONFIG } from '../../config/config';
 import { useAuth } from '../../context/AuthContext';
 
-// Buffer to accumulate all file chunks
+// Add state all file chunks
 let accumulatedData: Buffer[] = [];
 
 // Function to handle the received file chunk in binary form
-function handleReceivedFileChunk(data: ArrayBuffer) {
-  console.log('Received file chunk: ', data)
-  // Convert ArrayBuffer to Buffer
-  const chunkBuffer = Buffer.from(data);
-
-  // Add the chunk to the accumulated data
-  accumulatedData.push(chunkBuffer);
-  console.log('Accumulated data: ', accumulatedData)
+export function handleReceivedFileChunk(data: ArrayBuffer) {
+  // Convert ArrayBuffer to Buffer and ensure it's a valid chunk
+  try {
+    const chunkBuffer = Buffer.from(data);
+    if (chunkBuffer.length > 0) {
+      accumulatedData.push(chunkBuffer);
+      console.log('Added chunk of size:', chunkBuffer.length);
+    }
+  } catch (error) {
+    console.error('Error processing file chunk:', error);
+  }
 }
 
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
-  const userHomeDirectory = os.homedir(); // Get the user's home directory
-  const filePath = path.join(userHomeDirectory, 'Downloads', fileName) // Save it in Downloads folder (or any other folder)
+  try {
+    const userHomeDirectory = os.homedir();
+    const filePath = path.join(userHomeDirectory, 'Downloads', fileName);
 
-  const completeBuffer = Buffer.concat(accumulatedData); // Combine all chunks
-
-  fs.writeFile(filePath, completeBuffer, (err) => {
-    if (err) {
-      console.error('Error saving file:', err);
-    } else {
-      return 'success';
-
+    // Combine all chunks and verify we have data
+    const completeBuffer = Buffer.concat(accumulatedData);
+    if (completeBuffer.length === 0) {
+      throw new Error('No data accumulated to save');
     }
-  });
 
-  // Clear accumulated data after saving
-  accumulatedData = [];
+    // Use synchronous write to ensure file is saved before clearing buffer
+    fs.writeFileSync(filePath, completeBuffer);
+    console.log(`File saved successfully: ${filePath} (${completeBuffer.length} bytes)`);
 
-  return 'success';
+    // Clear accumulated data only after successful save
+    accumulatedData = [];
+    return 'success';
+  } catch (error) {
+    console.error('Error saving file:', error);
+    throw error;
+  }
 }
 
 function handleTransferError(
