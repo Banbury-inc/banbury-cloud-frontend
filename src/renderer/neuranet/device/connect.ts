@@ -32,6 +32,9 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
 
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
+  console.log('Saving file:', fileName);
+  console.log('Total accumulated data size:', accumulatedData.reduce((sum, buf) => sum + buf.length, 0));
+
   try {
     // Always save to Downloads folder
     const userHomeDirectory = os.homedir();
@@ -51,7 +54,7 @@ function saveFile(fileName: string, file_path: string) {
       throw new Error('No data accumulated to save');
     }
 
-    // Use synchronous write to ensure file is saved before clearing buffer
+    // Write file synchronously to ensure completion
     fs.writeFileSync(filePath, completeBuffer);
     console.log(`File saved successfully: ${filePath} (${completeBuffer.length} bytes)`);
 
@@ -151,17 +154,36 @@ export function createWebSocketConnection(
             resetAccumulatedData();
             break;
 
+          case 'File sent successfully':
           case 'File transfer complete':
-            const result = saveFile(data.file_name || 'received_file.zip', data.file_path);
-            const final_message = {
-              message: 'File transaction complete',
-              username: username,
-              requesting_device_name: device_name,
-              sending_device_name: data.sending_device_name,
-            };
-            socket.send(JSON.stringify(final_message));
-            console.log(`Sent: ${JSON.stringify(final_message)}`);
-            return result;
+          case 'File transaction complete':
+            console.log('File transfer completion message received:', data);
+            if (data.file_name) {  // Only save if we have a filename
+              try {
+                const result = saveFile(data.file_name, data.file_path || '');
+                // Send completion confirmation
+                const final_message = {
+                  message: 'File transaction complete',
+                  username: username,
+                  requesting_device_name: device_name,
+                  sending_device_name: data.sending_device_name,
+                  file_name: data.file_name,
+                  file_path: data.file_path
+                };
+                socket.send(JSON.stringify(final_message));
+                console.log(`Sent completion confirmation:`, final_message);
+              } catch (error) {
+                console.error('Error saving file:', error);
+                handleTransferError(
+                  'save_error',
+                  data.file_name,
+                  tasks,
+                  setTasks,
+                  setTaskbox_expanded
+                );
+              }
+            }
+            break;
 
           case 'File not found':
             console.log(`File not found: ${data.file_name}`);
