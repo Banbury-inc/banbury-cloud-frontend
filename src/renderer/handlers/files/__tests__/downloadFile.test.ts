@@ -20,7 +20,7 @@ describe('downloadFile', () => {
   const mockTasks: any[] = [];
   const mockSetTasks = jest.fn();
   const mockSetTaskboxExpanded = jest.fn();
-  
+  const mockWebsocket = new WebSocket('ws://mock-url');
   // Mock WebSocket
   let mockSocket: any;
 
@@ -31,7 +31,7 @@ describe('downloadFile', () => {
       onerror: null,
       onclose: null,
     };
-    
+
     // Setup createWebSocketConnection mock
     (neuranet.device.createWebSocketConnection as jest.Mock).mockImplementation(
       (username, device, taskInfo, tasks, setTasks, setTaskbox, callback) => {
@@ -48,7 +48,8 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     )).rejects.toEqual('No file selected');
   });
 
@@ -60,7 +61,8 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     )).rejects.toEqual('No file selected');
   });
 
@@ -72,13 +74,14 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     // Simulate successful transfers for all file/device combinations
     mockFiles.forEach(() => {
       mockDevices.forEach(() => {
-        mockSocket.onmessage({ 
+        mockSocket.onmessage({
           data: JSON.stringify({ message: 'File transfer complete' })
         });
       });
@@ -95,7 +98,8 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     mockSocket.onmessage({
@@ -113,7 +117,8 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     mockSocket.onerror();
@@ -123,7 +128,7 @@ describe('downloadFile', () => {
 
   test('should reject on timeout', async () => {
     jest.useFakeTimers();
-    
+
     const downloadPromise = downloadFile(
       mockUsername,
       mockFiles,
@@ -131,13 +136,14 @@ describe('downloadFile', () => {
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     jest.advanceTimersByTime(31000);
 
     await expect(downloadPromise).rejects.toEqual('timeout');
-    
+
     jest.useRealTimers();
   });
 }); 

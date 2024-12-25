@@ -144,7 +144,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort(event, property);
   };
 
-  const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
+  const { files, set_Files, global_file_path, global_file_path_device, websocket } = useAuth();  // Assuming global_file_path is available via context
   const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
 
 
@@ -258,7 +258,7 @@ export default function Devices() {
   const [rowsPerPage, setRowsPerPage] = useState(100);
   const [deviceRows, setDeviceRows] = useState<DeviceData[]>([]); // State for storing fetched file data
   const [allDevices, setAllDevices] = useState<DeviceData[]>([]);
-  const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
+  const { global_file_path, global_file_path_device, setGlobal_file_path, websocket } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
@@ -557,7 +557,16 @@ export default function Devices() {
         let task_description = 'Opening ' + selectedDeviceNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo, tasks || [], setTasks, setTaskbox_expanded);
+        let response = await handlers.files.downloadFile(
+          username ?? '',
+          selectedDeviceNames,
+          selectedDeviceNames,
+          taskInfo,
+          tasks || [],
+          setTasks,
+          setTaskbox_expanded,
+          websocket as unknown as WebSocket,
+        );
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }
@@ -787,14 +796,15 @@ export default function Devices() {
         taskInfo,
         tasks ?? [],
         setTasks,
-        setTaskbox_expanded
+        setTaskbox_expanded,
+        websocket as unknown as WebSocket,
       );
     }
 
   };
 
   const handleSavePredictionPreferences = async (
-    usePredictedCPUUsage: boolean, 
+    usePredictedCPUUsage: boolean,
     usePredictedRAMUsage: boolean,
     usePredictedGPUUsage: boolean,
     usePredictedDownloadSpeed: boolean,
@@ -1219,9 +1229,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted CPU Usage</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={usePredictedCPUUsage}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUsePredictedCPUUsage(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1242,9 +1252,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted RAM Usage</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={usePredictedRAMUsage}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUsePredictedRAMUsage(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1265,9 +1275,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted GPU Usage</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={usePredictedGPUUsage}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUsePredictedGPUUsage(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1288,9 +1298,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Download Speed</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={usePredictedDownloadSpeed}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUsePredictedDownloadSpeed(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1311,9 +1321,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Predicted Upload Speed</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={usePredictedUploadSpeed}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUsePredictedUploadSpeed(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1334,9 +1344,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Available for Download</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={useFilesAvailableForDownload}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUseFilesAvailableForDownload(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1357,9 +1367,9 @@ export default function Devices() {
                               <Box>
                                 <Typography variant="body2">Files Needed</Typography>
                               </Box>
-                              <Switch 
+                              <Switch
                                 checked={useFilesNeeded}
-                                size="small" 
+                                size="small"
                                 onChange={(e) => setUseFilesNeeded(e.target.checked)}
                                 sx={{
                                   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -1385,9 +1395,9 @@ export default function Devices() {
                               usePredictedCPUUsage,
                               usePredictedRAMUsage,
                               usePredictedGPUUsage,
-                              usePredictedDownloadSpeed, 
-                              usePredictedUploadSpeed, 
-                              useFilesNeeded, 
+                              usePredictedDownloadSpeed,
+                              usePredictedUploadSpeed,
+                              useFilesNeeded,
                               useFilesAvailableForDownload
                             )}
                             sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}

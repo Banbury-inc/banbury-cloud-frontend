@@ -6,9 +6,15 @@ import { arrayBuffer } from 'stream/consumers';
 import { neuranet } from '../../neuranet'
 import { CONFIG } from '../../config/config';
 import { useAuth } from '../../context/AuthContext';
+import { Socket } from 'net';
 
-// Add state all file chunks
+// Add state all file chunks with a reset function
 let accumulatedData: Buffer[] = [];
+
+function resetAccumulatedData() {
+  accumulatedData = [];
+  console.log('Reset accumulated data');
+}
 
 // Function to handle the received file chunk in binary form
 export function handleReceivedFileChunk(data: ArrayBuffer) {
@@ -17,7 +23,7 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
     const chunkBuffer = Buffer.from(data);
     if (chunkBuffer.length > 0) {
       accumulatedData.push(chunkBuffer);
-      console.log('Added chunk of size:', chunkBuffer.length);
+      console.log('Added chunk of size:', chunkBuffer.length, 'Total accumulated:', accumulatedData.reduce((sum, buf) => sum + buf.length, 0));
     }
   } catch (error) {
     console.error('Error processing file chunk:', error);
@@ -27,8 +33,17 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
   try {
+    // Always save to Downloads folder
     const userHomeDirectory = os.homedir();
-    const filePath = path.join(userHomeDirectory, 'Downloads', fileName);
+    const downloadsPath = path.join(userHomeDirectory, 'Downloads');
+
+    // Create Downloads directory if it doesn't exist
+    if (!fs.existsSync(downloadsPath)) {
+      fs.mkdirSync(downloadsPath, { recursive: true });
+    }
+
+    // Create final file path in Downloads
+    const filePath = path.join(downloadsPath, fileName);
 
     // Combine all chunks and verify we have data
     const completeBuffer = Buffer.concat(accumulatedData);
@@ -41,10 +56,12 @@ function saveFile(fileName: string, file_path: string) {
     console.log(`File saved successfully: ${filePath} (${completeBuffer.length} bytes)`);
 
     // Clear accumulated data only after successful save
-    accumulatedData = [];
+    resetAccumulatedData();
     return 'success';
   } catch (error) {
     console.error('Error saving file:', error);
+    // Reset accumulated data on error to prevent corruption
+    resetAccumulatedData();
     throw error;
   }
 }
@@ -118,19 +135,25 @@ export function createWebSocketConnection(
 
   // Message event: When a message or file is received from the server
   socket.onmessage = async function (event: any) {
-    console.log('I received a message: ', event.data);
+    console.log('Message received');
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      handleReceivedFileChunk(event.data);
+      // handleReceivedFileChunk(event.data);
+      console.log('Received binary data, but not going to process it here');
     } else {
       try {
         const data = JSON.parse(event.data);
-        console.log('I parsed the data: ', data);
+        console.log('Parsed message data: ', data);
 
         switch (data.message) {
+          case 'Start file transfer':
+            // Reset accumulated data at the start of new transfer
+            resetAccumulatedData();
+            break;
+
           case 'File transfer complete':
-            saveFile(data.file_name || 'received_file.zip', data.file_path);
+            const result = saveFile(data.file_name || 'received_file.zip', data.file_path);
             const final_message = {
               message: 'File transaction complete',
               username: username,
@@ -139,7 +162,7 @@ export function createWebSocketConnection(
             };
             socket.send(JSON.stringify(final_message));
             console.log(`Sent: ${JSON.stringify(final_message)}`);
-            return 'success';
+            return result;
 
           case 'File not found':
             console.log(`File not found: ${data.file_name}`);
@@ -167,7 +190,6 @@ export function createWebSocketConnection(
             return 'transfer_failed';
         }
 
-
         if (data.request_type === 'device_info') {
           console.log('I was asked for device info')
           let device_info = await neuranet.device.getDeviceInfo();
@@ -183,29 +205,27 @@ export function createWebSocketConnection(
           console.log(`Sent: ${JSON.stringify(message)}`);
         }
 
+        // if (data.request_type === 'file_sync_request') {
+        //   console.log('I was asked to initiate file sync')
+        //   const download_queue = data.download_queue?.download_queue;
+        //   console.log('Extracted download queue: ', download_queue)
 
-
-        if (data.request_type === 'file_sync_request') {
-          console.log('I was asked to initiate file sync')
-          const download_queue = data.download_queue?.download_queue;
-          console.log('Extracted download queue: ', download_queue)
-
-          if (download_queue && Array.isArray(download_queue.files)) {
-            const response = await neuranet.files.downloadFileSyncFiles(
-              username,
-              download_queue,
-              [],
-              taskInfo,
-              tasks,
-              setTasks,
-              setTaskbox_expanded
-            );
-            console.log('I completed the file sync: ', response)
-          } else {
-            console.error('Invalid download queue format received:', download_queue);
-          }
-        }
-
+        //   if (download_queue && Array.isArray(download_queue.files)) {
+        //     const response = await neuranet.files.downloadFileSyncFiles(
+        //       username,
+        //       download_queue,
+        //       [],
+        //       taskInfo,
+        //       tasks,
+        //       setTasks,
+        //       setTaskbox_expanded,
+        //       websocket as unknown as WebSocket,
+        //     );
+        //     console.log('I completed the file sync: ', response)
+        //   } else {
+        //     console.error('Invalid download queue format received:', download_queue);
+        //   }
+        // }
 
         // Handle existing request types
         if (data.request_type === 'file_request') {
@@ -314,8 +334,8 @@ export function connect(
     (socket) => {
       // Declare the device online
       //commenting out as url doesnt exist I don't think
-      neuranet.device.declare_online(username);
-      download_request(username, file_name, file_path, socket, taskInfo);
+      // neuranet.device.declare_online(username);
+      // download_request(username, file_name, file_path, socket, taskInfo);
     }
   );
 }

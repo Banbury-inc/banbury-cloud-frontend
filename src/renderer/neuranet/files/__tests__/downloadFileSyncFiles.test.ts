@@ -1,7 +1,6 @@
 import { downloadFileSyncFiles } from '../downloadFileSyncFiles';
 import { neuranet } from '../..';
 import { downloadFile } from '../../../handlers/files/downloadFile';
-
 // Mock dependencies
 jest.mock('../../../handlers/files/downloadFile');
 jest.mock('../..');
@@ -11,11 +10,11 @@ describe('downloadFileSyncFiles', () => {
   const mockSetTasks = jest.fn();
   const mockSetTaskboxExpanded = jest.fn();
   const mockUsername = 'testUser';
-  
+  const mockWebsocket = new WebSocket('ws://mock-url');
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup neuranet sessions mock
-    (neuranet.sessions.addTask as jest.Mock).mockResolvedValue({ 
+    (neuranet.sessions.addTask as jest.Mock).mockResolvedValue({
       id: 'task-1',
       task_progress: 0,
       task_status: 'pending'
@@ -29,7 +28,7 @@ describe('downloadFileSyncFiles', () => {
       files: [],
       files_available_for_download: 0
     };
-    
+
     const result = await downloadFileSyncFiles(
       mockUsername,
       download_queue,
@@ -37,7 +36,8 @@ describe('downloadFileSyncFiles', () => {
       {},
       [],
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     expect(result).toEqual([]);
@@ -63,7 +63,8 @@ describe('downloadFileSyncFiles', () => {
       {},
       [],
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     expect(result).toEqual(['test1.txt', 'test2.txt']);
@@ -89,7 +90,8 @@ describe('downloadFileSyncFiles', () => {
       {},
       [],
       mockSetTasks,
-      mockSetTaskboxExpanded
+      mockSetTaskboxExpanded,
+      mockWebsocket,
     );
 
     expect(result).toEqual([]);

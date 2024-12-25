@@ -26,6 +26,7 @@ export async function downloadFileSyncFiles(
   tasks: any[] | null,
   setTasks: any,
   setTaskbox_expanded: any,
+  websocket: WebSocket,
 ) {
 
   // Add validation for download_queue and its properties
@@ -39,13 +40,13 @@ export async function downloadFileSyncFiles(
     // Create a task to show completion
     const task_name = 'Checking for files to download';
     const download_task = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
-    
+
     if (download_task && typeof download_task !== 'string') {
       download_task.task_progress = 100;
       download_task.task_status = 'complete';
       await neuranet.sessions.updateTask(username ?? '', download_task);
     }
-    
+
     return [];
   }
 
@@ -80,24 +81,24 @@ export async function downloadFileSyncFiles(
 
     // Attempt to download file from source device
     try {
-      const result = await downloadFile(username, [file_name], [source_device], download_task, tasks || [], setTasks, setTaskbox_expanded);
+      const result = await downloadFile(username, [file_name], [source_device], download_task, tasks || [], setTasks, setTaskbox_expanded, websocket as unknown as WebSocket);
 
       if (result === 'success') {
         downloaded_files.push(file_name);
       }
     } catch (error) {
-      
+
       // Update task info for failure
       if (download_task) {
         download_task.task_progress = (i / download_queue.files.length * 100);
         download_task.task_status = 'error';
-        
+
         // Call failTask with the specific error
         await neuranet.sessions.failTask(
-          username ?? '', 
-          download_task, 
+          username ?? '',
+          download_task,
           error, // Pass the specific error message
-          tasks, 
+          tasks,
           setTasks
         );
 
@@ -121,7 +122,7 @@ export async function downloadFileSyncFiles(
             // console.log(`Download timeout for ${file_name}`);
             break;
           default:
-            // console.log(`Unknown error occurred while downloading ${file_name}`);
+          // console.log(`Unknown error occurred while downloading ${file_name}`);
         }
       }
     }
