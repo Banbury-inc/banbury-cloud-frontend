@@ -139,8 +139,7 @@ export function createWebSocketConnection(
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      // handleReceivedFileChunk(event.data);
-      console.log('Received binary data, but not going to process it here');
+      handleReceivedFileChunk(event.data);
     } else {
       try {
         const data = JSON.parse(event.data);
@@ -323,19 +322,18 @@ export function connect(
   tasks: any[],
   setTasks: (tasks: any[]) => void,
   setTaskbox_expanded: (expanded: boolean) => void,
-) {
-  createWebSocketConnection(
-    username,
-    device_name,
-    taskInfo,
-    tasks,
-    setTasks,
-    setTaskbox_expanded,
-    (socket) => {
-      // Declare the device online
-      //commenting out as url doesnt exist I don't think
-      // neuranet.device.declare_online(username);
-      // download_request(username, file_name, file_path, socket, taskInfo);
-    }
-  );
+): Promise<WebSocket> {
+  return new Promise((resolve) => {
+    createWebSocketConnection(
+      username,
+      device_name,
+      taskInfo,
+      tasks,
+      setTasks,
+      setTaskbox_expanded,
+      (socket) => {
+        resolve(socket);
+      }
+    );
+  });
 }

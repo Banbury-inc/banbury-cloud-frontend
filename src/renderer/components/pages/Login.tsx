@@ -158,9 +158,6 @@ export default function SignIn() {
     if (email && password) {
       try {
 
-        let websocket = await neuranet.networking.connect();
-        console.log(websocket);
-        setSocket(websocket as unknown as WebSocket);
         const result = await send_login_request(email, password);
         console.log(result);
         setUsername(email);

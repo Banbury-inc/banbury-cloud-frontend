@@ -393,6 +393,7 @@ export default function Files() {
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
   const handleDownloadClick = async () => {
+    console.log(websocket);
     setSelectedFiles(selected);
     console.log(selectedFileNames);
     console.log('handling download click');
