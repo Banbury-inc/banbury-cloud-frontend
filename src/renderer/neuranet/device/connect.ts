@@ -208,12 +208,14 @@ export function createWebSocketConnection(
           const file_path = data.file_path;
           const directory_name: string = file_path;
           const directory_path: string = path.join(os.homedir(), directory_name);
-          const file_save_path: string = path.join(directory_path, data.file_name);
+          const file_save_path: string = path.join(directory_path);
 
           console.log('File save path: ', file_save_path)
-          console.log('Creating read stream')
+          console.log('Directory path: ', directory_path)
+          console.log('Directory name: ', directory_name)
+          console.log('Creating read stream for: ', file_save_path)
 
-          const fileStream = fs.createReadStream(file_save_path);
+          const fileStream = fs.createReadStream(file_path);
 
           fileStream.on('error', () => {
             const message = {
