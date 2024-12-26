@@ -129,6 +129,8 @@ export function createWebSocketConnection(
       message: `Initiate live data connection`,
       username: username,
       requesting_device_name: device_name,
+      run_device_info_loop: CONFIG.run_device_info_loop,
+      run_device_predictions_loop: CONFIG.run_device_predictions_loop,
     };
     socket.send(JSON.stringify(message));
 
@@ -226,27 +228,27 @@ export function createWebSocketConnection(
           console.log(`Sent: ${JSON.stringify(message)}`);
         }
 
-        // if (data.request_type === 'file_sync_request') {
-        //   console.log('I was asked to initiate file sync')
-        //   const download_queue = data.download_queue?.download_queue;
-        //   console.log('Extracted download queue: ', download_queue)
+        if (data.request_type === 'file_sync_request') {
+          console.log('I was asked to initiate file sync')
+          const download_queue = data.download_queue?.download_queue;
+          console.log('Extracted download queue: ', download_queue)
 
-        //   if (download_queue && Array.isArray(download_queue.files)) {
-        //     const response = await neuranet.files.downloadFileSyncFiles(
-        //       username,
-        //       download_queue,
-        //       [],
-        //       taskInfo,
-        //       tasks,
-        //       setTasks,
-        //       setTaskbox_expanded,
-        //       websocket as unknown as WebSocket,
-        //     );
-        //     console.log('I completed the file sync: ', response)
-        //   } else {
-        //     console.error('Invalid download queue format received:', download_queue);
-        //   }
-        // }
+          if (download_queue && Array.isArray(download_queue.files)) {
+            const response = await neuranet.files.downloadFileSyncFiles(
+              username,
+              download_queue,
+              [],
+              taskInfo,
+              tasks,
+              setTasks,
+              setTaskbox_expanded,
+              socket as unknown as WebSocket,
+            );
+            console.log('I completed the file sync: ', response)
+          } else {
+            console.error('Invalid download queue format received:', download_queue);
+          }
+        }
 
         // Handle existing request types
         if (data.request_type === 'file_request') {

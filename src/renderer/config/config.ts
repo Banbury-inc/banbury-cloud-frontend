@@ -1,9 +1,15 @@
+import path from 'path';
+import os from 'os';
+
 export const CONFIG = {
   relayHost: '32.27.118.149',
   relayPort: 443,
+  download_destination: path.join(os.homedir(), 'Downloads'),
   full_device_sync: false,
   skip_dot_files: true,
   scan_selected_folders: true,
+  run_device_info_loop: true,
+  run_device_predictions_loop: true,
   prod: false,
   dev: false,
   semi_local: true,

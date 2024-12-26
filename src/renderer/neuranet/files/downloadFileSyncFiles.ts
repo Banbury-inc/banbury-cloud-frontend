@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { CONFIG } from '../../config/config';
 import { handlers } from '../../handlers';
 import { downloadFile } from '../../handlers/files/downloadFile';
+import path from 'path';
+import fs from 'fs';
 
 
 /**
@@ -79,13 +81,24 @@ export async function downloadFileSyncFiles(
     let file_name = file.file_name;
     let source_device = file.device_name;
 
-    // Attempt to download file from source device
-    try {
-      const result = await downloadFile(username, [file_name], [source_device], download_task, tasks || [], setTasks, setTaskbox_expanded, websocket as unknown as WebSocket);
+    // Check if file already exists in destination path
+    const destination_path = path.join(CONFIG.download_destination, file_name);
+    if (fs.existsSync(destination_path)) {
+      console.log(`File ${file_name} already exists in ${destination_path}`);
+      downloaded_files.push(file_name);
+      const response = await neuranet.files.add_device_id_to_file_sync_file(file_name, username);
+      continue;
+    }
+    else {
 
-      if (result === 'success') {
-        downloaded_files.push(file_name);
-      }
+        // Attempt to download file from source device
+        try {
+          const result = await downloadFile(username, [file_name], [source_device], download_task, tasks || [], setTasks, setTaskbox_expanded, websocket as unknown as WebSocket);
+
+          if (result === 'success') {
+            downloaded_files.push(file_name);
+            const response = await neuranet.files.add_device_id_to_file_sync_file(file_name, username);
+          }
     } catch (error) {
 
       // Update task info for failure
@@ -127,6 +140,7 @@ export async function downloadFileSyncFiles(
       }
     }
   }
+}
 
   // Only mark as complete if we have a task and it didn't encounter errors
   if (download_task && typeof download_task !== 'string') {
