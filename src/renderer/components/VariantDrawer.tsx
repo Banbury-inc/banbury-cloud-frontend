@@ -18,14 +18,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import FolderIcon from '@mui/icons-material/Folder';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-import EnhancedTable from "./Table"
+import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import Devices from "./pages/Devices"
 
 
@@ -146,7 +143,7 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Files', 'Sync', 'Devices'].map((text, index) => (
+          {['Files', 'Sync', 'Devices', 'Profile'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 onClick={() => setActiveTab(text)}
@@ -164,13 +161,15 @@ export default function MiniDrawer() {
                   }}
                 >
                   {(() => {
-                    switch (index % 3) {
+                    switch (index % 4) {
                       case 0:
                         return <FolderIcon />;
                       case 1:
                         return <CloudOutlinedIcon />;
                       case 2:
                         return <DevicesIcon />;
+                      case 3:
+                        return <AccountBoxOutlinedIcon />;
                       default:
                         return null; // Just in case
                     }

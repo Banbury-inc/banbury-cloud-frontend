@@ -11,6 +11,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import Files from './pages/Files/Files';
 import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
@@ -197,7 +198,7 @@ export default function PermanentDrawerLeft() {
                     >
 
                       {(() => {
-                        switch (index % 3) {
+                        switch (index % 4) {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
