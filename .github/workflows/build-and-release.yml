@@ -32,6 +32,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install python
+          python3 -m ensurepip --upgrade
+          python3 -m pip install setuptools
 
       - name: Install Build Tools on Windows
         if: runner.os == 'Windows'
