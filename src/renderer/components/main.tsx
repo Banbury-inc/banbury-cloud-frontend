@@ -201,7 +201,7 @@ export default function PermanentDrawerLeft() {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
-                            return <CloudSyncIcon fontSize='inherit' />;
+                            return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
                             return <DevicesIcon fontSize='inherit' />;
                           case 3:
