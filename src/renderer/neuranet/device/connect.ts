@@ -215,7 +215,6 @@ export function createWebSocketConnection(
             device_info: device_info,
           };
           socket.send(JSON.stringify(message));
-          console.log(`Sent: ${JSON.stringify(message)}`);
         }
 
         if (data.request_type === 'file_sync_request') {
