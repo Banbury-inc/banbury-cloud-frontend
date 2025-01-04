@@ -27,6 +27,7 @@ import * as utils from '../../../../../utils';
 import { buildTree } from './utils/buildTree';
 import { fetchFileData } from '../../utils/fetchFileData'
 import { DatabaseData } from './types';
+import { fetchFileSyncData } from '../../utils/fetchFileSyncData';
 
 
 
@@ -60,7 +61,7 @@ function getIconForKind(kind: string) {
 
 export default function FileTreeView() {
   const { updates, files, set_Files, sync_files, setSyncFiles, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
-  const [fileRows, setFileRows] = useState<DatabaseData[]>([]);
+  const [syncRows, setSyncRows] = useState<DatabaseData[]>([]);
   const [expanded, setExpanded] = useState<string[]>(['core']);
   const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const [disableFetch, setDisableFetch] = useState(false);
@@ -79,192 +80,71 @@ export default function FileTreeView() {
 
 
   useEffect(() => {
-    const fetchAndUpdateFiles = async () => {
-      const new_files = await fetchFileData(
+    const fetchData = async () => {
+      const new_synced_files = await fetchFileSyncData(
         username || '',
-        disableFetch,
-        snapshot_json,
         global_file_path || '',
         {
           setFirstname,
           setLastname,
-          setFileRows,
+          setSyncRows,
           setAllFiles,
-          set_Files,
           setIsLoading,
-          cache,
-          existingFiles: fetchedFiles,
+          cache: new Map(),
         },
       );
 
-
-
-      if (new_files) {
-        // Create a Map to store unique files
-        const uniqueFilesMap = new Map<string, DatabaseData>();
-
-        // Add existing fetched files to the Map
-        fetchedFiles.forEach(file => {
-          const uniqueKey = `${file.file_path}-${file.device_name}`;
-          uniqueFilesMap.set(uniqueKey, file);
-        });
-
-        // Add new files to the Map (will automatically overwrite duplicates)
-        new_files.forEach(file => {
-          const uniqueKey = `${file.file_path}-${file.device_name}`;
-          uniqueFilesMap.set(uniqueKey, file);
-        });
-
-
-        // Convert Map back to array
-        const updatedFiles = Array.from(uniqueFilesMap.values());
-
-        setFetchedFiles(updatedFiles);
-        const treeData = buildTree(updatedFiles);
-        setFileRows(treeData);
-        if (!disableFetch) {
-          setAllFiles(treeData);
-        }
-        set_Files(updatedFiles);
+      setSyncFiles(new_synced_files || []);
+      setFetchedFiles(new_synced_files || []);
+      const treeData = buildTree(new_synced_files || []);
+      setSyncRows(treeData);
+      if (!disableFetch) {
+        setAllFiles(treeData);
       }
     };
 
-    fetchAndUpdateFiles();
-  }, [username, disableFetch, updates, global_file_path]);
+    fetchData();
+  }, [username, disableFetch, global_file_path]);
 
 
-  useEffect(() => {
-    const fetchAndUpdateFiles = async () => {
-      const new_files = await fetchFileData(
-        username || '',
-        disableFetch,
-        snapshot_json,
-        global_file_path || '',
-        {
-          setFirstname,
-          setLastname,
-          setFileRows,
-          setAllFiles,
-          set_Files,
-          setIsLoading,
-          cache,
-          existingFiles: fetchedFiles,
-        },
-      );
-
-
-
-
-      if (new_files) {
-        let updatedFiles: DatabaseData[] = [];
-        updatedFiles = [...fetchedFiles, ...new_files];
-        setFetchedFiles(updatedFiles);
-
-        const treeData = buildTree(updatedFiles);
-        setFileRows(treeData);
-        if (!disableFetch) {
-          setAllFiles(treeData);
-        }
-        set_Files(updatedFiles);
+  const findNodeById = (nodes: DatabaseData[], id: any): DatabaseData | null => {
+    for (const node of nodes) {
+      if (node.id === id) {
+        return node;
       }
-    };
-
-    fetchAndUpdateFiles();
-  }, [username, disableFetch, updates, global_file_path]);
-
-
-  useEffect(() => {
-    const handleFileChange = async () => {
-      const new_files = await fetchFileData(
-        username || '',
-        disableFetch,
-        snapshot_json,
-        global_file_path || '',
-        {
-          setFirstname,
-          setLastname,
-          setFileRows,
-          setAllFiles,
-          set_Files,
-          setIsLoading,
-          cache,
-          existingFiles: fetchedFiles,
-        },
-      );
-
-      if (new_files) {
-        const updatedFiles = [...fetchedFiles, ...new_files];
-        setFetchedFiles(updatedFiles);
-
-        const treeData = buildTree(updatedFiles);
-        setFileRows(treeData);
-        if (!disableFetch) {
-          setAllFiles(treeData);
-        }
-        set_Files(updatedFiles);
-      }
-    };
-
-    fileWatcherEmitter.on('fileChanged', handleFileChange);
-    return () => {
-      fileWatcherEmitter.off('fileChanged', handleFileChange);
-    };
-  }, [username, disableFetch]);
-
-  const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
-
-
-
-
-
-    const findNodeById = (nodes: DatabaseData[], id: any): DatabaseData | null => {
-      for (const node of nodes) {
-        if (node.id === id) {
-          return node;
-        }
-        if (node.children) {
-          const childNode = findNodeById(node.children, id);
-          if (childNode) {
-            return childNode;
-          }
+      if (node.children) {
+        const childNode = findNodeById(node.children, id);
+        if (childNode) {
+          return childNode;
         }
       }
-      return null;
-    };
-    const selectedNode = findNodeById(fileRows, nodeId);
-    if (selectedNode) {
-      // Don't set path for root core node
-      if (selectedNode.id === 'Core') {
-        setGlobal_file_path(selectedNode.id);
-        setGlobal_file_path_device('');
-        return;
-      }
-      // Don't set path for main Devices or Cloud Sync nodes
-      if (selectedNode.id === 'Devices' || selectedNode.id === 'Cloud Sync') {
-        setGlobal_file_path(`Core/${selectedNode.id}`);
-        setGlobal_file_path_device('');
-        return;
-      }
-
-      let newFilePath = '';
-      // If it's a device node (direct child of 'Devices')
-      if (selectedNode.file_parent === 'Devices') {
-        newFilePath = `Core/Devices/${selectedNode.file_name}`;
-      }
-      // For files and folders under devices
-      else if (selectedNode.file_path) {
-        newFilePath = `Core/Devices/${selectedNode.device_name}${selectedNode.file_path}`;
-      }
-      // Set the global file path and device
-      setGlobal_file_path(newFilePath);
-      setGlobal_file_path_device(selectedNode.device_name);
-      // Log the node information
-      console.log('Setting global file path:', newFilePath);
-      console.log('Setting device name:', selectedNode.device_name);
-
-
     }
+    return null;
   };
+
+  // const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
+  //   const selectedNode = findNodeById(fileRows, nodeId);
+  //   if (selectedNode) {
+  //     // Don't set path for root core node
+  //     if (selectedNode.id === 'Core') {
+  //       setGlobal_file_path(selectedNode.id);
+  //       setGlobal_file_path_device('');
+  //       return;
+  //     }
+  //     // Don't set path for main Devices or Cloud Sync nodes
+  //     if (selectedNode.id === 'Devices' || selectedNode.id === 'Cloud Sync') {
+  //       setGlobal_file_path(`Core/${selectedNode.id}`);
+  //       setGlobal_file_path_device('');
+  //       return;
+  //     }
+
+  //     let newFilePath = '';
+  //     setGlobal_file_path(newFilePath);
+  //     setGlobal_file_path_device(selectedNode.device_name);
+
+
+  //   }
+  // };
 
   // Monitor changes to global_file_path in useEffect
   useEffect(() => {
@@ -316,9 +196,9 @@ export default function FileTreeView() {
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
         sx={{ width: '100%', flexGrow: 1, overflow: 'auto' }}
-        onNodeSelect={handleNodeSelect}
+      // onNodeSelect={handleNodeSelect}
       >
-        {renderTreeItems(fileRows)}
+        {renderTreeItems(syncRows)}
       </TreeView>
     </Box>
   )

@@ -4,27 +4,27 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
   // Move the entire buildTree function here
   // ... (keep the existing buildTree implementation)
 
-  
-    // Build final tree
-    const allFilesData = files.flatMap((file, fileIndex) => ({
-        id: `device-${file.deviceID}-file-${fileIndex}`,
-        file_type: file.file_type,
-        file_name: file.file_name,
-        file_size: file.file_size,
-        file_path: file.file_path,
-        kind: file.kind,
-        helpers: file.helpers,
-        date_uploaded: file.date_uploaded,
-        deviceID: file.deviceID,
-        device_name: file.device_name,
-        file_parent: file.file_parent,
-        original_device: file.original_device,
-        available: file.available,
-    }));
+
+  // Build final tree
+  const allFilesData = files.flatMap((file, fileIndex) => ({
+    id: `device-${file.deviceID}-file-${fileIndex}`,
+    file_type: file.file_type,
+    file_name: file.file_name,
+    file_size: file.file_size,
+    file_path: file.file_path,
+    kind: file.kind,
+    helpers: file.helpers,
+    date_uploaded: file.date_uploaded,
+    deviceID: file.deviceID,
+    device_name: file.device_name,
+    file_parent: file.file_parent,
+    original_device: file.original_device,
+    available: file.available,
+  }));
 
 
 
-  
+
 
   const fileMap = new Map<string, DatabaseData>();
 
@@ -65,26 +65,10 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     original_device: '',
   };
 
-  const cloudSyncNode: DatabaseData = {
-    id: 'Cloud Sync',
-    file_type: 'directory',
-    file_name: 'Cloud Sync',
-    file_size: '',
-    file_path: '',
-    kind: 'CloudSyncFolder',
-    file_parent: 'Core',
-    date_uploaded: '',
-    helpers: 0,
-    available: '',
-    deviceID: '',
-    device_name: '',
-    children: [],
-    original_device: '',
-  };
 
   // Add the new nodes to core's children
   coreNode.children!.push(devicesNode);
-  coreNode.children!.push(cloudSyncNode);
+
 
   // Group files by a unique device identifier based on the device name
   const devicesMap = new Map<string, DatabaseData>();
@@ -97,23 +81,7 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
 
     // Check if the file belongs to Cloud Sync
     if (file.file_path.startsWith('Core/Cloud Sync/')) {
-      // Create a file node directly under Cloud Sync
-      const fileNode: DatabaseData = {
-        id: `cloud-sync-file-${index}`,
-        file_type: file.file_type,
-        file_name: file.file_path.split('/').pop() || '',
-        file_size: file.file_size,
-        file_path: file.file_path,
-        kind: file.kind,
-        file_parent: 'Cloud Sync',
-        date_uploaded: file.date_uploaded,
-        helpers: file.helpers,
-        available: file.available,
-        deviceID: file.deviceID,
-        device_name: file.device_name,
-        original_device: file.original_device,
-      };
-      cloudSyncNode.children!.push(fileNode);
+      // Skip files that belong to Cloud Sync
       return;
     }
 
@@ -197,8 +165,6 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     devicesNode.children!.push(deviceNode);
   });
 
-  // Before returning, let's ensure the Cloud Sync node and its children are properly structured
-  const cloudSyncChildren = cloudSyncNode.children || [];
 
   // Return the tree with "Core" as the root
   return [coreNode];

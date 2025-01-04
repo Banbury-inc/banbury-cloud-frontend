@@ -21,6 +21,7 @@ import Settings from './pages/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Sync from './pages/Sync/Sync';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
@@ -114,17 +115,13 @@ export default function PermanentDrawerLeft() {
   useEffect(() => {
     async function setupConnection() {
       try {
-        console.log("connecting to relay server");
-        console.log("Starting receiver");
         const fullDeviceSync = CONFIG.full_device_sync;
         const skipDotFiles = CONFIG.skip_dot_files;
         const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
 
         const websocket = await neuranet.device.connect(username || "default", tasks || [], setTasks, setTaskbox_expanded);
-        console.log(websocket);
         setSocket(websocket);
         neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
-        console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);
       }
@@ -181,6 +178,7 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
+            'Sync',
             'Devices',
             'Profile'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
@@ -203,8 +201,10 @@ export default function PermanentDrawerLeft() {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
-                            return <DevicesIcon fontSize='inherit' />;
+                            return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
+                            return <DevicesIcon fontSize='inherit' />;
+                          case 3:
                             return <AccountBoxIcon fontSize='inherit' />;
                           default:
                             return null;
@@ -266,6 +266,8 @@ export default function PermanentDrawerLeft() {
           switch (activeTab) {
             case 'Files':
               return <Files />;
+            case 'Sync':
+              return <Sync />;
             case 'Devices':
               return <Devices />;
             case 'AI':

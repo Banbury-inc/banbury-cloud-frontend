@@ -29,22 +29,16 @@ export async function updateTask(
 
     if (result === 'success') {
       taskInfo.task_id = response.data.task_id;
-      console.log("task update_success");
       return response.data;
     }
     if (result === 'fail') {
-      console.log("task update failed");
       return 'failed';
     }
     if (result === 'device_already_exists') {
-      console.log("device already exists");
       return 'exists';
     }
 
     else {
-      console.log("task update failed");
-      console.log(result);
-      console.log(taskInfo)
       return 'device_add failed';
     }
   } catch (error) {
