@@ -105,6 +105,7 @@ interface DeviceData {
   files_needed: number;
   sync_storage_capacity_gb: number;
   predicted_performance_score: number;
+  use_device_in_file_sync: boolean;
   use_predicted_cpu_usage: boolean;
   use_predicted_download_speed: boolean;
   use_predicted_gpu_usage: boolean;
@@ -323,6 +324,7 @@ export default function Devices() {
             use_predicted_upload_speed: boolean;
             use_files_available_for_download: boolean;
             use_files_needed: boolean;
+            use_device_in_file_sync: boolean;
             score: number;
             score_timestamp: string;
             sync_storage_capacity_gb: number;
@@ -356,6 +358,7 @@ export default function Devices() {
           use_predicted_upload_speed: false,
           use_files_available_for_download: false,
           use_files_needed: false,
+          use_device_in_file_sync: false,
           sync_storage_capacity_gb: 0,
           files_available_for_download: 0,
           files_needed: 0,
@@ -415,6 +418,7 @@ export default function Devices() {
           use_predicted_upload_speed: devicePrediction.use_predicted_upload_speed,
           use_files_available_for_download: devicePrediction.use_files_available_for_download,
           use_files_needed: devicePrediction.use_files_needed,
+          use_device_in_file_sync: devicePrediction.use_device_in_file_sync,
         };
       });
 
@@ -810,7 +814,8 @@ export default function Devices() {
     usePredictedDownloadSpeed: boolean,
     usePredictedUploadSpeed: boolean,
     useFilesNeeded: boolean,
-    useFilesAvailableForDownload: boolean
+    useFilesAvailableForDownload: boolean,
+    useDeviceinFileSync: boolean
   ) => {
 
 
@@ -827,6 +832,7 @@ export default function Devices() {
       usePredictedUploadSpeed,
       useFilesNeeded,
       useFilesAvailableForDownload,
+      useDeviceinFileSync,
       neuranet.device.name()
     );
 
@@ -838,6 +844,9 @@ export default function Devices() {
 
   };
 
+
+
+
   const [syncStorageValue, setSyncStorageValue] = useState<string>('');
   const [usePredictedUploadSpeed, setUsePredictedUploadSpeed] = useState(true);
   const [usePredictedDownloadSpeed, setUsePredictedDownloadSpeed] = useState(true);
@@ -846,6 +855,7 @@ export default function Devices() {
   const [usePredictedGPUUsage, setUsePredictedGPUUsage] = useState(true);
   const [useFilesNeeded, setUseFilesNeeded] = useState(true);
   const [useFilesAvailableForDownload, setUseFilesAvailableForDownload] = useState(true);
+  const [useDeviceinFileSync, setUseDeviceinFileSync] = useState(true);
 
   // Update syncStorageValue when selectedDevice changes
   useEffect(() => {
@@ -866,6 +876,7 @@ export default function Devices() {
       setUsePredictedUploadSpeed(selectedDevice.use_predicted_upload_speed);
       setUseFilesAvailableForDownload(selectedDevice.use_files_available_for_download);
       setUseFilesNeeded(selectedDevice.use_files_needed);
+      setUseDeviceinFileSync(selectedDevice.use_device_in_file_sync);
     }
   }, [selectedDevice]);
 
@@ -1187,7 +1198,10 @@ export default function Devices() {
                                   highest performing devices.
                                 </Typography>
                               </Box>
-                              <Switch defaultChecked size="small" sx={{
+                              <Switch 
+                              checked={useDeviceinFileSync}
+                              onChange={(e) => setUseDeviceinFileSync(e.target.checked)}
+                              size="small" sx={{
                                 mt: 1,
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                   '&:hover': {
@@ -1208,6 +1222,16 @@ export default function Devices() {
                           <Button
                             variant="outlined"
                             size="small"
+                            onClick={() => handleSavePredictionPreferences(
+                              usePredictedCPUUsage,
+                              usePredictedRAMUsage,
+                              usePredictedGPUUsage,
+                              usePredictedDownloadSpeed,
+                              usePredictedUploadSpeed,
+                              useFilesNeeded,
+                              useFilesAvailableForDownload,
+                              useDeviceinFileSync
+                            )}
                             sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
                           >
                             Save
@@ -1398,7 +1422,8 @@ export default function Devices() {
                               usePredictedDownloadSpeed,
                               usePredictedUploadSpeed,
                               useFilesNeeded,
-                              useFilesAvailableForDownload
+                              useFilesAvailableForDownload,
+                              useDeviceinFileSync
                             )}
                             sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
                           >

@@ -18,6 +18,7 @@ export async function updateScoreConfigurationPreferences(
   use_predicted_upload_speed: any,
   use_files_needed: any,
   use_files_available_for_download: any,
+  use_device_in_file_sync: any,
   device_name: string
 ) {
 
@@ -37,6 +38,7 @@ export async function updateScoreConfigurationPreferences(
       use_predicted_upload_speed: use_predicted_upload_speed,
       use_files_needed: use_files_needed,
       use_files_available_for_download: use_files_available_for_download,
+      use_device_in_file_sync: use_device_in_file_sync,
     });
     const result = response.data.result;
 
