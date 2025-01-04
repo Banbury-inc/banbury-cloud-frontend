@@ -13,7 +13,6 @@ let accumulatedData: Buffer[] = [];
 
 function resetAccumulatedData() {
   accumulatedData = [];
-  console.log('Reset accumulated data');
 }
 
 // Function to handle the received file chunk in binary form
@@ -23,7 +22,6 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
     const chunkBuffer = Buffer.from(data);
     if (chunkBuffer.length > 0) {
       accumulatedData.push(chunkBuffer);
-      console.log('Added chunk of size:', chunkBuffer.length, 'Total accumulated:', accumulatedData.reduce((sum, buf) => sum + buf.length, 0));
     }
   } catch (error) {
     console.error('Error processing file chunk:', error);
@@ -32,8 +30,6 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
 
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
-  console.log('Saving file:', fileName);
-  console.log('Total accumulated data size:', accumulatedData.reduce((sum, buf) => sum + buf.length, 0));
 
   try {
     // Always save to Downloads folder
@@ -56,7 +52,6 @@ function saveFile(fileName: string, file_path: string) {
 
     // Write file synchronously to ensure completion
     fs.writeFileSync(filePath, completeBuffer);
-    console.log(`File saved successfully: ${filePath} (${completeBuffer.length} bytes)`);
 
     // Clear accumulated data only after successful save
     resetAccumulatedData();
@@ -140,7 +135,6 @@ export function createWebSocketConnection(
 
   // Message event: When a message or file is received from the server
   socket.onmessage = async function (event: any) {
-    console.log('Message received');
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
@@ -148,7 +142,6 @@ export function createWebSocketConnection(
     } else {
       try {
         const data = JSON.parse(event.data);
-        console.log('Parsed message data: ', data);
 
         switch (data.message) {
           case 'Start file transfer':
@@ -159,7 +152,6 @@ export function createWebSocketConnection(
           case 'File sent successfully':
           case 'File transfer complete':
           case 'File transaction complete':
-            console.log('File transfer completion message received:', data);
             if (data.file_name) {  // Only save if we have a filename
               try {
                 const result = saveFile(data.file_name, data.file_path || '');
@@ -214,9 +206,7 @@ export function createWebSocketConnection(
         }
 
         if (data.request_type === 'device_info') {
-          console.log('I was asked for device info')
           let device_info = await neuranet.device.getDeviceInfo();
-          console.log('I retrieved the device info: ', device_info)
           const message = {
             message: `device_info_response`,
             username: username,
@@ -229,9 +219,7 @@ export function createWebSocketConnection(
         }
 
         if (data.request_type === 'file_sync_request') {
-          console.log('I was asked to initiate file sync')
           const download_queue = data.download_queue?.download_queue;
-          console.log('Extracted download queue: ', download_queue)
 
           if (download_queue && Array.isArray(download_queue.files)) {
             const response = await neuranet.files.downloadFileSyncFiles(
@@ -244,7 +232,6 @@ export function createWebSocketConnection(
               setTaskbox_expanded,
               socket as unknown as WebSocket,
             );
-            console.log('I completed the file sync: ', response)
           } else {
             console.error('Invalid download queue format received:', download_queue);
           }
@@ -252,18 +239,12 @@ export function createWebSocketConnection(
 
         // Handle existing request types
         if (data.request_type === 'file_request') {
-          console.log('Received file request')
           // const directory_name: string = 'BCloud';
           const file_path = data.file_path;
           const directory_name: string = file_path;
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path);
 
-          console.log('File path 238: ', file_path)
-          console.log('File save path 240: ', file_save_path)
-          console.log('Directory path 242: ', directory_path)
-          console.log('Directory name 244: ', directory_name)
-          console.log('Creating read stream for 246: ', file_save_path)
 
           const fileStream = fs.createReadStream(file_path);
 
@@ -285,7 +266,6 @@ export function createWebSocketConnection(
           });
 
           fileStream.on('end', () => {
-            console.log('File transfer complete: containing data:', data)
             const message = {
               message: 'File sent successfully',
               username: username,
@@ -306,7 +286,6 @@ export function createWebSocketConnection(
 
   // Close event: When the WebSocket connection is closed
   socket.onclose = function () {
-    console.log('WebSocket connection closed');
     return 'connection_closed';
   };
 
