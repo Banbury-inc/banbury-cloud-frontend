@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import os from 'os';
+import { CONFIG } from '../../config/config';
 
 
 
@@ -8,7 +9,7 @@ export async function searchFile(username: string, fileName: string) {
 
   try {
     const deviceName = os.hostname();
-    const response = await axios.post(`https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/search_file/${username}/`, {
+    const response = await axios.post(`${CONFIG.url}/files/search_file/${username}/`, {
       device_name: deviceName,
       file_name: fileName
     });
@@ -31,7 +32,3 @@ export async function searchFile(username: string, fileName: string) {
   }
 }
 
-// Example usage:
-searchFile('michael-ubuntu', '8641923.png').then(result => {
-  console.log(result);
-});

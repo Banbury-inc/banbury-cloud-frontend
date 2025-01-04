@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { neuranet } from '../../neuranet'
 import os from 'os';
+import { CONFIG } from '../../config/config';
 
 export async function addFiles(
   username: string,
@@ -11,7 +12,8 @@ export async function addFiles(
     const response = await axios.post<{
       result: string;
       // }>('https://website2-389236221119.us-central1.run.app/add_files/' + username + '/', {
-    }>('https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/add_files/' + username + '/', {
+    }>('' + CONFIG.url + '/files/add_files/' + username + '/', {
+
       // }>('http://localhost:8080/add_files/' + username + '/', {
       files: filesInfo,
       device_name: device,

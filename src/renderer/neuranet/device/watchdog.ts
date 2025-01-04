@@ -207,11 +207,21 @@ export function detectFileChanges(directoryPath: string, username: string) {
     .on('unlink', (filePath) => {
       onFileDeleted(filePath, username); // Call the onFileAdded function
     })
-    .on('change', (filePath) => console.log(`File changed: ${filePath}`))
-    .on('addDir', (filePath) => console.log(`Directory added: ${filePath}`))
-    .on('unlinkDir', (filePath) => console.log(`Directory removed: ${filePath}`))
-    .on('error', (error) => console.error('Error watching files:', error))
-    .on('ready', () => console.log('Initial scan complete. Ready for file changes.'));
+    .on('change', (filePath) => {
+      // Silently handle file changes
+    })
+    .on('addDir', (filePath) => {
+      // Silently handle directory additions
+    })
+    .on('unlinkDir', (filePath) => {
+      // Silently handle directory removals
+    })
+    .on('error', (error) => {
+      // Silently handle errors
+    })
+    .on('ready', () => {
+      // Silently handle ready state
+    });
 }
 
 // Usage Example

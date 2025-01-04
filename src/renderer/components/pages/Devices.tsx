@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import { join } from 'path';
 import { shell } from 'electron';
 import axios from 'axios';
-import { useMediaQuery } from '@mui/material';
+import { FormControlLabel, FormGroup, Switch, useMediaQuery } from '@mui/material';
 import ButtonBase from '@mui/material/ButtonBase';
 import Box from '@mui/material/Box';
 import { readdir, stat } from 'fs/promises';
@@ -15,6 +15,7 @@ import DevicesIcon from '@mui/icons-material/Devices';
 import MemoryIcon from '@mui/icons-material/Memory';
 import SpeedIcon from '@mui/icons-material/Speed';
 import TableCell from '@mui/material/TableCell';
+import CloudIcon from '@mui/icons-material/Cloud';
 import TableContainer from '@mui/material/TableContainer';
 import { Skeleton } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
@@ -30,6 +31,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LineChart } from '@mui/x-charts/LineChart';
+import StarIcon from '@mui/icons-material/Star';
 import { visuallyHidden } from '@mui/utils';
 import { CardContent, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import AccountMenuIcon from '../common/AccountMenuIcon';
@@ -54,6 +56,14 @@ import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturi
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import LaunchIcon from '@mui/icons-material/Launch';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import PendingIcon from '@mui/icons-material/Pending';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 import { CONFIG } from '../../config/config';
 
@@ -86,7 +96,23 @@ interface DeviceData {
   ram_total: string;
   ram_free: string;
   scanned_folders: string[];
-
+  predicted_cpu_usage: number;
+  predicted_ram_usage: number;
+  predicted_gpu_usage: number;
+  predicted_download_speed: number;
+  predicted_upload_speed: number;
+  files_available_for_download: number;
+  files_needed: number;
+  sync_storage_capacity_gb: number;
+  predicted_performance_score: number;
+  use_device_in_file_sync: boolean;
+  use_predicted_cpu_usage: boolean;
+  use_predicted_download_speed: boolean;
+  use_predicted_gpu_usage: boolean;
+  use_predicted_ram_usage: boolean;
+  use_predicted_upload_speed: boolean;
+  use_files_available_for_download: boolean;
+  use_files_needed: boolean;
 }
 
 const headCells: HeadCell[] = [
@@ -119,7 +145,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort(event, property);
   };
 
-  const { files, set_Files, global_file_path, global_file_path_device } = useAuth();  // Assuming global_file_path is available via context
+  const { files, set_Files, global_file_path, global_file_path_device, websocket } = useAuth();  // Assuming global_file_path is available via context
   const pathSegments = global_file_path ? global_file_path.split('/').filter(Boolean) : []; // Split and remove empty segments safely
 
 
@@ -231,9 +257,9 @@ export default function Devices() {
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [fileRows, setFileRows] = useState<DeviceData[]>([]); // State for storing fetched file data
+  const [deviceRows, setDeviceRows] = useState<DeviceData[]>([]); // State for storing fetched file data
   const [allDevices, setAllDevices] = useState<DeviceData[]>([]);
-  const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
+  const { global_file_path, global_file_path_device, setGlobal_file_path, websocket } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [disableFetch, setDisableFetch] = useState(false);
@@ -249,16 +275,10 @@ export default function Devices() {
     setSelectedTab(newValue);
   };
 
-  let url: string;
-  if (CONFIG.prod) {
-    url = 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app';
-  } else {
-    url = 'http://localhost:8080';
-  }
 
   const getSelectedDeviceNames = () => {
     return selected.map(id => {
-      const device = fileRows.find(device => device.id === id);
+      const device = deviceRows.find(device => device.id === id);
       return device ? device.device_name : null;
     }).filter(device_name => device_name !== null); // Filter out any null values if a file wasn't found
   };
@@ -274,7 +294,7 @@ export default function Devices() {
         last_name: string;
         phone_number: string;
         email: string;
-      }>(`${url}/getuserinfo/${username}/`);
+      }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
       setFirstname(first_name);
@@ -283,50 +303,127 @@ export default function Devices() {
       // Fetch device information
       const deviceInfoResponse = await axios.get<{
         devices: any[];
-      }>(`${url}/getdeviceinfo/${username}/`);
+      }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`);
+
+      const devicePredictionsResponse = await axios.get<{
+        data: {
+          device_predictions: Array<{
+            device_id: string;
+            device_name: string;
+            files_available_for_download: number;
+            files_needed: number;
+            predicted_cpu_usage: number;
+            predicted_download_speed: number;
+            predicted_gpu_usage: number;
+            predicted_ram_usage: number;
+            predicted_upload_speed: number;
+            use_predicted_cpu_usage: boolean;
+            use_predicted_download_speed: boolean;
+            use_predicted_gpu_usage: boolean;
+            use_predicted_ram_usage: boolean;
+            use_predicted_upload_speed: boolean;
+            use_files_available_for_download: boolean;
+            use_files_needed: boolean;
+            use_device_in_file_sync: boolean;
+            score: number;
+            score_timestamp: string;
+            sync_storage_capacity_gb: number;
+            timestamp: string;
+          }>;
+          result: string;
+        };
+      }>(`${CONFIG.url}/predictions/get_device_prediction_data/${username}/`);
+
+      console.log('devicePredictionsResponse: ', devicePredictionsResponse);
 
       const { devices } = deviceInfoResponse.data;
+      const { device_predictions } = devicePredictionsResponse.data.data;
 
       // Transform device data
-      const transformedDevices: DeviceData[] = devices.map((device, index) => ({
-        id: index + 1,
-        device_name: device.device_name,
-        device_manufacturer: device.device_manufacturer,
-        device_model: device.device_model,
-        storage_capacity_gb: device.storage_capacity_gb,
-        total_storage: device.total_storage,
-        upload_speed: Array.isArray(device.upload_speed)
-          ? device.upload_speed[0] || 'N/A'
-          : device.upload_speed || 'N/A',
-        download_speed: Array.isArray(device.download_speed)
-          ? device.download_speed[0] || 'N/A'
-          : device.download_speed || 'N/A',
-        battery_status: Array.isArray(device.battery_status)
-          ? device.battery_status[0] || 'N/A'
-          : device.battery_status || 'N/A',
-        battery_time_remaining: device.battery_time_remaining,
-        available: device.online ? "Available" : "Unavailable",
-        cpu_info_manufacturer: device.cpu_info_manufacturer,
-        cpu_info_brand: device.cpu_info_brand,
-        cpu_info_speed: device.cpu_info_speed,
-        cpu_info_cores: device.cpu_info_cores,
-        cpu_info_physical_cores: device.cpu_info_physical_cores,
-        cpu_info_processors: device.cpu_info_processors,
-        cpu_info_socket: device.cpu_info_socket,
-        cpu_info_vendor: device.cpu_info_vendor,
-        cpu_info_family: device.cpu_info_family,
-        cpu_usage: device.cpu_usage,
-        gpu_usage: Array.isArray(device.gpu_usage)
-          ? device.gpu_usage
-          : [device.gpu_usage],
-        ram_usage: device.ram_usage,
-        ram_total: device.ram_total,
-        ram_free: device.ram_free,
-        scanned_folders: Array.isArray(device.scanned_folders) ? device.scanned_folders : [], // Ensure it's always an array
+      const transformedDevices: DeviceData[] = devices.map((device, index) => {
 
-      }));
+        // Find matching predictions for this device with default values
+        const devicePrediction = device_predictions?.find(
+          pred => pred.device_name === device.device_name
+        ) || {
+          predicted_cpu_usage: 0,
+          predicted_ram_usage: 0,
+          predicted_gpu_usage: 0,
+          predicted_download_speed: 0,
+          predicted_upload_speed: 0,
+          use_predicted_cpu_usage: false,
+          use_predicted_download_speed: false,
+          use_predicted_gpu_usage: false,
+          use_predicted_ram_usage: false,
+          use_predicted_upload_speed: false,
+          use_files_available_for_download: false,
+          use_files_needed: false,
+          use_device_in_file_sync: false,
+          sync_storage_capacity_gb: 0,
+          files_available_for_download: 0,
+          files_needed: 0,
+          score: 0
+        };
+
+        console.log('devicePrediction: ', devicePrediction);
+
+        return {
+          id: index + 1,
+          device_name: device.device_name,
+          device_manufacturer: device.device_manufacturer,
+          device_model: device.device_model,
+          storage_capacity_gb: device.storage_capacity_gb,
+          total_storage: device.total_storage,
+          upload_speed: Array.isArray(device.upload_speed)
+            ? device.upload_speed[0] || 'N/A'
+            : device.upload_speed || 'N/A',
+          download_speed: Array.isArray(device.download_speed)
+            ? device.download_speed[0] || 'N/A'
+            : device.download_speed || 'N/A',
+          battery_status: Array.isArray(device.battery_status)
+            ? device.battery_status[0] || 'N/A'
+            : device.battery_status || 'N/A',
+          battery_time_remaining: device.battery_time_remaining,
+          available: device.online ? "Available" : "Unavailable",
+          cpu_info_manufacturer: device.cpu_info_manufacturer,
+          cpu_info_brand: device.cpu_info_brand,
+          cpu_info_speed: device.cpu_info_speed,
+          cpu_info_cores: device.cpu_info_cores,
+          cpu_info_physical_cores: device.cpu_info_physical_cores,
+          cpu_info_processors: device.cpu_info_processors,
+          cpu_info_socket: device.cpu_info_socket,
+          cpu_info_vendor: device.cpu_info_vendor,
+          cpu_info_family: device.cpu_info_family,
+          cpu_usage: device.cpu_usage,
+          gpu_usage: Array.isArray(device.gpu_usage)
+            ? device.gpu_usage
+            : [device.gpu_usage],
+          ram_usage: device.ram_usage,
+          ram_total: device.ram_total,
+          ram_free: device.ram_free,
+          scanned_folders: Array.isArray(device.scanned_folders) ? device.scanned_folders : [],
+          sync_storage_capacity_gb: devicePrediction.sync_storage_capacity_gb,
+          predicted_cpu_usage: devicePrediction.predicted_cpu_usage,
+          predicted_ram_usage: devicePrediction.predicted_ram_usage,
+          predicted_gpu_usage: devicePrediction.predicted_gpu_usage,
+          predicted_download_speed: devicePrediction.predicted_download_speed,
+          predicted_upload_speed: devicePrediction.predicted_upload_speed,
+          predicted_performance_score: devicePrediction.score,
+          files_available_for_download: devicePrediction.files_available_for_download,
+          files_needed: devicePrediction.files_needed,
+          use_predicted_cpu_usage: devicePrediction.use_predicted_cpu_usage,
+          use_predicted_download_speed: devicePrediction.use_predicted_download_speed,
+          use_predicted_gpu_usage: devicePrediction.use_predicted_gpu_usage,
+          use_predicted_ram_usage: devicePrediction.use_predicted_ram_usage,
+          use_predicted_upload_speed: devicePrediction.use_predicted_upload_speed,
+          use_files_available_for_download: devicePrediction.use_files_available_for_download,
+          use_files_needed: devicePrediction.use_files_needed,
+          use_device_in_file_sync: devicePrediction.use_device_in_file_sync,
+        };
+      });
 
       setAllDevices(transformedDevices);
+
 
       // Restore the previously selected device if it exists in the new list
       const restoredDevice = transformedDevices.find(device => device.device_name === previousSelectedDeviceName);
@@ -375,7 +472,7 @@ export default function Devices() {
       return isInSameDirectory || isFile;
     });
 
-    setFileRows(filteredDevices);
+    setDeviceRows(filteredDevices);
 
   }, [global_file_path, global_file_path_device, allDevices]);
 
@@ -392,7 +489,7 @@ export default function Devices() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = fileRows.map((n) => n.id);
+      const newSelected = deviceRows.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -427,9 +524,9 @@ export default function Devices() {
         selected.slice(selectedIndex + 1),
       );
     }
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
+    const device_name = deviceRows.find(device => device.id === id)?.device_name;
     const newSelectedDeviceNames = newSelected
-      .map(id => fileRows.find(device => device.id === id)?.device_name)
+      .map(id => deviceRows.find(device => device.id === id)?.device_name)
       .filter(name => name !== undefined) as string[];
     console.log(newSelectedDeviceNames[0]);
     const directoryName = "BCloud";
@@ -464,7 +561,16 @@ export default function Devices() {
         let task_description = 'Opening ' + selectedDeviceNames.join(', ');
         let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
         setTaskbox_expanded(true);
-        let response = await handlers.files.downloadFile(username ?? '', selectedDeviceNames, selectedDeviceNames, taskInfo);
+        let response = await handlers.files.downloadFile(
+          username ?? '',
+          selectedDeviceNames,
+          selectedDeviceNames,
+          taskInfo,
+          tasks || [],
+          setTasks,
+          setTaskbox_expanded,
+          websocket as unknown as WebSocket,
+        );
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
         }
@@ -518,8 +624,8 @@ export default function Devices() {
     }
     setSelected(newSelected);
 
-    const device_name = fileRows.find(device => device.id === id)?.device_name;
-    const newSelectedDeviceNames = newSelected.map(id => fileRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
+    const device_name = deviceRows.find(device => device.id === id)?.device_name;
+    const newSelectedDeviceNames = newSelected.map(id => deviceRows.find(device => device.id === id)?.device_name).filter(name => name !== undefined) as string[];
     setSelectedDeviceNames(newSelectedDeviceNames);
     console.log(newSelectedDeviceNames)
     console.log(selectedDeviceNames)
@@ -581,7 +687,7 @@ export default function Devices() {
         setUpdates,
         updates,
         global_file_path ?? '',
-        setFileRows,
+        setDeviceRows,
         setNewFolderName,
         setDisableFetch,
         username
@@ -601,7 +707,7 @@ export default function Devices() {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   // Calculate empty rows for pagination
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - fileRows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - deviceRows.length) : 0;
 
   function stableSort<T>(array: T[], comparator: (a: T, b: T) => number): T[] {
     return array
@@ -614,16 +720,23 @@ export default function Devices() {
       .map(({ el }) => el); // Extract the sorted elements
   }
 
-  function getComparator<Key extends keyof any>(
+  function getComparator<Key extends keyof DeviceData>(
     order: Order,
     orderBy: Key,
-  ): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
+  ): (
+    a: DeviceData,
+    b: DeviceData,
+  ) => number {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
 
-  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+  function descendingComparator<T extends DeviceData>(
+    a: T,
+    b: T,
+    orderBy: keyof T,
+  ) {
     if (b[orderBy] < a[orderBy]) {
       return -1;
     }
@@ -641,7 +754,131 @@ export default function Devices() {
     fetchDevices(); // Refetch devices when folders are updated
   };
 
+  const handleSyncStorageChange = async (value: string) => {
+    console.log(value);
 
+    let task_description = 'Updating Sync Storage Capacity';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    let result = await neuranet.device.update_sync_storage_capacity(username ?? '', value);
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+      fetchDevices();
+    }
+
+  };
+
+
+
+  const handleGetDownloadQueue = async (value: string) => {
+    console.log(value);
+
+    let task_name = 'Getting Download Queue';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_name, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    // let response = await neuranet.files.getDownloadQueue(username ?? '');
+    let response = await neuranet.files.runPipeline(username ?? '');
+
+    console.log('response: ', response);
+
+    let result = (response as any).result;
+    let download_queue = (response as any).download_queue;
+
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      setUpdates(updates + 1);
+      fetchDevices();
+      let downloadResult = await neuranet.files.downloadFileSyncFiles(
+        username ?? '',
+        download_queue ?? { files: [], files_available_for_download: 0 },
+        allDevices,
+        taskInfo,
+        tasks ?? [],
+        setTasks,
+        setTaskbox_expanded,
+        websocket as unknown as WebSocket,
+      );
+    }
+
+  };
+
+  const handleSavePredictionPreferences = async (
+    usePredictedCPUUsage: boolean,
+    usePredictedRAMUsage: boolean,
+    usePredictedGPUUsage: boolean,
+    usePredictedDownloadSpeed: boolean,
+    usePredictedUploadSpeed: boolean,
+    useFilesNeeded: boolean,
+    useFilesAvailableForDownload: boolean,
+    useDeviceinFileSync: boolean
+  ) => {
+
+
+    let task_description = 'Updating prediction preferences';
+    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+    setTaskbox_expanded(true);
+
+    const result = await neuranet.device.updateScoreConfigurationPreferences(
+      username ?? '',
+      usePredictedCPUUsage,
+      usePredictedRAMUsage,
+      usePredictedGPUUsage,
+      usePredictedDownloadSpeed,
+      usePredictedUploadSpeed,
+      useFilesNeeded,
+      useFilesAvailableForDownload,
+      useDeviceinFileSync,
+      neuranet.device.name()
+    );
+
+    if (result === 'success') {
+      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      // setUpdates(updates + 1);
+    }
+
+
+  };
+
+
+
+
+  const [syncStorageValue, setSyncStorageValue] = useState<string>('');
+  const [usePredictedUploadSpeed, setUsePredictedUploadSpeed] = useState(true);
+  const [usePredictedDownloadSpeed, setUsePredictedDownloadSpeed] = useState(true);
+  const [usePredictedCPUUsage, setUsePredictedCPUUsage] = useState(true);
+  const [usePredictedRAMUsage, setUsePredictedRAMUsage] = useState(true);
+  const [usePredictedGPUUsage, setUsePredictedGPUUsage] = useState(true);
+  const [useFilesNeeded, setUseFilesNeeded] = useState(true);
+  const [useFilesAvailableForDownload, setUseFilesAvailableForDownload] = useState(true);
+  const [useDeviceinFileSync, setUseDeviceinFileSync] = useState(true);
+
+  // Update syncStorageValue when selectedDevice changes
+  useEffect(() => {
+    if (selectedDevice && selectedDevice.sync_storage_capacity_gb != null) {
+      setSyncStorageValue(selectedDevice.sync_storage_capacity_gb.toString());
+    } else {
+      setSyncStorageValue('0'); // Set a default value when null
+    }
+  }, [selectedDevice]);
+
+  // Initialize state values when selectedDevice changes
+  useEffect(() => {
+    if (selectedDevice) {
+      setUsePredictedCPUUsage(selectedDevice.use_predicted_cpu_usage);
+      setUsePredictedRAMUsage(selectedDevice.use_predicted_ram_usage);
+      setUsePredictedGPUUsage(selectedDevice.use_predicted_gpu_usage);
+      setUsePredictedDownloadSpeed(selectedDevice.use_predicted_download_speed);
+      setUsePredictedUploadSpeed(selectedDevice.use_predicted_upload_speed);
+      setUseFilesAvailableForDownload(selectedDevice.use_files_available_for_download);
+      setUseFilesNeeded(selectedDevice.use_files_needed);
+      setUseDeviceinFileSync(selectedDevice.use_device_in_file_sync);
+    }
+  }, [selectedDevice]);
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -718,30 +955,46 @@ export default function Devices() {
                         </TableCell>
                       </TableRow>
                     ))
-                  ) : fileRows.length === 0 ? (
+                  ) : allDevices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={2} align="center">
+                      <TableCell colSpan={3} align="center">
                         <Typography variant="body1" color="textSecondary">
                           No devices available.
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    fileRows.map((row, index) => (
-                      <TableRow
-                        hover
-                        onClick={() => handleDeviceClick(row)}
-                        key={row.id}
-                        selected={!!selectedDevice && selectedDevice.id === row.id}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox color="primary" />
-                        </TableCell>
-                        <TableCell component="th" scope="row" padding="normal">
-                          {row.device_name}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    stableSort(allDevices, getComparator(order, orderBy))
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row, index) => {
+                        const isItemSelected = isSelected(row.id);
+                        const labelId = `enhanced-table-checkbox-${index}`;
+
+                        return (
+                          <TableRow
+                            hover
+                            onClick={() => handleDeviceClick(row)}
+                            role="checkbox"
+                            aria-checked={isItemSelected}
+                            tabIndex={-1}
+                            key={row.id}
+                            selected={!!selectedDevice && selectedDevice.id === row.id}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isItemSelected}
+                                inputProps={{
+                                  'aria-labelledby': labelId,
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell component="th" id={labelId} scope="row" padding="normal">
+                              {row.device_name}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                   )}
                 </TableBody>
               </Table>
@@ -768,11 +1021,13 @@ export default function Devices() {
                     minHeight: '32px',
                     '& .MuiTab-root': {
                       minHeight: '32px',
-                      padding: '6px 12px'
+                      padding: '6px 12px',
+                      fontSize: '12px'
                     }
                   }}
                 >
                   <Tab label="Device Info" />
+                  <Tab label="Cloud Sync" />
                   <Tab label="Performance" />
                 </Tabs>
 
@@ -781,233 +1036,563 @@ export default function Devices() {
                 {/* Conditional rendering based on selected tab */}
                 {selectedTab === 0 ? (
                   <Stack direction="column" spacing={3}>
-                    <Card sx={{ p: 2, flex: 1, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-                      <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 2 }}>
-                        {/* Device Status Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto', mb: { xs: 2, md: 0 } }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                            <DevicesIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                            <Typography variant="h6">Device Status</Typography>
-                          </Stack>
+                    {/* Details Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Device Info</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={6}>
                           <Stack spacing={2}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Chip
-                                icon={<GrainIcon />}
-                                label={selectedDevice.available}
-                                color={selectedDevice.available === "Available" ? "success" : "error"}
-                                size="small"
-                                sx={{ minWidth: 100 }}
-                              />
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Status</Typography>
+                              <Typography variant="body2">{selectedDevice.available || 'N/A'}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <PrecisionManufacturingIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{selectedDevice.device_manufacturer}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Manufacturer</Typography>
+                              <Typography variant="body2">{selectedDevice.device_manufacturer || 'N/A'}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <DeviceHubIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{selectedDevice.device_model}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Device Model</Typography>
+                              <Typography variant="body2">{selectedDevice.device_model || 'N/A'}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
+                        </Grid>
 
-                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
-
-                        {/* System Stats Section */}
-                        <Box sx={{ minWidth: '200px', flex: '1 1 auto' }}>
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                            <StorageIcon sx={{ fontSize: 28, color: 'primary.main' }} />
-                            <Typography variant="h6">System Stats</Typography>
-                          </Stack>
+                        {/* Right Column */}
+                        <Grid item xs={12} md={6}>
                           <Stack spacing={2}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <MemoryIcon sx={{ color: 'text.secondary' }} />
-                              <Typography noWrap>{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Upload Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.upload_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'success.main' }} />
-                              <Typography noWrap>↑ {formatSpeed(selectedDevice.upload_speed)}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Download Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.download_speed || 0)}</Typography>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedIcon sx={{ color: 'info.main' }} />
-                              <Typography noWrap>↓ {formatSpeed(selectedDevice.download_speed)}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Storage Capacity</Typography>
+                              <Typography variant="body2">{formatStorageCapacity(selectedDevice.storage_capacity_gb)}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
-                      </Stack>
+                        </Grid>
+                      </Grid>
                     </Card>
 
-                    <Divider sx={{ my: 3 }} />
-
-                    <Typography variant="h5" gutterBottom>
-                      Scanned Folders
-                    </Typography>
-                    <ScannedFoldersChips
-                      scanned_folders={selectedDevice.scanned_folders}
-                      username={username ?? ''}
-                      onFoldersUpdate={handleFoldersUpdate}
-                    />
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Scanned Folders</Typography>
+                      <Box>
+                        <ScannedFoldersChips
+                          scanned_folders={selectedDevice.scanned_folders}
+                          username={username ?? ''}
+                          onFoldersUpdate={handleFoldersUpdate}
+                        />
+                      </Box>
+                    </Card>
                   </Stack>
-
-
-                ) : (
-                  // Performance tab content
-                  <Stack direction="column" spacing={0} sx={{ p: 0 }}>
-                    {/* Performance metrics section */}
-                    <Stack direction="row" spacing={4}>
-                      <Card sx={{ flex: 1, p: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <MemoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                          <Typography variant="h6" color="primary">CPU Information</Typography>
-                        </Stack>
-
-                        <Box sx={{ mt: 2 }}>
-                          <Stack spacing={1.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Chip
-                                label={`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
-                                color={parseFloat(selectedDevice.cpu_usage) > 80 ? 'error' : 'success'}
-                                size="small"
-                                sx={{ mr: 1 }}
-                              />
-                              <Typography variant="body2">Current Usage</Typography>
+                ) : selectedTab === 1 ? (
+                  <Stack direction="column" spacing={2}>
+                    {/* Details Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Cloud Sync Details</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted CPU Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_cpu_usage || 0}%</Typography>
                             </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted RAM Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_ram_usage || 0}%</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted GPU Usage</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_gpu_usage || 0}%</Typography>
+                            </Box>
+                          </Stack>
+                        </Grid>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <PrecisionManufacturingIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>
+                        {/* Middle Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted Download Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.predicted_download_speed || 0)}</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Predicted Upload Speed</Typography>
+                              <Typography variant="body2">{formatSpeed(selectedDevice.predicted_upload_speed || 0)}</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Score</Typography>
+                              <Typography variant="body2">{selectedDevice.predicted_performance_score || 0}</Typography>
+                            </Box>
+                          </Stack>
+                        </Grid>
+
+                        {/* Right Column */}
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Files Needed</Typography>
+                              <Typography variant="body2">{selectedDevice.files_needed || 0}</Typography>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Files Available for Download</Typography>
+                              <Typography variant="body2">{selectedDevice.files_available_for_download || 0}</Typography>
+                            </Box>
+                            <Box>
+                              <Stack spacing={4}>
+                                <Typography color="textSecondary" variant="caption">Sync Storage Capacity</Typography>
+                              </Stack>
+                              <Stack paddingTop={1} direction="row" spacing={1} alignItems="center">
+                                <TextField
+                                  variant="outlined"
+                                  size="small"
+                                  // type="number"
+                                  value={syncStorageValue}
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSyncStorageValue(e.target.value)}
+                                  sx={{
+                                    width: 60,
+                                    '& .MuiOutlinedInput-root': {
+                                      height: '24px',
+                                      fontSize: '12px',
+                                    },
+                                    '& .MuiOutlinedInput-input': {
+                                      padding: '2px 8px',
+                                      textAlign: 'right',
+                                    }
+                                  }}
+                                />
+                                <Typography variant="caption" noWrap>GB</Typography>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => handleSyncStorageChange(syncStorageValue)}
+                                  sx={{
+                                    fontSize: '12px',
+                                    padding: '2px 8px',
+                                    height: '24px',
+                                    minWidth: 'unset'
+                                  }}
+                                >
+                                  Submit
+                                </Button>
+                              </Stack>
+                            </Box>
+                          </Stack>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                    {/* Include in File Sync Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <Box sx={{ pr: 3 }}>
+                                <Typography variant="h6" gutterBottom>Include in Cloud Sync</Typography>
+                                <Typography color="textSecondary" variant="caption">Include this device in Cloud Sync. This device will take part in downloading files from your other devices.
+                                  This device will also be able to upload files to your other devices. Banbury will predict device performance and allocate the highest priority files to the
+                                  highest performing devices.
+                                </Typography>
+                              </Box>
+                              <Switch 
+                              checked={useDeviceinFileSync}
+                              onChange={(e) => setUseDeviceinFileSync(e.target.checked)}
+                              size="small" sx={{
+                                mt: 1,
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                  },
+                                },
+                                '& .MuiSwitch-thumb': {
+                                  backgroundColor: '#fff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#2fca45',
+                                },
+                              }} />
+                            </Box>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleSavePredictionPreferences(
+                              usePredictedCPUUsage,
+                              usePredictedRAMUsage,
+                              usePredictedGPUUsage,
+                              usePredictedDownloadSpeed,
+                              usePredictedUploadSpeed,
+                              useFilesNeeded,
+                              useFilesAvailableForDownload,
+                              useDeviceinFileSync
+                            )}
+                            sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
+                          >
+                            Save
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                    {/* Score Configuration Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Typography variant="h6" gutterBottom>Score Configuration</Typography>
+                          <Typography color="textSecondary" variant="caption">Include the following metrics in performance score calculation</Typography>
+
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted CPU Usage</Typography>
+                              </Box>
+                              <Switch
+                                checked={usePredictedCPUUsage}
+                                size="small"
+                                onChange={(e) => setUsePredictedCPUUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted RAM Usage</Typography>
+                              </Box>
+                              <Switch
+                                checked={usePredictedRAMUsage}
+                                size="small"
+                                onChange={(e) => setUsePredictedRAMUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted GPU Usage</Typography>
+                              </Box>
+                              <Switch
+                                checked={usePredictedGPUUsage}
+                                size="small"
+                                onChange={(e) => setUsePredictedGPUUsage(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted Download Speed</Typography>
+                              </Box>
+                              <Switch
+                                checked={usePredictedDownloadSpeed}
+                                size="small"
+                                onChange={(e) => setUsePredictedDownloadSpeed(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Predicted Upload Speed</Typography>
+                              </Box>
+                              <Switch
+                                checked={usePredictedUploadSpeed}
+                                size="small"
+                                onChange={(e) => setUsePredictedUploadSpeed(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Files Available for Download</Typography>
+                              </Box>
+                              <Switch
+                                checked={useFilesAvailableForDownload}
+                                size="small"
+                                onChange={(e) => setUseFilesAvailableForDownload(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
+                            </Box>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="body2">Files Needed</Typography>
+                              </Box>
+                              <Switch
+                                checked={useFilesNeeded}
+                                size="small"
+                                onChange={(e) => setUseFilesNeeded(e.target.checked)}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#4caf50',
+                                  },
+                                }} />
+                            </Box>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleSavePredictionPreferences(
+                              usePredictedCPUUsage,
+                              usePredictedRAMUsage,
+                              usePredictedGPUUsage,
+                              usePredictedDownloadSpeed,
+                              usePredictedUploadSpeed,
+                              useFilesNeeded,
+                              useFilesAvailableForDownload,
+                              useDeviceinFileSync
+                            )}
+                            sx={{ mt: 2, fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}
+                          >
+                            Save
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                    {/* Status Overview Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Grid container spacing={4}>
+                        <Grid item>
+                          <Button variant="outlined" size="small" sx={{ fontSize: '12px', padding: '2px 8px', height: '24px', minWidth: 'unset' }}>
+                            Get Download Queue
+                          </Button>
+                        </Grid>
+
+                      </Grid>
+                    </Card>
+                  </Stack>
+                ) : selectedTab === 2 ? (
+                  // Performance tab content
+                  <Stack direction="column" spacing={3}>
+                    {/* Performance Card */}
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
+                      <Grid container spacing={3}>
+                        {/* Left Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.cpu_usage) || 0).toFixed(2)}%`}
+                                  color={parseFloat(selectedDevice.cpu_usage) > 80 ? 'error' : 'success'}
+                                  size="small"
+                                  sx={{ mr: 1, fontSize: '12px' }}
+                                />
+                              </Box>
+                            </Box>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Model</Typography>
+                              <Typography variant="body2">
                                 {selectedDevice.cpu_info_manufacturer} {selectedDevice.cpu_info_brand}
                               </Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <SpeedIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>{selectedDevice.cpu_info_speed}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Speed</Typography>
+                              <Typography variant="body2">{selectedDevice.cpu_info_speed}</Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <DeviceHubIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">CPU Cores</Typography>
+                              <Typography variant="body2">
                                 {selectedDevice.cpu_info_cores} Cores (Physical: {selectedDevice.cpu_info_physical_cores})
                               </Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <SettingsIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>{selectedDevice.cpu_info_processors} Processors</Typography>
-                            </Box>
                           </Stack>
-                        </Box>
-                      </Card>
+                        </Grid>
 
-                      <Card sx={{ flex: 1, p: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <MemoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                          <Typography variant="h6" color="primary">Memory & GPU</Typography>
-                        </Stack>
-
-                        <Box sx={{ mt: 2 }}>
-                          <Stack spacing={1.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography>
-                                GPU Usage: <Chip
-                                  // label={'${selectedDevice.gpu_usage[0]}%'}
-                                label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
+                        {/* Right Column */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={2}>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">GPU Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.gpu_usage[0]) || 0).toFixed(0)}%`}
                                   size="small"
+                                  sx={{ fontSize: '12px' }}
                                   color={parseFloat(selectedDevice.gpu_usage[0]) > 80 ? 'error' : 'success'}
                                 />
-                              </Typography>
+                              </Box>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <MemoryIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>
-                                RAM Usage: <Chip
-                                  // label={selectedDevice.ram_usage[0]}
-                                label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">RAM Usage</Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                <Chip
+                                  label={`${(parseFloat(selectedDevice.ram_usage[0]) || 0).toFixed(2)}%`}
                                   size="small"
+                                  sx={{ fontSize: '12px' }}
                                   color={parseFloat(selectedDevice.ram_usage[0]) > 80 ? 'error' : 'success'}
                                 />
-                              </Typography>
+                              </Box>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Total RAM: {formatRAM(selectedDevice.ram_total[0])}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Total RAM</Typography>
+                              <Typography variant="body2">{formatRAM(selectedDevice.ram_total[0])}</Typography>
                             </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <StorageIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                              <Typography>Free RAM: {formatRAM(selectedDevice.ram_free[0])}</Typography>
+                            <Box>
+                              <Typography color="textSecondary" variant="caption">Free RAM</Typography>
+                              <Typography variant="body2">{formatRAM(selectedDevice.ram_free[0])}</Typography>
                             </Box>
                           </Stack>
-                        </Box>
-                      </Card>
-                    </Stack>
+                        </Grid>
+                      </Grid>
+                    </Card>
 
 
                     <Divider orientation="horizontal" flexItem sx={{ my: 2 }} />
 
 
                     {/* Charts section */}
-                    <Stack direction="column" alignItems="flex-end" sx={{ p: 0 }}>
-                      <FormControl sx={{ maxWidth: 150 }}>
-                        <InputLabel id="chart-select-label">Select Metric</InputLabel>
-                        <Select
-                          variant="outlined"
-                          size="small"
-                          labelId="chart-select-label"
-                          value={selectedMetric}
-                          label="Select Metric"
-                          onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
-                        >
-                          <MenuItem value="gpu">GPU Usage</MenuItem>
-                          <MenuItem value="ram">RAM Usage</MenuItem>
-                          <MenuItem value="cpu">CPU Usage</MenuItem>
-                        </Select>
-                      </FormControl>
+                    <Card variant='outlined' sx={{ p: 3 }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="h6">Performance Metrics</Typography>
+                        <FormControl sx={{ minWidth: 150 }}>
+                          <InputLabel id="chart-select-label">Select Metric</InputLabel>
+                          <Select
+                            variant="outlined"
+                            size="small"
+                            labelId="chart-select-label"
+                            value={selectedMetric}
+                            label="Select Metric"
+                            sx={{ fontSize: '12px' }}
+                            onChange={(e) => setSelectedMetric(e.target.value as 'gpu' | 'ram' | 'cpu')}
+                          >
+                            <MenuItem sx={{ fontSize: '12px' }} value="gpu">GPU Usage</MenuItem>
+                            <MenuItem sx={{ fontSize: '12px' }} value="ram">RAM Usage</MenuItem>
+                            <MenuItem sx={{ fontSize: '12px' }} value="cpu">CPU Usage</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Stack>
 
-                    </Stack>
-                    <Stack direction="column" alignItems="stretch" sx={{ mt: 0, height: 'calc(100vh - 600px)' }}>
-                      <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
-                        <Typography variant="subtitle1" color="primary" gutterBottom>
-                          {selectedMetric === 'gpu' ? 'GPU' : selectedMetric === 'ram' ? 'RAM' : 'CPU'} Usage Over Time
-                        </Typography>
-                        <Box sx={{ pb: 0, width: '100%', height: '100%' }}>
-                          <LineChart
-                            sx={{
-                              flex: 1,
-                              width: '100%',
-                              height: '100%'
-                            }}
-                            xAxis={[{
-                              data: Array.from(
-                                {
-                                  length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                    selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length
-                                },
-                                (_, i) => i + 1
-                              )
-                            }]}
-                            series={[{
-                              data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
-                                ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
-                                : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
-                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
-                              valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
-                              color: selectedMetric === 'gpu' ? '#4CAF50'
-                                : selectedMetric === 'ram' ? '#2196F3'
-                                  : '#FF5722',
-                              showMark: false
-                            }]}
-                            margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
-                          />
-                        </Box>
+                      <Box sx={{ height: 300, width: '100%' }}>
+                        <LineChart
+                          sx={{
+                            width: '100%',
+                            height: '100%'
+                          }}
+                          xAxis={[{
+                            data: Array.from(
+                              {
+                                length: selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                  selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'].length
+                              },
+                              (_, i) => i + 1
+                            )
+                          }]}
+                          series={[{
+                            data: Array.isArray(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                              selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'])
+                              ? (selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string[]).map(Number)
+                              : [Number(selectedDevice[selectedMetric === 'gpu' ? 'gpu_usage' :
+                                selectedMetric === 'ram' ? 'ram_usage' : 'cpu_usage'] as string)],
+                            valueFormatter: (value) => (value == null ? 'NaN' : `${value}%`),
+                            color: selectedMetric === 'gpu' ? '#4CAF50'
+                              : selectedMetric === 'ram' ? '#2196F3'
+                                : '#FF5722',
+                            showMark: false
+                          }]}
+                          margin={{ top: 10, bottom: 20, left: 40, right: 10 }}
+                        />
                       </Box>
-                    </Stack>
+                    </Card>
 
                   </Stack>
+
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 5 }}>
+                    <DevicesIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h5" color="textSecondary">
+                      No devices available
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Please add a device to get started.
+                    </Typography>
+                  </Box>
                 )}
               </>
             ) : (
@@ -1024,6 +1609,6 @@ export default function Devices() {
           </CardContent>
         </Card>
       </Stack>
-    </Box>
+    </Box >
   );
 }

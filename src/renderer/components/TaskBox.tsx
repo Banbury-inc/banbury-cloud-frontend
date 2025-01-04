@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { neuranet } from '../neuranet';
 import { useEffect } from 'react';
+import { CONFIG } from '../config/config';
 
 export default function TaskBox() {
   // Remove local expanded state
@@ -22,7 +23,7 @@ export default function TaskBox() {
     const fetchData = async () => {
       try {
         let task_device = neuranet.device.name();
-        const url = `https://website2-389236221119.us-central1.run.app/get_session/${username}/`;
+        const url = `${CONFIG.url}/sessions/get_session/${username}/`;
         const response = await axios.post<{
           result: string;
           sessions: any[];
@@ -36,8 +37,6 @@ export default function TaskBox() {
           setTasks(sessions); // Only update tasks if sessions are different
         }
 
-        console.log('sessions:', sessions);
-        console.log('result:', result);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -111,6 +110,9 @@ export default function TaskBox() {
               sx={{ margin: 0 }}
             >
               {task.task_name}
+            </Typography>
+            <Typography variant="body2" color="textPrimary" sx={{ marginLeft: '8px' }}>
+              {task.task_progress}%
             </Typography>
             {/* Render the status icon */}
             {getStatusIcon(task.task_status)}

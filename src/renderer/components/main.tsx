@@ -11,7 +11,10 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import Files from './pages/Files';
+import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
+import CloudSyncIcon from '@mui/icons-material/CloudSync';
+import Files from './pages/Files/Files';
+import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import AI from './pages/AI';
@@ -19,6 +22,7 @@ import Settings from './pages/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Sync from './pages/Sync/Sync';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
@@ -106,22 +110,19 @@ export default function PermanentDrawerLeft() {
   const theme = useTheme();
   const initialActiveTab = location.state?.activeTab || 'Files';
   const [activeTab, setActiveTab] = React.useState(initialActiveTab);
-  const { username, redirect_to_login } = useAuth();
+  const { username, redirect_to_login, tasks, setTasks, setTaskbox_expanded, websocket, setSocket } = useAuth();
   const [open, setOpen] = React.useState(false);
 
   useEffect(() => {
     async function setupConnection() {
       try {
-        console.log("connecting to relay server");
-        console.log("Starting receiver");
         const fullDeviceSync = CONFIG.full_device_sync;
         const skipDotFiles = CONFIG.skip_dot_files;
-        // Determine the directory path based on the fullDeviceSync flag
         const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
 
-        neuranet.device.connect(username || "default");
+        const websocket = await neuranet.device.connect(username || "default", tasks || [], setTasks, setTaskbox_expanded);
+        setSocket(websocket);
         neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
-        console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);
       }
@@ -178,6 +179,7 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
+            'Sync',
             'Devices',
             'Profile'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
@@ -196,16 +198,14 @@ export default function PermanentDrawerLeft() {
                     >
 
                       {(() => {
-                        switch (index % 5) {
-                          // case 0:
-                          // return <SpaceDashboardOutlinedIcon fontSize='inherit' />;
+                        switch (index % 4) {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
-                            return <DevicesIcon fontSize='inherit' />;
-                          // case 3:
-                          // return <AutoAwesomeIcon fontSize='inherit' />;
+                            return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
+                            return <DevicesIcon fontSize='inherit' />;
+                          case 3:
                             return <AccountBoxIcon fontSize='inherit' />;
                           default:
                             return null;
@@ -267,6 +267,8 @@ export default function PermanentDrawerLeft() {
           switch (activeTab) {
             case 'Files':
               return <Files />;
+            case 'Sync':
+              return <Sync />;
             case 'Devices':
               return <Devices />;
             case 'AI':

@@ -69,8 +69,8 @@ import CircularProgress, {
   CircularProgressProps,
 } from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
-import DataManagementCard from './TreeView';
-import CustomizedTreeView from './TreeView';
+import DataManagementCard from './common/TreeView/TreeView';
+import CustomizedTreeView from './common/TreeView/TreeView';
 import { BorderLeft, NavigateBefore } from '@mui/icons-material';
 import TaskBadge from './TaskBadge';
 import { handlers } from '../handlers'
@@ -374,12 +374,10 @@ export default function EnhancedTable() {
 
         if (!disableFetch) {
           if (!isEqual(newFiles, allFiles)) {
-            console.log("Updating files...");
             setAllFiles(newFiles);
 
 
           } else {
-            console.log("No changes in files.");
           }
         }
       } catch (error) {
@@ -607,7 +605,6 @@ export default function EnhancedTable() {
 
     // Run update devices function after all deletions are complete
     const update_result = await handlers.devices.updateDevice(username);
-    console.log(update_result);
     setUpdates(updates + 1);
   };
 
@@ -686,7 +683,6 @@ export default function EnhancedTable() {
     } catch (error) {
       console.error('Error creating folder:', error);
     }
-    console.log(updates)
     setIsAddingFolder(false);
     setNewFolderName("");
     setDisableFetch(false);

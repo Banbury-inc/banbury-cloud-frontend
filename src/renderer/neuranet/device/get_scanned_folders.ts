@@ -14,16 +14,8 @@ export async function get_scanned_folders(
 
   let device_name = neuranet.device.name();
 
-  let url = ''
 
-  try {
-
-    if (CONFIG.prod) {
-      url = `https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/get_scanned_folders/${username}/`;
-    } else {
-      url = `http://localhost:8080/get_scanned_folders/${username}/`;
-
-    }
+    let url = `${CONFIG.url}/files/get_scanned_folders/${username}/`;
 
 
 
@@ -51,8 +43,5 @@ export async function get_scanned_folders(
       console.log(response.data.result);
       return 'task_add failed';
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
 }
 

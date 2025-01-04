@@ -5,67 +5,127 @@ import fs from 'fs';
 import { arrayBuffer } from 'stream/consumers';
 import { neuranet } from '../../neuranet'
 import { CONFIG } from '../../config/config';
+import { useAuth } from '../../context/AuthContext';
+import { Socket } from 'net';
 
-
-// Buffer to accumulate all file chunks
+// Add state all file chunks with a reset function
 let accumulatedData: Buffer[] = [];
 
-// Function to handle the received file chunk in binary form
-function handleReceivedFileChunk(data: ArrayBuffer) {
-  // Convert ArrayBuffer to Buffer
-  const chunkBuffer = Buffer.from(data);
+function resetAccumulatedData() {
+  accumulatedData = [];
+}
 
-  // Add the chunk to the accumulated data
-  accumulatedData.push(chunkBuffer);
+// Function to handle the received file chunk in binary form
+export function handleReceivedFileChunk(data: ArrayBuffer) {
+  // Convert ArrayBuffer to Buffer and ensure it's a valid chunk
+  try {
+    const chunkBuffer = Buffer.from(data);
+    if (chunkBuffer.length > 0) {
+      accumulatedData.push(chunkBuffer);
+    }
+  } catch (error) {
+    console.error('Error processing file chunk:', error);
+  }
 }
 
 // Function to save the accumulated file after all chunks are received
-function saveFile(fileName: string) {
-  const userHomeDirectory = os.homedir(); // Get the user's home directory
-  const filePath = path.join(userHomeDirectory, 'Downloads', fileName); // Save it in Downloads folder (or any other folder)
+function saveFile(fileName: string, file_path: string) {
 
-  const completeBuffer = Buffer.concat(accumulatedData); // Combine all chunks
+  try {
+    // Always save to Downloads folder
+    const userHomeDirectory = os.homedir();
+    const downloadsPath = path.join(userHomeDirectory, 'Downloads');
 
-  fs.writeFile(filePath, completeBuffer, (err) => {
-    if (err) {
-      console.error('Error saving file:', err);
-    } else {
-      return 'success';
-
+    // Create Downloads directory if it doesn't exist
+    if (!fs.existsSync(downloadsPath)) {
+      fs.mkdirSync(downloadsPath, { recursive: true });
     }
-  });
 
-  // Clear accumulated data after saving
-  accumulatedData = [];
+    // Create final file path in Downloads
+    const filePath = path.join(downloadsPath, fileName);
 
-  return 'success';
+    // Combine all chunks and verify we have data
+    const completeBuffer = Buffer.concat(accumulatedData);
+    if (completeBuffer.length === 0) {
+      throw new Error('No data accumulated to save');
+    }
+
+    // Write file synchronously to ensure completion
+    fs.writeFileSync(filePath, completeBuffer);
+
+    // Clear accumulated data only after successful save
+    resetAccumulatedData();
+    return 'success';
+  } catch (error) {
+    console.error('Error saving file:', error);
+    // Reset accumulated data on error to prevent corruption
+    resetAccumulatedData();
+    throw error;
+  }
 }
 
+function handleTransferError(
+  errorType: 'save_error' | 'file_not_found' | 'device_offline' | 'permission_denied' | 'transfer_failed',
+  fileName: string,
+  tasks: any[] | null,
+  setTasks: ((tasks: any[]) => void) | null,
+  setTaskbox_expanded: ((expanded: boolean) => void) | null,
+  deviceName?: string
+) {
+  if (!tasks || !setTasks || !setTaskbox_expanded) {
+    console.error('Missing required parameters for error handling');
+    return;
+  }
+
+  const errorMessages = {
+    save_error: `Failed to save file: ${fileName}`,
+    file_not_found: `File not found: ${fileName}`,
+    device_offline: `Device ${deviceName} is offline`,
+    permission_denied: `Permission denied for file: ${fileName}`,
+    transfer_failed: `Transfer failed for file: ${fileName}`,
+  };
+
+  const updatedTasks = tasks.map((task: any) =>
+    task.file_name === fileName
+      ? { ...task, status: 'error', error_message: errorMessages[errorType] }
+      : task
+  );
+
+  setTasks(updatedTasks);
+  setTaskbox_expanded(true);
+}
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
-export function createWebSocketConnection(username: string, device_name: string, callback: (socket: WebSocket) => void) {
+export function createWebSocketConnection(
+  username: string,
+  device_name: string,
+  taskInfo: any,
+  tasks: any[],
+  setTasks: (tasks: any[]) => void,
+  setTaskbox_expanded: (expanded: boolean) => void,
+  callback: (socket: WebSocket) => void
+) {
   // Check if the native WebSocket is available (i.e., in browser)
   const WebSocketClient = typeof window !== 'undefined' ? WebSocket : require('ws');
 
   let socket: WebSocket;
 
+  const url_ws = CONFIG.url_ws;
   // Replace the URL with your WebSocket endpoint
-  if (CONFIG.prod) {  
-    socket = new WebSocketClient('wss://banbury-cloud-backend-prod-389236221119.us-east1.run.app/ws/live_data/');
-  } else {
-    socket = new WebSocketClient('ws://0.0.0.0:8082/ws/live_data/');
-  }
+  socket = new WebSocketClient(url_ws);
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
 
   // Open event: When the connection is established
-  socket.onopen = function() {
+  socket.onopen = function () {
 
     const message = {
       message: `Initiate live data connection`,
       username: username,
       requesting_device_name: device_name,
+      run_device_info_loop: CONFIG.run_device_info_loop,
+      run_device_predictions_loop: CONFIG.run_device_predictions_loop,
     };
     socket.send(JSON.stringify(message));
 
@@ -74,127 +134,184 @@ export function createWebSocketConnection(username: string, device_name: string,
   };
 
   // Message event: When a message or file is received from the server
-  socket.onmessage = async function(event: any) {
+  socket.onmessage = async function (event: any) {
+
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      // Handle binary data (e.g., save it to a file)
-      const result =  handleReceivedFileChunk(event.data);
+      handleReceivedFileChunk(event.data);
     } else {
-      const data = JSON.parse(event.data);
-      const message = data.message;
-      const request_type = data.request_type;
-      const file_name = data.file_name;
-      const requesting_device_name = data.requesting_device_name;
-      const sending_device_name = data.sending_device_name;
+      try {
+        const data = JSON.parse(event.data);
 
-      // Handle text-based messages (e.g., JSON data)
+        switch (data.message) {
+          case 'Start file transfer':
+            // Reset accumulated data at the start of new transfer
+            resetAccumulatedData();
+            break;
 
-      // When the server indicates that the file transfer is complete, save the file
-      if (data.message === 'File transfer complete') {
-        saveFile(data.file_name || 'received_file.png'); // Save file with correct name
-        const final_message = {
-          message: `File transaction complete`,
-          username: username,
-          requesting_device_name: requesting_device_name,
-          sending_device_name: sending_device_name,
-        };
-        socket.send(JSON.stringify(final_message));
-        console.log(`Sent: ${JSON.stringify(final_message)}`);
-        return 'success';
-      }
+          case 'File sent successfully':
+          case 'File transfer complete':
+          case 'File transaction complete':
+            if (data.file_name) {  // Only save if we have a filename
+              try {
+                const result = saveFile(data.file_name, data.file_path || '');
+                // Send completion confirmation
+                const final_message = {
+                  message: 'File transaction complete',
+                  username: username,
+                  requesting_device_name: device_name,
+                  sending_device_name: data.sending_device_name,
+                  file_name: data.file_name,
+                  file_path: data.file_path
+                };
+                socket.send(JSON.stringify(final_message));
+                console.log(`Sent completion confirmation:`, final_message);
+              } catch (error) {
+                console.error('Error saving file:', error);
+                handleTransferError(
+                  'save_error',
+                  data.file_name,
+                  tasks,
+                  setTasks,
+                  setTaskbox_expanded
+                );
+              }
+            }
+            break;
 
-      if (request_type === 'file_request') {
-        const directory_name: string = 'BCloud';
-        const directory_path: string = path.join(os.homedir(), directory_name);
-        const file_save_path: string = path.join(directory_path, file_name);
+          case 'File not found':
+            console.log(`File not found: ${data.file_name}`);
+            return 'file_not_found';
 
-        // If the file exists, read the file and send it chunk by chunk
-        const fileStream = fs.createReadStream(file_save_path);
+          case 'Device offline':
+            console.log(`Device offline: ${data.sending_device_name}`);
+            return 'device_offline';
 
-        fileStream.on('data', (chunk) => {
-          socket.send(chunk); // Send the chunk as bytes
-        });
+          case 'Permission denied':
+            console.log(`Permission denied for file: ${data.file_name}`);
+            return 'permission_denied';
 
-        fileStream.on('end', () => {
+          case 'Transfer failed':
+            console.log(`Transfer failed for file: ${data.file_name}`);
+            if (tasks && setTasks && setTaskbox_expanded) {
+              handleTransferError(
+                'transfer_failed',
+                data.file_name,
+                tasks,
+                setTasks,
+                setTaskbox_expanded
+              );
+            }
+            return 'transfer_failed';
+        }
+
+        if (data.request_type === 'device_info') {
+          let device_info = await neuranet.device.getDeviceInfo();
           const message = {
-            message: `File sent successfully`,
-            file_name: file_name,
+            message: `device_info_response`,
             username: username,
-            requesting_device_name: requesting_device_name,
-            sending_device_name: sending_device_name,
+            sending_device_name: device_name,
+            requesting_device_name: data.requesting_device_name,
+            device_info: device_info,
           };
           socket.send(JSON.stringify(message));
+        }
 
+        if (data.request_type === 'file_sync_request') {
+          const download_queue = data.download_queue?.download_queue;
 
-          const newTaskInfo = {
-            name: 'Downloading ' + file_name,
-            device: sending_device_name,
-            status: 'complete',
+          if (download_queue && Array.isArray(download_queue.files)) {
+            const response = await neuranet.files.downloadFileSyncFiles(
+              username,
+              download_queue,
+              [],
+              taskInfo,
+              tasks,
+              setTasks,
+              setTaskbox_expanded,
+              socket as unknown as WebSocket,
+            );
+          } else {
+            console.error('Invalid download queue format received:', download_queue);
           }
+        }
 
-          neuranet.sessions.updateTask(username, newTaskInfo);
+        // Handle existing request types
+        if (data.request_type === 'file_request') {
+          // const directory_name: string = 'BCloud';
+          const file_path = data.file_path;
+          const directory_name: string = file_path;
+          const directory_path: string = path.join(os.homedir(), directory_name);
+          const file_save_path: string = path.join(directory_path);
 
-          let result = 'success';
-          return result;
-        });
 
-        fileStream.on('error', (err: any) => {
-          console.log(`File not found: ${file_name}`);
-          const message = {
-            message: `File not found`,
-            username: username,
-            requesting_device_name: requesting_device_name,
-            file_name: file_name,
-          };
-          socket.send(JSON.stringify(message));
-        });
-      }
-      if (request_type === 'device_info') {
-        let device_info = await neuranet.device.getDeviceInfo();
-        const message = {
-          message: `device_info_response`,
-          username: username,
-          sending_device_name: device_name,
-          requesting_device_name: device_name,
-          device_info: device_info,
-        };
-        socket.send(JSON.stringify(message));
+          const fileStream = fs.createReadStream(file_path);
+
+          fileStream.on('error', () => {
+            const message = {
+              message: 'File not found',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              file_name: data.file_name,
+            };
+            socket.send(JSON.stringify(message));
+            return 'file_not_found';
+          });
+
+          // Add handlers for reading and sending the file
+          fileStream.on('data', (chunk) => {
+            console.log('Sending chunk: ', chunk)
+            socket.send(chunk);
+          });
+
+          fileStream.on('end', () => {
+            const message = {
+              message: 'File sent successfully',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              sending_device_name: device_name,
+              file_name: data.file_name,
+              file_path: data.file_path
+            };
+            socket.send(JSON.stringify(message));
+          });
+        }
+      } catch (error) {
+        console.error('Invalid message format:', error);
+        return 'invalid_response';
       }
     }
   };
 
   // Close event: When the WebSocket connection is closed
-  socket.onclose = function() {
-    console.log('WebSocket connection closed');
-
-    // Declare the device offline
-    //commenting out as url doesnt exist I don't think
-    //neuranet.device.declare_offline(username);
-    console.log('Device declared offline');
+  socket.onclose = function () {
+    return 'connection_closed';
   };
 
   // Error event: When an error occurs with the WebSocket connection
-  socket.onerror = function(error: any) {
+  socket.onerror = function (error: any) {
     console.error('WebSocket error: ', error);
+    return 'connection_error';
   };
 }
 
 // Function to send a download request using the provided socket
-export function download_request(username: string, file_name: string, socket: WebSocket, taskInfo: any) {
+export function download_request(username: string, file_name: string, file_path: string, socket: WebSocket, taskInfo: any) {
   const message = {
-    message: `Download Request`,
+    message: "Download Request",
     username: username,
     file_name: file_name,
+    file_path: file_path,  // This will now be the actual directory path
     requesting_device_name: os.hostname(),
   };
   socket.send(JSON.stringify(message));
-
 }
 
 
 // Usage of the functions
 const username = 'mmills';
 const file_name = 'Logo.png';
+const file_path = path.join(os.homedir(), 'Downloads');  // Use a proper path
 const device_name = os.hostname();
 const taskInfo = {
   task_name: 'download_file',
@@ -202,14 +319,24 @@ const taskInfo = {
   task_status: 'in_progress',
 };
 
-export function connect(username: string) {
 
-  // Create the WebSocket connection and pass the callback to call download_request once the connection is open
-  createWebSocketConnection(username, device_name, (socket) => {
-    // Declare the device online
-    //commenting out as url doesnt exist I don't think
-    //neuranet.device.declare_online(username);
-    // download_request(username, file_name, socket);
+export function connect(
+  username: string,
+  tasks: any[],
+  setTasks: (tasks: any[]) => void,
+  setTaskbox_expanded: (expanded: boolean) => void,
+): Promise<WebSocket> {
+  return new Promise((resolve) => {
+    createWebSocketConnection(
+      username,
+      device_name,
+      taskInfo,
+      tasks,
+      setTasks,
+      setTaskbox_expanded,
+      (socket) => {
+        resolve(socket);
+      }
+    );
   });
-
 }

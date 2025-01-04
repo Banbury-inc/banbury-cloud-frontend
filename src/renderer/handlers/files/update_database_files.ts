@@ -47,19 +47,14 @@ export async function update_database_files(username: string) {
       file_path: file.file_path,
     })) || [];
 
-    console.log('Files to add:', files_to_add);
-    console.log('Files to remove:', files_to_remove);
 
     // Add files to the database if available
     if (files_to_add.length > 0) {
       result = await neuranet.files.addFiles(username, files_to_add);
       if (result === 'success') {
-        console.log('Files added successfully');
       } else {
-        console.error('Error adding files');
       }
     } else {
-      console.log('No files to add');
     }
 
     // Remove files if available
@@ -67,18 +62,13 @@ export async function update_database_files(username: string) {
       const device_name = os.hostname();
       result = await neuranet.files.removeFiles(username, device_name, files_to_remove);
       if (result === 'success') {
-        console.log('Files removed successfully');
       } else {
-        console.error('Error removing files');
       }
     } else {
-      console.log('No files to remove');
     }
-
     return 'success';
 
   } catch (error) {
-    console.error('Error updating database files: ', error);
     return 'error';
   }
 }
