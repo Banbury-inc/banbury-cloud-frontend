@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CONFIG } from '../../config/config';
 
 export async function registerUser(first_name: string,
   last_name: string,
@@ -6,12 +7,13 @@ export async function registerUser(first_name: string,
   password_str: string) {
 
   try {
+    
     const response = await axios.get<{
       result: string;
       username: string;
-      // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo2/' + username + '/');
-    }>('https://website2-v3xlkt54dq-uc.a.run.app/new_register/' + username + '/' + password_str + '/' + first_name + '/' + last_name + '/');
-    // }>('https://website2-v3xlkt54dq-uc.a.run.app/getuserinfo/');
+    }>(`${CONFIG.url}/authentication/new_register/${username}/${password_str}/${first_name}/${last_name}/`, {
+    });
+    
     const result = response.data.result;
     if (result === 'success') {
       console.log("register success");
