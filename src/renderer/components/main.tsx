@@ -115,17 +115,13 @@ export default function PermanentDrawerLeft() {
   useEffect(() => {
     async function setupConnection() {
       try {
-        console.log("connecting to relay server");
-        console.log("Starting receiver");
         const fullDeviceSync = CONFIG.full_device_sync;
         const skipDotFiles = CONFIG.skip_dot_files;
         const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
 
         const websocket = await neuranet.device.connect(username || "default", tasks || [], setTasks, setTaskbox_expanded);
-        console.log(websocket);
         setSocket(websocket);
         neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
-        console.log("receiver has been started");
       } catch (error) {
         console.error("Failed to setup connection:", error);
       }

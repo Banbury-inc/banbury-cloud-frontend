@@ -66,7 +66,6 @@ export default function TaskBoxButton() {
         });
         const result = response.data.result;
         const sessions = response.data.sessions;
-        console.log(sessions);
 
         if (JSON.stringify(sessions) !== JSON.stringify(tasks)) {
           setTasks(sessions); // Only update tasks if sessions are different
