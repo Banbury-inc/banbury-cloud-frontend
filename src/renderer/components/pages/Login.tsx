@@ -220,7 +220,7 @@ export default function SignIn() {
         token: string;
         username: string;
         // }>(CONFIG.url + 'getuserinfo2/' + username + '/');
-      }>(CONFIG.url + 'authentication/getuserinfo4/' + username + '/' + password + '/');
+      }>(CONFIG.url + '/authentication/getuserinfo4/' + username + '/' + password + '/');
       // }>(CONFIG.url + 'getuserinfo/');
       const result = response.data.result;
       if (result === 'success') {
