@@ -3,14 +3,15 @@ name: Build and Release
 on:
   push:
     branches:
-      - main  # Triggers the workflow on every push to the main branch
+      - main
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]  # Add Windows support
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
@@ -21,23 +22,39 @@ jobs:
           node-version: '20.11.0'
           cache: 'npm'
 
+      - name: Install Python and Build Tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-distutils build-essential
+
+      - name: Install Python for macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install python
+
+      - name: Install Build Tools for Windows
+        if: runner.os == 'Windows'
+        run: |
+          npm install --global windows-build-tools
+
       - name: Install dependencies
-        run: npm install --force
+        run: npm install --legacy-peer-deps
 
       - name: Build the app
-        run: npm run build
+        run: npm run build --verbose
 
       - name: Package with Electron Builder
         run: npm run deploy
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Set GH_TOKEN to avoid token error in electron-builder
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-artifacts
           path: packages/**/*
-          
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -45,7 +62,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Ensure full history for tagging
+          fetch-depth: 0
 
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v3
@@ -70,6 +87,7 @@ jobs:
         run: |
           VERSION=$(jq -r .version package.json)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Create and push a new tag
         env:
           VERSION: ${{ env.VERSION }}
@@ -79,6 +97,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "v$VERSION"
           git push https://$PAT@github.com/${{ github.repository }} "v$VERSION"
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
