@@ -61,7 +61,7 @@ function getIconForKind(kind: string) {
 
 export default function FileTreeView() {
   const { updates, files, set_Files, sync_files, setSyncFiles, setUpdates, global_file_path, global_file_path_device, username, setFirstname, setLastname, setGlobal_file_path, setGlobal_file_path_device } = useAuth();
-  const [fileRows, setFileRows] = useState<DatabaseData[]>([]);
+  const [syncRows, setSyncRows] = useState<DatabaseData[]>([]);
   const [expanded, setExpanded] = useState<string[]>(['core']);
   const [allFiles, setAllFiles] = useState<DatabaseData[]>([]);
   const [disableFetch, setDisableFetch] = useState(false);
@@ -87,9 +87,8 @@ export default function FileTreeView() {
         {
           setFirstname,
           setLastname,
-          setFileRows,
+          setSyncRows,
           setAllFiles,
-          set_Files,
           setIsLoading,
           cache: new Map(),
         },
@@ -98,7 +97,7 @@ export default function FileTreeView() {
       setSyncFiles(new_synced_files || []);
       setFetchedFiles(new_synced_files || []);
       const treeData = buildTree(new_synced_files || []);
-      setFileRows(treeData);
+      setSyncRows(treeData);
       if (!disableFetch) {
         setAllFiles(treeData);
       }
@@ -199,7 +198,7 @@ export default function FileTreeView() {
         sx={{ width: '100%', flexGrow: 1, overflow: 'auto' }}
       // onNodeSelect={handleNodeSelect}
       >
-        {renderTreeItems(fileRows)}
+        {renderTreeItems(syncRows)}
       </TreeView>
     </Box>
   )

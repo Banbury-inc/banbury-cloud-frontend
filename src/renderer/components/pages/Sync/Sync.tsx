@@ -162,7 +162,6 @@ export default function Sync() {
     tasks,
     setTasks,
     username,
-    files,
     sync_files,
     first_name,
     last_name,
@@ -179,7 +178,7 @@ export default function Sync() {
   const getSelectedFileNames = () => {
     return selected
       .map((id) => {
-        const file = fileRows.find((file) => file.id === id);
+        const file = syncRows.find((file: any) => file.id === id);
         return file ? file.file_name : null;
       })
       .filter((file_name) => file_name !== null); // Filter out any null values if a file wasn't found
@@ -215,7 +214,7 @@ export default function Sync() {
 
 
 
-  let { isLoading, allFiles, fileRows, setAllFiles } = newUseFileData(
+  let { isLoading, allFiles, syncRows, setSyncRows } = newUseFileData(
     username,
     disableFetch,
     updates,
@@ -223,25 +222,16 @@ export default function Sync() {
     global_file_path_device,
     setFirstname,
     setLastname,
-    files,
-    sync_files,
     devices,
     setDevices,
   );
 
 
-
-
-
-
-  useEffect(() => {
-    let new_devices = fetchDeviceData(username || '', disableFetch, global_file_path || '', {
-      setFirstname,
-      setLastname,
-      setDevices,
-    });
-
-  }, [devices]);
+  const handleFinish = () => {
+    setSelected([]);
+    setSelectedFileNames([]);
+    setUpdates(updates + 1);
+  };
 
 
 
@@ -254,7 +244,7 @@ export default function Sync() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = fileRows.map((n) => n.id);
+      const newSelected = syncRows.map((n: any) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -274,13 +264,13 @@ export default function Sync() {
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
     }
-    const file_name = fileRows.find((file) => file.id === id)?.file_name;
+    const file_name = syncRows.find((file: any) => file.id === id)?.file_name;
     const newSelectedFileNames = newSelected
-      .map((id) => fileRows.find((file) => file.id === id)?.file_name)
+      .map((id) => syncRows.find((file: any) => file.id === id)?.file_name)
       .filter((name) => name !== undefined) as string[];
     console.log(newSelectedFileNames);
     const newSelectedFilePaths = newSelected
-      .map((id) => fileRows.find((file) => file.id === id)?.file_path)
+      .map((id) => syncRows.find((file: any) => file.id === id)?.file_path)
       .filter((name) => name !== undefined) as string[];
     console.log(newSelectedFilePaths[0]);
     const directoryName = 'BCloud';
@@ -359,11 +349,6 @@ export default function Sync() {
     }
   };
 
-  const handleFinish = () => {
-    setSelected([]);
-    setSelectedFileNames([]);
-    setUpdates(updates + 1);
-  };
 
   const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
@@ -380,12 +365,12 @@ export default function Sync() {
     }
     setSelected(newSelected);
 
-    const file_name = fileRows.find((file) => file._id === id)?.file_name;
+    const file_name = syncRows.find((file: any) => file._id === id)?.file_name;
     const newSelectedFileNames = newSelected
-      .map((id) => fileRows.find((file) => file._id === id)?.file_name)
+      .map((id) => syncRows.find((file: any) => file._id === id)?.file_name)
       .filter((name) => name !== undefined) as string[];
     const newSelectedDeviceNames = newSelected
-      .map((id) => fileRows.find((file) => file._id === id)?.device_name)
+      .map((id) => syncRows.find((file: any) => file._id === id)?.device_name)
       .filter((name) => name !== undefined) as string[];
     setSelectedFileNames(newSelectedFileNames);
     setSelectedDeviceNames(newSelectedDeviceNames);
@@ -407,7 +392,7 @@ export default function Sync() {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   // Calculate empty rows for pagination
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - fileRows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - syncRows.length) : 0;
 
   function stableSort<T>(array: T[], comparator: (a: T, b: T) => number): T[] {
     return array
@@ -534,7 +519,7 @@ export default function Sync() {
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
-            {fileRows.length === 0 ? (
+            {syncRows.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 5 }}>
                 <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
                 <Typography variant="h5" color="textSecondary">
@@ -553,7 +538,7 @@ export default function Sync() {
                     orderBy={orderBy}
                     onSelectAllClick={handleSelectAllClick}
                     onRequestSort={handleRequestSort}
-                    rowCount={fileRows.length}
+                    rowCount={syncRows.length}
                   />
                   <TableBody>
                     {isLoading
@@ -582,7 +567,7 @@ export default function Sync() {
                           </TableCell>
                         </TableRow>
                       ))
-                      : stableSort(fileRows, getComparator(order, orderBy))
+                      : stableSort(syncRows, getComparator(order, orderBy))
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((row, index) => {
                           const isItemSelected = isSelected(row._id as string);
@@ -740,7 +725,7 @@ export default function Sync() {
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
-                  count={fileRows.length}
+                  count={syncRows.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}

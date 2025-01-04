@@ -13,9 +13,8 @@ export const fetchFileSyncData = async (
   options: {
     setFirstname: (value: string) => void;
     setLastname: (value: string) => void;
-    setFileRows: (value: DatabaseData[]) => void;
+    setSyncRows: (value: DatabaseData[]) => void;
     setAllFiles: (value: DatabaseData[]) => void;
-    set_Files: (value: any[]) => void;
     setIsLoading: (value: boolean) => void;
     cache: Map<string, DatabaseData[]>;
   },

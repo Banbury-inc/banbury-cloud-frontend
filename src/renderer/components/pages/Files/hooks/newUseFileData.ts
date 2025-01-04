@@ -77,10 +77,10 @@ export const newUseFileData = (
 
     // First map devices to files to include availability
     const regularFilesData = mapDevicesToFiles(devices, files);
-    
+
     // Combine regular files and sync files
-    const allFilesData = [...regularFilesData, ...sync_files];
-    
+    const allFilesData = [...regularFilesData];
+
 
     setAllFiles(allFilesData);
 
@@ -138,6 +138,6 @@ export const newUseFileData = (
     fileRows,
     setAllFiles,
   };
-}; 
+};
 
 

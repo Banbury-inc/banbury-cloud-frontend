@@ -20,14 +20,12 @@ export const newUseFileData = (
   global_file_path_device: string | null,
   setFirstname: (name: string) => void,
   setLastname: (name: string) => void,
-  files: any,
-  sync_files: any,
   devices: any,
   setDevices: (devices: any[]) => void,
 ) => {
   const [isLoading, setIsLoading] = useState(true);
   const [allFiles, setAllFiles] = useState<any[]>([]);
-  const [fileRows, setFileRows] = useState<any[]>([]);
+  const [syncRows, setSyncRows] = useState<any[]>([]);
 
   // Initial load effect
   useEffect(() => {
@@ -35,15 +33,14 @@ export const newUseFileData = (
       const sync_files_data = await fetchFileSyncData(username || '', global_file_path || '', {
         setFirstname,
         setLastname,
-        setFileRows,
+        setSyncRows,
         setAllFiles,
         setIsLoading,
-        set_Files,
         cache: new Map(),
       });
 
       if (sync_files_data) {
-        setFileRows(sync_files_data);
+        setSyncRows(sync_files_data);
         setAllFiles(sync_files_data);
       }
       setIsLoading(false);
@@ -55,7 +52,7 @@ export const newUseFileData = (
   // Reset everything when updates change
   useEffect(() => {
     setIsLoading(true);
-    setFileRows([]);
+    setSyncRows([]);
     setAllFiles([]);
   }, [updates]);
 
@@ -66,7 +63,7 @@ export const newUseFileData = (
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!devices || !files) {
+      if (!devices) {
         fetchDeviceData(username || '', disableFetch, global_file_path || '', {
           setFirstname,
           setLastname,
@@ -78,25 +75,24 @@ export const newUseFileData = (
       const sync_files_data = await fetchFileSyncData(username || '', global_file_path || '', {
         setFirstname,
         setLastname,
-        setFileRows,
+        setSyncRows,
         setAllFiles,
-        set_Files,
         setIsLoading,
         cache: new Map(),
       });
 
       if (sync_files_data) {
-        setFileRows([]);
-        setFileRows(sync_files_data);
+        setSyncRows([]);
+        setSyncRows(sync_files_data);
       }
 
       setIsLoading(false);
     };
 
     fetchData();
-  }, [global_file_path, global_file_path_device, files, sync_files, devices, disableFetch, username, updates]);
+  }, [global_file_path, global_file_path_device, devices, disableFetch, username, updates]);
 
-  return { isLoading, allFiles, fileRows, setAllFiles };
+  return { isLoading, allFiles, syncRows, setSyncRows };
 };
 
 
