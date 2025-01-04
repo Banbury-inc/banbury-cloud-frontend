@@ -29,6 +29,29 @@ export const newUseFileData = (
   const [allFiles, setAllFiles] = useState<any[]>([]);
   const [fileRows, setFileRows] = useState<any[]>([]);
 
+  // Initial load effect
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const sync_files_data = await fetchFileSyncData(username || '', global_file_path || '', {
+        setFirstname,
+        setLastname,
+        setFileRows,
+        setAllFiles,
+        setIsLoading,
+        set_Files,
+        cache: new Map(),
+      });
+
+      if (sync_files_data) {
+        setFileRows(sync_files_data);
+        setAllFiles(sync_files_data);
+      }
+      setIsLoading(false);
+    };
+
+    fetchInitialData();
+  }, [updates]); // Empty dependency array for initial load
+
   // Reset everything when updates change
   useEffect(() => {
     setIsLoading(true);
@@ -42,7 +65,7 @@ export const newUseFileData = (
   console.log('updates', updates);
 
   const set_Files = (files: any[]) => {
-    setFileRows([]);
+    console.log('files', files);
   };
 
   useEffect(() => {
@@ -67,6 +90,7 @@ export const newUseFileData = (
       });
 
       if (sync_files_data) {
+        setFileRows([]);
         setFileRows(sync_files_data);
       }
 
