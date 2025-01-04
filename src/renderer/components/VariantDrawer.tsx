@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Files from './pages/Files/Files';
+import Sync from './pages/Sync/Sync';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -21,6 +22,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import FolderIcon from '@mui/icons-material/Folder';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import EnhancedTable from "./Table"
@@ -144,7 +146,7 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Dashboard', 'Files', 'Devices'].map((text, index) => (
+          {['Files', 'Sync', 'Devices'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 onClick={() => setActiveTab(text)}
@@ -164,9 +166,9 @@ export default function MiniDrawer() {
                   {(() => {
                     switch (index % 3) {
                       case 0:
-                        return <DashboardIcon />;
-                      case 1:
                         return <FolderIcon />;
+                      case 1:
+                        return <CloudOutlinedIcon />;
                       case 2:
                         return <DevicesIcon />;
                       default:
@@ -208,6 +210,7 @@ export default function MiniDrawer() {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         {activeTab === 'Files' && <Files />}
+        {activeTab === 'Sync' && <Sync />}
         {activeTab === 'Devices' && <Devices />}
         {activeTab === 'Settings' && <Typography>Settings Content</Typography>}
       </Box>

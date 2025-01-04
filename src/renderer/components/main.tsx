@@ -21,6 +21,7 @@ import Settings from './pages/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
+import Sync from './pages/Sync/Sync';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
@@ -106,7 +107,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function PermanentDrawerLeft() {
   const location = useLocation();
   const theme = useTheme();
-  const initialActiveTab = location.state?.activeTab || 'Files';
+  const initialActiveTab = location.state?.activeTab || 'Sync';
   const [activeTab, setActiveTab] = React.useState(initialActiveTab);
   const { username, redirect_to_login, tasks, setTasks, setTaskbox_expanded, websocket, setSocket } = useAuth();
   const [open, setOpen] = React.useState(false);
@@ -181,6 +182,7 @@ export default function PermanentDrawerLeft() {
 
         <List>
           {['Files',
+            'Sync',
             'Devices',
             'Profile'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
@@ -203,8 +205,10 @@ export default function PermanentDrawerLeft() {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
-                            return <DevicesIcon fontSize='inherit' />;
+                            return <CloudSyncIcon fontSize='inherit' />;
                           case 2:
+                            return <DevicesIcon fontSize='inherit' />;
+                          case 3:
                             return <AccountBoxIcon fontSize='inherit' />;
                           default:
                             return null;
@@ -266,6 +270,8 @@ export default function PermanentDrawerLeft() {
           switch (activeTab) {
             case 'Files':
               return <Files />;
+            case 'Sync':
+              return <Sync />;
             case 'Devices':
               return <Devices />;
             case 'AI':
