@@ -13,6 +13,7 @@ interface AuthContextType {
   fileRows: any[];
   global_file_path: string | null;
   global_file_path_device: string | null;
+  websocket: WebSocket | null;
   setUsername: (username: string | null) => void;
   setUpdates: (updates: number) => void;
   setPassword: (password: string | null) => void;
@@ -25,11 +26,11 @@ interface AuthContextType {
   set_Files: (files: any[] | []) => void;
   setSyncFiles: (sync_files: any[] | []) => void;
   setTasks: (tasks: any[] | null) => void;
+  setSocket: (socket: WebSocket) => void;
   isAuthenticated: boolean; // Change the type to boolean directly
   redirect_to_login: boolean;
   setredirect_to_login: (redict_to_login: boolean) => void;
-  taskbox_expanded: boolean;
-  setTaskbox_expanded: (taskbox_expanded: boolean) => void;
+  taskbox_expanded: boolean; setTaskbox_expanded: (taskbox_expanded: boolean) => void;
   run_receiver: boolean
   files_is_loading: boolean
   setrun_receiver: (run_receiver: boolean) => void;
@@ -59,6 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [taskbox_expanded, setTaskbox_expanded] = useState<boolean>(false); // Add redirect_to_login state
   const [run_receiver, setrun_receiver] = useState<boolean>(false); // Add redirect_to_login state
   const [files_is_loading, setFilesIsLoading] = useState<boolean>(false); // Add redirect_to_login state
+  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
 
   const setUsername = (username: string | null) => {
     setUser(username);
@@ -98,6 +100,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const setFileRows = (fileRows: any[] | []) => {
     setFiles(fileRows);
   };
+  const setSocket = (socket: WebSocket) => {
+    setWebsocket(socket)
+  }
 
 
 
@@ -120,6 +125,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       global_file_path_device,
       files_is_loading,
       updates,
+      websocket,
       setUsername,
       setPassword,
       setFirstname,
@@ -133,6 +139,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUpdates,
       setGlobal_file_path_device,
       setFilesIsLoading,
+      setSocket,
       isAuthenticated,
       redirect_to_login,
       setredirect_to_login,
@@ -140,6 +147,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setTaskbox_expanded,
       run_receiver,
       setrun_receiver,
+
 
     }}>
       {children}

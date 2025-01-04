@@ -108,7 +108,7 @@ export default function PermanentDrawerLeft() {
   const theme = useTheme();
   const initialActiveTab = location.state?.activeTab || 'Files';
   const [activeTab, setActiveTab] = React.useState(initialActiveTab);
-  const { username, redirect_to_login, tasks, setTasks, setTaskbox_expanded } = useAuth();
+  const { username, redirect_to_login, tasks, setTasks, setTaskbox_expanded, websocket, setSocket } = useAuth();
   const [open, setOpen] = React.useState(false);
 
   useEffect(() => {
@@ -118,10 +118,11 @@ export default function PermanentDrawerLeft() {
         console.log("Starting receiver");
         const fullDeviceSync = CONFIG.full_device_sync;
         const skipDotFiles = CONFIG.skip_dot_files;
-        // Determine the directory path based on the fullDeviceSync flag
         const bcloudDirectoryPath = fullDeviceSync ? os.homedir() : path.join(os.homedir(), 'BCloud');
 
-        neuranet.device.connect(username || "default", tasks || [], setTasks, setTaskbox_expanded);
+        const websocket = await neuranet.device.connect(username || "default", tasks || [], setTasks, setTaskbox_expanded);
+        console.log(websocket);
+        setSocket(websocket);
         neuranet.device.detectFileChanges(username || "default", bcloudDirectoryPath);
         console.log("receiver has been started");
       } catch (error) {

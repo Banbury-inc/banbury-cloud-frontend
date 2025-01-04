@@ -105,7 +105,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells
           .filter((headCell: HeadCell) => {
             const isVisibleOnCurrentScreen = !isSmallScreen || headCell.isVisibleOnSmallScreen;
-            
+
             if (isCloudSync) {
               // Show only these specific columns in Cloud Sync view
               const cloudSyncColumns = ['file_name', 'file_size', 'device_ids', 'file_priority'];
@@ -154,7 +154,7 @@ export default function Files() {
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
-  const { global_file_path, global_file_path_device, setGlobal_file_path } = useAuth();
+  const { global_file_path, global_file_path_device, setGlobal_file_path, websocket } = useAuth();
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [disableFetch, setDisableFetch] = useState(false);
@@ -325,6 +325,7 @@ export default function Files() {
           tasks || [],
           setTasks,
           setTaskbox_expanded,
+          websocket as unknown as WebSocket,
         );
         if (response === 'No file selected') {
           let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
@@ -392,6 +393,7 @@ export default function Files() {
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
   const handleDownloadClick = async () => {
+    console.log(websocket);
     setSelectedFiles(selected);
     console.log(selectedFileNames);
     console.log('handling download click');
@@ -399,9 +401,18 @@ export default function Files() {
     let task_description = 'Downloading ' + selectedFileNames.join(', ');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
-    console.log(selectedFileNames);  
+    console.log(selectedFileNames);
 
-    let response = await handlers.files.downloadFile(username ?? '', selectedFileNames, selectedDeviceNames, taskInfo, tasks || [], setTasks, setTaskbox_expanded);
+    let response = await handlers.files.downloadFile(
+      username ?? '',
+      selectedFileNames,
+      selectedDeviceNames,
+      taskInfo,
+      tasks || [],
+      setTasks,
+      setTaskbox_expanded,
+      websocket as unknown as WebSocket,
+    );
 
     if (response === 'No file selected' || response === 'file_not_found') {
       let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
@@ -499,7 +510,7 @@ export default function Files() {
     return 0;
   }
 
-  const handlePriorityChange = async (row : any, newValue: number | null) => {
+  const handlePriorityChange = async (row: any, newValue: number | null) => {
     if (newValue === null) return;
 
 
@@ -517,7 +528,7 @@ export default function Files() {
     }
 
 
-    
+
   };
 
   const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
@@ -712,262 +723,262 @@ export default function Files() {
             ) : (
               <>
                 <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
-                    <EnhancedTableHead
-                      numSelected={selected.length}
-                      order={order}
-                      orderBy={orderBy}
-                      onSelectAllClick={handleSelectAllClick}
-                      onRequestSort={handleRequestSort}
-                      rowCount={fileRows.length}
-                    />
-                    <TableBody>
-                      {isLoading
-                        ? Array.from(new Array(rowsPerPage)).map((_, index) => (
-                            <TableRow key={`skeleton-${index}`}>
-                              <TableCell padding="checkbox">
-                                <Skeleton variant="rectangular" width={24} height={24} />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                              <TableCell>
-                                <Skeleton variant="text" width="100%" />
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        : stableSort(fileRows, getComparator(order, orderBy))
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((row, index) => {
-                              const isItemSelected = isSelected(row.id as number);
-                              const labelId = `enhanced-table-checkbox-${index}`;
+                  <EnhancedTableHead
+                    numSelected={selected.length}
+                    order={order}
+                    orderBy={orderBy}
+                    onSelectAllClick={handleSelectAllClick}
+                    onRequestSort={handleRequestSort}
+                    rowCount={fileRows.length}
+                  />
+                  <TableBody>
+                    {isLoading
+                      ? Array.from(new Array(rowsPerPage)).map((_, index) => (
+                        <TableRow key={`skeleton-${index}`}>
+                          <TableCell padding="checkbox">
+                            <Skeleton variant="rectangular" width={24} height={24} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width="100%" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                      : stableSort(fileRows, getComparator(order, orderBy))
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((row, index) => {
+                          const isItemSelected = isSelected(row.id as number);
+                          const labelId = `enhanced-table-checkbox-${index}`;
 
-                              return (
-                                <TableRow
-                                  hover
-                                  onClick={(event) => handleClick(event, row.id as number)}
-                                  role="checkbox"
-                                  aria-checked={isItemSelected}
-                                  tabIndex={-1}
-                                  key={row.id}
-                                  selected={isItemSelected}
-                                  onMouseEnter={() => setHoveredRowId(row.id as number)} // Track hover state
-                                  onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
+                          return (
+                            <TableRow
+                              hover
+                              onClick={(event) => handleClick(event, row.id as number)}
+                              role="checkbox"
+                              aria-checked={isItemSelected}
+                              tabIndex={-1}
+                              key={row.id}
+                              selected={isItemSelected}
+                              onMouseEnter={() => setHoveredRowId(row.id as number)} // Track hover state
+                              onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
+                            >
+                              <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
+                                {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
+                                  <Checkbox
+                                    color="primary"
+                                    checked={isItemSelected}
+                                    inputProps={{ 'aria-labelledby': labelId }}
+                                  />
+                                ) : null}
+                              </TableCell>
+
+                              <TableCell
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                                component="th"
+                                id={labelId}
+                                scope="row"
+                                padding="normal"
+                              >
+                                <ButtonBase
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleFileNameClick(row.id as number);
+                                  }}
+                                  style={{ textDecoration: 'none' }}
                                 >
-                                  <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
-                                    {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
-                                      <Checkbox
-                                        color="primary"
-                                        checked={isItemSelected}
-                                        inputProps={{ 'aria-labelledby': labelId }}
-                                      />
-                                    ) : null}
-                                  </TableCell>
+                                  {row.file_name}
+                                </ButtonBase>
+                              </TableCell>
 
-                                  <TableCell
-                                    sx={{
-                                      borderBottomColor: '#424242',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }}
-                                    component="th"
-                                    id={labelId}
-                                    scope="row"
-                                    padding="normal"
-                                  >
-                                    <ButtonBase
-                                      onClick={(event) => {
-                                          event.stopPropagation();
-                                          handleFileNameClick(row.id as number);
-                                        }}
-                                        style={{ textDecoration: 'none' }}
-                                      >
-                                        {row.file_name}
-                                    </ButtonBase>
-                                  </TableCell>
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.file_size}
+                              </TableCell>
 
-                                  <TableCell
-                                    align="left"
-                                    padding="normal"
-                                    sx={{
-                                      borderBottomColor: '#424242',
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }}
-                                  >
-                                    {row.file_size}
-                                  </TableCell>
+                              {(!isCloudSync) && (
+                                <TableCell
+                                  align="left"
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {row.kind}
+                                </TableCell>
+                              )}
 
-                                  {(!isCloudSync) && (
-                                    <TableCell
-                                      align="left"
+                              {(!isCloudSync) && (
+                                <TableCell
+                                  align="left"
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {row.device_name}
+                                </TableCell>
+                              )}
+
+                              {(!isCloudSync) && (
+                                <TableCell
+                                  align="left"
+                                  padding="normal"
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    color:
+                                      row.available === 'Available'
+                                        ? '#1DB954'
+                                        : row.available === 'Unavailable'
+                                          ? 'red'
+                                          : 'inherit', // Default color is 'inherit'
+                                  }}
+                                >
+                                  {row.available}
+                                </TableCell>
+                              )}
+
+                              {isCloudSync && (
+                                <TableCell
+                                  align="left"
+                                  padding="normal"
+                                  onClick={(e) => e.stopPropagation()}
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    width: '75%',
+                                    position: 'relative',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
+                                    borderRadius: '2px',  // Optional: slight rounding of corners
+                                  }}>
+                                    <LinearProgress
+                                      variant="determinate"
+                                      value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
                                       sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      {row.kind}
-                                    </TableCell>
-                                  )}
-
-                                  {(!isCloudSync) && (
-                                    <TableCell
-                                      align="left"
-                                      sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      {row.device_name}
-                                    </TableCell>
-                                  )}
-
-                                  {(!isCloudSync) && (
-                                    <TableCell
-                                      align="left"
-                                      padding="normal"
-                                      sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        color:
-                                          row.available === 'Available'
-                                            ? '#1DB954'
-                                            : row.available === 'Unavailable'
-                                            ? 'red'
-                                            : 'inherit', // Default color is 'inherit'
-                                      }}
-                                    >
-                                      {row.available}
-                                    </TableCell>
-                                  )}
-
-                                  {isCloudSync && (
-                                    <TableCell
-                                      align="left"
-                                      padding="normal"
-                                      onClick={(e) => e.stopPropagation()} 
-                                      sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        width: '75%', 
-                                        position: 'relative',
-                                        border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
-                                        borderRadius: '2px',  // Optional: slight rounding of corners
-                                      }}>
-                                        <LinearProgress
-                                          variant="determinate"
-                                          value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
-                                          sx={{ 
-                                            flexGrow: 1,
-                                            height: 16,
-                                            backgroundColor: 'transparent',
-                                            borderRadius: '1px',  // Match the outer border radius
-                                            '& .MuiLinearProgress-bar': {
-                                              backgroundColor: (theme) => {
-                                                const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
-                                                if (percentage >= 80) return '#1DB954';
-                                                if (percentage >= 50) return '#CD853F';
-                                                return '#FF4444';
-                                              }
-                                            }
-                                          }}
-                                        />
-                                        <Typography 
-                                          variant="body2" 
-                                          sx={{ 
-                                            position: 'absolute',
-                                            width: '100%',
-                                            textAlign: 'center',
-                                            color: '#ffffff',
-                                            mixBlendMode: 'normal'
-                                          }}
-                                        >
-                                          {Array.isArray(row.device_ids) ? 
-                                            `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` : 
-                                            '0%'
+                                        flexGrow: 1,
+                                        height: 16,
+                                        backgroundColor: 'transparent',
+                                        borderRadius: '1px',  // Match the outer border radius
+                                        '& .MuiLinearProgress-bar': {
+                                          backgroundColor: (theme) => {
+                                            const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
+                                            if (percentage >= 80) return '#1DB954';
+                                            if (percentage >= 50) return '#CD853F';
+                                            return '#FF4444';
                                           }
-                                        </Typography>
-                                      </Box>
-                                    </TableCell>
-                                  )}
-
-                                  {isCloudSync && (
-                                    <TableCell
-                                      align="left"
-                                      padding="normal"
-                                      onClick={(e) => e.stopPropagation()} 
+                                        }
+                                      }}
+                                    />
+                                    <Typography
+                                      variant="body2"
                                       sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
+                                        position: 'absolute',
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        color: '#ffffff',
+                                        mixBlendMode: 'normal'
                                       }}
                                     >
-                                      <Rating
-                                        name={`priority-${row.id}`}
-                                        value={Number(row.file_priority)}
-                                        max={5}
-                                        onChange={(event, newValue) => handlePriorityChange(row, newValue)}
-                                        sx={{
-                                          fontSize: '16px',
-                                          '& .MuiRating-iconFilled': {
-                                            color: (theme) => {
-                                              const priority = Number(row.file_priority);
-                                              if (priority >= 4) return '#FF9500';
-                                              if (priority === 3) return '#FFCC00';
-                                              return '#1DB954';
-                                            }
-                                          }
-                                        }}
-                                      />
-                                    </TableCell>
-                                  )}
+                                      {Array.isArray(row.device_ids) ?
+                                        `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` :
+                                        '0%'
+                                      }
+                                    </Typography>
+                                  </Box>
+                                </TableCell>
+                              )}
 
-                                  {(!isCloudSync) && (
-                                    <TableCell
-                                      padding="normal"
-                                      align="right"
-                                      sx={{
-                                        borderBottomColor: '#424242',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      {row.date_uploaded}
-                                    </TableCell>
-                                  )}
-                                </TableRow>
-                              );
-                            })}
-                    </TableBody>
-                  </Table>
+                              {isCloudSync && (
+                                <TableCell
+                                  align="left"
+                                  padding="normal"
+                                  onClick={(e) => e.stopPropagation()}
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  <Rating
+                                    name={`priority-${row.id}`}
+                                    value={Number(row.file_priority)}
+                                    max={5}
+                                    onChange={(event, newValue) => handlePriorityChange(row, newValue)}
+                                    sx={{
+                                      fontSize: '16px',
+                                      '& .MuiRating-iconFilled': {
+                                        color: (theme) => {
+                                          const priority = Number(row.file_priority);
+                                          if (priority >= 4) return '#FF9500';
+                                          if (priority === 3) return '#FFCC00';
+                                          return '#1DB954';
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
+                              )}
+
+                              {(!isCloudSync) && (
+                                <TableCell
+                                  padding="normal"
+                                  align="right"
+                                  sx={{
+                                    borderBottomColor: '#424242',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {row.date_uploaded}
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          );
+                        })}
+                  </TableBody>
+                </Table>
                 </TableContainer>
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25, 50, 100]}

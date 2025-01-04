@@ -5,3 +5,4 @@ export * from './updateFilePriority';
 export * from './getDownloadQueue';
 export * from './downloadFileSyncFiles';
 export * from './runPipeline';
+export * from './addDeviceIdtoFileSyncFiles';

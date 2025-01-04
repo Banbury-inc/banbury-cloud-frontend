@@ -1,65 +1,48 @@
+import path from 'path';
+import os from 'os';
 import { neuranet } from '../../neuranet'
+import { useAuth } from '../../context/AuthContext';
 
-export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any): Promise<string> {
+export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any, websocket: WebSocket): Promise<string> {
   return new Promise((resolve, reject) => {
     if (files.length === 0 || devices.length === 0) {
       reject('No file selected');
       return;
     }
 
-    let completedTransfers = 0;
-    const totalTransfers = files.length * devices.length;
+    // Add message handler for this specific file transfer
+    const messageHandler = (event: MessageEvent) => {
+      if (typeof event.data === 'string') {
+        try {
+          const data = JSON.parse(event.data);
 
-    files.forEach((file_name) => {
-      devices.forEach((device_name) => {
-        neuranet.device.createWebSocketConnection(username, device_name, taskInfo, tasks, setTasks, setTaskbox_expanded, (socket: any) => {
-          socket.onmessage = (event: any) => {
-            try {
-              const data = JSON.parse(event.data);
-              console.log(data);
-              
-              switch (data.message) {
-                case 'File transfer complete':
-                  completedTransfers++;
-                  if (completedTransfers === totalTransfers) {
-                    resolve('success');
-                  }
-                  break;
-                case 'File not found':
-                  reject('file_not_found');
-                  break;
-                case 'Device offline':
-                  reject('device_offline');
-                  break;
-                case 'Permission denied':
-                  reject('permission_denied');
-                  break;
-                case 'Transfer failed':
-                  reject('transfer_failed');
-                  break;
-                // Add more cases as needed
-              }
-            } catch (error) {
-              reject('invalid_response');
-            }
-          };
+          // Check for success conditions
+          if (data.message === 'File transaction complete' && data.file_name === files[0]) {
+            websocket.removeEventListener('message', messageHandler);
+            resolve('success');
+          }
 
-          socket.onerror = () => {
-            reject('connection_error');
-          };
+          // Check for error conditions
+          if (['File not found', 'Device offline', 'Permission denied', 'Transfer failed'].includes(data.message)) {
+            websocket.removeEventListener('message', messageHandler);
+            reject(data.message);
+          }
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      }
+    };
 
-          socket.onclose = () => {
-            reject('connection_closed');
-          };
+    // Add the message handler
+    websocket.addEventListener('message', messageHandler);
 
-          neuranet.device.download_request(username, file_name, socket, taskInfo);
-        });
-      });
-    });
+    // Send the download request
+    neuranet.device.download_request(username, files[0], files[0], websocket, taskInfo);
 
     // Optional: Add timeout
     setTimeout(() => {
-      reject('timeout');
+      websocket.removeEventListener('message', messageHandler);
+      reject('Download request timed out');
     }, 30000); // 30 second timeout
   });
 }

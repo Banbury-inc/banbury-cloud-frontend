@@ -123,7 +123,7 @@ function saveCredentials(credentials: Record<string, string>): void {
 export default function SignIn() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [redirect_to_register, setredirect_to_register] = useState(false);
-  const { setUsername } = useAuth(); // Destructure setUsername from useAuth
+  const { setUsername, websocket, setSocket } = useAuth(); // Destructure setUsername from useAuth
   const [incorrect_login, setincorrect_login] = useState(false);
   const [server_offline, setserver_offline] = useState(false);
   const incorrect_login_message: Message = {
@@ -158,7 +158,6 @@ export default function SignIn() {
     if (email && password) {
       try {
 
-        let senderSocket = await neuranet.networking.connect();
         const result = await send_login_request(email, password);
         console.log(result);
         setUsername(email);
