@@ -5,6 +5,7 @@ import { fileWatcherEmitter } from '../../../../neuranet/device/watchdog';
 import path from 'path';
 import os from 'os';
 import { fetchDeviceData } from '../utils/fetchDeviceData';
+import { fetchFileSyncData } from '../utils/fetchFileSyncData';
 
 const file_name: string = 'mmills_database_snapshot.json';
 const directory_name: string = 'BCloud';
@@ -28,113 +29,54 @@ export const newUseFileData = (
   const [allFiles, setAllFiles] = useState<any[]>([]);
   const [fileRows, setFileRows] = useState<any[]>([]);
 
+  // Reset everything when updates change
+  useEffect(() => {
+    setIsLoading(true);
+    setFileRows([]);
+    setAllFiles([]);
+  }, [updates]);
 
+  console.log('fallFiles', allFiles);
+  console.log('sync_files', sync_files);
+  console.log('fileRows', fileRows);
+  console.log('updates', updates);
 
-
-  // Helper function to map devices to files
-  const mapDevicesToFiles = (devices: any[], sync_files: any[]) => {
-    return devices.flatMap((device, deviceIndex) => {
-      const deviceFiles = sync_files.filter((file: any) => file.device_name === device.device_name);
-      return deviceFiles.map((sync_file: any, fileIndex: any) => ({
-        _id: sync_file._id,
-        file_name: sync_file.file_name,
-        file_size: sync_file.file_size,
-        kind: sync_file.kind,
-        file_path: sync_file.file_path,
-        date_uploaded: sync_file.date_uploaded,
-        deviceID: (deviceIndex + 1).toString(),
-        device_name: device.device_name,
-        helpers: 0,
-        available: device.online ? 'Available' : 'Unavailable',
-        priority: sync_file.priority,
-        device_ids: device.device_ids,
-      }));
-    });
+  const set_Files = (files: any[]) => {
+    setFileRows([]);
   };
 
-  // Filter files effect
   useEffect(() => {
-    if (!devices || !files) {
-      // Fetch devices if they're not available
-      fetchDeviceData(username || '', disableFetch, global_file_path || '', {
+    const fetchData = async () => {
+      if (!devices || !files) {
+        fetchDeviceData(username || '', disableFetch, global_file_path || '', {
+          setFirstname,
+          setLastname,
+          setDevices,
+        });
+        return;
+      }
+
+      const sync_files_data = await fetchFileSyncData(username || '', global_file_path || '', {
         setFirstname,
         setLastname,
-        setDevices,
-      })
-        .then((new_devices) => {
-          if (new_devices) {
-            setDevices(new_devices);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching device data:", error);
-        });
-      return;
-    }
+        setFileRows,
+        setAllFiles,
+        set_Files,
+        setIsLoading,
+        cache: new Map(),
+      });
 
-    // First map devices to files to include availability
-    const regularFilesData = mapDevicesToFiles(devices, files);
-
-    // Combine regular files and sync files
-    const allFilesData = [...sync_files];
-
-
-    setAllFiles(allFilesData);
-
-    // Then filter the mapped files
-    const file_path = global_file_path?.split('/').slice(3).join('/');
-    const pathToShow = '/' + (file_path || '/');
-    const pathSegments = pathToShow.split('/').filter(Boolean).length;
-
-    const filteredFiles = allFilesData.filter((file: any) => {
-      if (!global_file_path && !global_file_path_device) {
-        return true; // Show all files
+      if (sync_files_data) {
+        setFileRows(sync_files_data);
       }
 
-      if (global_file_path === "Core/Cloud Sync") {
-        setFileRows(sync_files);
-        // Show any file that contains "Cloud Sync" in its path
-        return sync_files;
-      }
-
-      if (!global_file_path && global_file_path_device) {
-        return file.device_name === global_file_path_device; // Filter by device
-      }
-
-      if (!file.file_path) {
-        return false; // Skip files with undefined filePath
-      }
-
-      const fileSegments = file.file_path.split('/').filter(Boolean).length;
-      const isInSameDirectory = file.file_path.startsWith(pathToShow) && fileSegments === pathSegments + 1;
-      const isFile = file.file_path === pathToShow && file.kind !== 'Folder';
-
-      return isInSameDirectory || isFile;
-    });
-
-    if (global_file_path === "Core/Cloud Sync") {
-      setFileRows(sync_files);
-    } else {
-      setFileRows(filteredFiles);
-    }
-
-    if (isLoading) {
       setIsLoading(false);
-    }
+    };
 
-  }, [global_file_path, global_file_path_device, files, sync_files, devices, disableFetch, username, setFirstname, setLastname, setDevices]);
+    fetchData();
+  }, [global_file_path, global_file_path_device, files, sync_files, devices, disableFetch, username, updates]);
 
-
-
-
-
-
-  return {
-    isLoading,
-    allFiles,
-    fileRows,
-    setAllFiles,
-  };
+  return { isLoading, allFiles, fileRows, setAllFiles };
 };
 
 

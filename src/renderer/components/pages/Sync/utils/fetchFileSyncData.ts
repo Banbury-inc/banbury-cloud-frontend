@@ -9,8 +9,6 @@ import { CONFIG } from '../../../../config/config';
 
 export const fetchFileSyncData = async (
   username: string,
-  disableFetch: boolean,
-  snapshot_json: string,
   global_file_path: string,
   options: {
     setFirstname: (value: string) => void;

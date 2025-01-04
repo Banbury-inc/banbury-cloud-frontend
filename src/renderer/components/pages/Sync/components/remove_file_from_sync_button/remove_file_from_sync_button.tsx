@@ -6,13 +6,14 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { neuranet } from '../../../../../neuranet';
 
 
-export default function RemoveFileFromSyncButton({ selectedFileNames }: { selectedFileNames: string[] }) {
+export default function RemoveFileFromSyncButton({ selectedFileNames, onFinish }: { selectedFileNames: string[], onFinish: () => void }) {
   const [loading, setLoading] = useState(false);
   const { username, tasks, setTasks, setTaskbox_expanded, updates, setUpdates } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   const handleRemoveFileFromSync = async () => {
+    console.log("selectedFileNames in remove_file_from_sync_button", selectedFileNames);
     setLoading(true);
 
     for (const file of selectedFileNames) {
@@ -38,6 +39,7 @@ export default function RemoveFileFromSyncButton({ selectedFileNames }: { select
     }
     try {
       setLoading(false);
+      onFinish();
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';

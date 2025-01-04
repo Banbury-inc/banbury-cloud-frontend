@@ -83,8 +83,6 @@ export default function FileTreeView() {
     const fetchData = async () => {
       const new_synced_files = await fetchFileSyncData(
         username || '',
-        disableFetch,
-        snapshot_json,
         global_file_path || '',
         {
           setFirstname,
@@ -93,7 +91,7 @@ export default function FileTreeView() {
           setAllFiles,
           set_Files,
           setIsLoading,
-          cache,
+          cache: new Map(),
         },
       );
 

@@ -59,6 +59,7 @@ import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
+import { fetchFileSyncData } from './utils/fetchFileSyncData';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -214,7 +215,7 @@ export default function Sync() {
 
 
 
-  const { isLoading, allFiles, fileRows, setAllFiles } = newUseFileData(
+  let { isLoading, allFiles, fileRows, setAllFiles } = newUseFileData(
     username,
     disableFetch,
     updates,
@@ -228,9 +229,9 @@ export default function Sync() {
     setDevices,
   );
 
-  useEffect(() => {
 
-  }, [files]);
+
+
 
 
   useEffect(() => {
@@ -241,7 +242,6 @@ export default function Sync() {
     });
 
   }, [devices]);
-
 
 
 
@@ -358,6 +358,13 @@ export default function Sync() {
       console.error('Error searching for file:', err);
     }
   };
+
+  const handleFinish = () => {
+    setSelected([]);
+    setSelectedFileNames([]);
+    setUpdates(updates + 1);
+  };
+
   const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected: readonly string[] = [];
@@ -487,7 +494,10 @@ export default function Sync() {
             <Grid container spacing={0} sx={{ display: 'flex', flexWrap: 'nowrap', pt: 0 }}>
 
               <Grid item paddingRight={1}>
-                <RemoveFileFromSyncButton selectedFileNames={selectedFileNames} />
+                <RemoveFileFromSyncButton
+                  selectedFileNames={selectedFileNames}
+                  onFinish={handleFinish}
+                />
               </Grid>
             </Grid>
             <Grid container justifyContent="flex-end" alignItems="flex-end">
