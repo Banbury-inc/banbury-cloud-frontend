@@ -22,6 +22,14 @@ jobs:
           node-version: '20.11.0'
           cache: 'npm'
 
+      - name: Install Python and Build Tools for macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install python-setuptools
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python3 -m pip install --upgrade pip setuptools
+
       - name: Install dependencies
         run: npm install --force
 
