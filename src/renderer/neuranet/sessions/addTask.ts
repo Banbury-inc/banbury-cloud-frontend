@@ -45,22 +45,17 @@ export async function addTask(
         task_progress: 0,
       };
       setTasks([...(tasks || []), taskInfo]);
-      console.log("task add success");
 
       return taskInfo;
     }
     if (result === 'fail') {
-      console.log("task add failed");
       return 'failed';
     }
     if (result === 'task_already_exists') {
-      console.log("task already exists");
       return 'exists';
     }
 
     else {
-      console.log("task_add failed");
-      console.log(result);
       return 'task_add failed';
     }
   } catch (error) {

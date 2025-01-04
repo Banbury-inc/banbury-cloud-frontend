@@ -30,7 +30,6 @@ export default function AddFileToSyncButton({ selectedFileNames }: { selectedFil
 
       try {
 
-        console.log("file", file);
 
         // Add the selected folder as a scanned folder
         let task_description = `Adding file to sync: ${file}`;

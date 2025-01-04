@@ -16,7 +16,6 @@ export async function runPipeline(
     const response = await axios.get<{ result: string; username: string; }>(url);
     const result = response.data.result;
 
-    console.log('runPipeline response: ', response);
 
     if (result === 'success') {
       return response.data;

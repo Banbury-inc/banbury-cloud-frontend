@@ -59,10 +59,6 @@ export const newUseFileData = (
     setAllFiles([]);
   }, [updates]);
 
-  console.log('fallFiles', allFiles);
-  console.log('sync_files', sync_files);
-  console.log('fileRows', fileRows);
-  console.log('updates', updates);
 
   const set_Files = (files: any[]) => {
     console.log('files', files);

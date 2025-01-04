@@ -37,8 +37,6 @@ export default function TaskBox() {
           setTasks(sessions); // Only update tasks if sessions are different
         }
 
-        console.log('sessions:', sessions);
-        console.log('result:', result);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

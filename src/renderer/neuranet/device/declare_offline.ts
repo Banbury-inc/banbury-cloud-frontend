@@ -23,22 +23,17 @@ export async function declare_offline(
 
     if (result === 'success') {
 
-      console.log("declare offline success");
 
       return result;
     }
     if (result === 'fail') {
-      console.log("declare offline failed");
       return 'failed';
     }
     if (result === 'task_already_exists') {
-      console.log("task already exists");
       return 'exists';
     }
 
     else {
-      console.log("declare offline failed");
-      console.log(result);
       return 'task_add failed';
     }
   } catch (error) {
