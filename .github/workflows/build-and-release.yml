@@ -22,24 +22,33 @@ jobs:
           node-version: '20.11.0'
           cache: 'npm'
 
-      - name: Install Python and Build Tools
+      - name: Install Python and Build Tools for Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y python3 python3-distutils build-essential
 
-      - name: Install Python for macOS
+      - name: Install Python and Build Tools for macOS
         if: runner.os == 'macOS'
         run: |
           brew install python
 
-      - name: Install Build Tools for Windows
+      - name: Install Build Tools on Windows
         if: runner.os == 'Windows'
         run: |
-          npm install --global windows-build-tools
+          choco install visualstudio2019buildtools -y --package-parameters "--includeRecommended --includeOptional"
+          choco install python --version=3.9.0 -y
+          refreshenv
+
+      - name: Configure Node.js and Python
+        if: runner.os == 'Windows'
+        run: npm config set python $(where python | Select-String -Pattern python.exe -SimpleMatch)
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+
+      - name: Rebuild Native Dependencies
+        run: npx electron-rebuild
 
       - name: Build the app
         run: npm run build --verbose
@@ -55,56 +64,3 @@ jobs:
           name: ${{ matrix.os }}-artifacts
           path: packages/**/*
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Download Linux Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: ubuntu-latest-artifacts
-          path: ./dist/linux
-
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-artifacts
-          path: ./dist/windows
-
-      - name: Download macos Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: macos-latest-artifacts
-          path: ./dist/macos
-
-      - name: Get version from package.json
-        id: get_version
-        run: |
-          VERSION=$(jq -r .version package.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Create and push a new tag
-        env:
-          VERSION: ${{ env.VERSION }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v$VERSION"
-          git push https://$PAT@github.com/${{ github.repository }} "v$VERSION"
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "v${{ env.VERSION }}"
-          files: |
-            ./dist/linux/*
-            ./dist/windows/*.exe
-            ./dist/macos/*.dmg
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
