@@ -32,6 +32,11 @@ export async function change_profile_info(
       return 'failed';
     }
 
+    if (result === 'photo_too_large') {
+      console.log("profile photo too large");
+      return 'photo_too_large';
+    }
+
     else {
       console.log("change profile failed");
       return 'change profile failed';
