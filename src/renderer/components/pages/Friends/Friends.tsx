@@ -16,8 +16,14 @@ import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, InputAdornment, Badge, Avatar, Tabs, Tab } from '@mui/material';
+import { handlers } from '../../../handlers';
 
-
+interface SearchResult {
+  id: number;
+  first_name: string;
+  last_name: string;
+  status: string;
+}
 
 export default function Friends() {
 
@@ -27,16 +33,38 @@ export default function Friends() {
 
   // Mock data - replace with actual data from your backend
   const [friends, setFriends] = useState([
-    { id: 1, name: 'John Doe', status: 'online', stats: { files: 156, devices: 3, connections: 12 } },
-    { id: 2, name: 'Jane Smith', status: 'offline', stats: { files: 89, devices: 2, connections: 8 } },
+    { id: 1, first_name: 'John', last_name: 'Doe', status: 'online', stats: { files: 156, devices: 3, connections: 12 } },
+    { id: 2, first_name: 'Jane', last_name: 'Smith', status: 'offline', stats: { files: 89, devices: 2, connections: 8 } },
   ]);
 
   const [friendRequests, setFriendRequests] = useState([
-    { id: 3, name: 'Alice Brown', status: 'pending' },
+    { id: 3, first_name: 'Alice', last_name: 'Brown', status: 'pending' },
   ]);
 
+  // Add new state for search results
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-
+  // Update search handler to handle the API response correctly
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      handlers.users.typeahead(query)
+        .then(response => {
+          if (response && response.data) {
+            console.log("response", response.data);
+            setSearchResults(response.data.users || []);
+          } else {
+            setSearchResults([]);
+          }
+        })
+        .catch(error => {
+          console.error('Search failed:', error);
+          setSearchResults([]);
+        });
+    } else {
+      setSearchResults([]);
+    }
+  };
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -71,9 +99,9 @@ export default function Friends() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="Search friends..."
+              placeholder="Search users..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -98,6 +126,7 @@ export default function Friends() {
                 }
                 value="requests"
               />
+              <Tab label="Search" value="search" />
             </Tabs>
 
             <List component="nav">
@@ -115,21 +144,21 @@ export default function Friends() {
                       },
                     }}
                   >
-                    <Avatar sx={{ mr: 2 }}>{friend.name[0]}</Avatar>
+                    <Avatar sx={{ mr: 2 }}>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
                     <ListItemText
-                      primary={friend.name}
+                      primary={`${friend.first_name || ''} ${friend.last_name || ''}`.trim() || 'Unknown User'}
                       secondary={friend.status}
                     />
                   </ListItemButton>
                 ))
-              ) : (
+              ) : activeSection === 'requests' ? (
                 friendRequests.map((request) => (
                   <ListItemButton
                     key={request.id}
                     sx={{ borderRadius: 1, mb: 1 }}
                   >
-                    <Avatar sx={{ mr: 2 }}>{request.name[0]}</Avatar>
-                    <ListItemText primary={request.name} />
+                    <Avatar sx={{ mr: 2 }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
+                    <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} />
                     <IconButton color="success" size="small">
                       <CheckIcon />
                     </IconButton>
@@ -138,6 +167,24 @@ export default function Friends() {
                     </IconButton>
                   </ListItemButton>
                 ))
+              ) : (
+                // Updated search results section with null checks
+                searchResults?.map((user) => (
+                  <ListItemButton
+                    key={user.id}
+                    sx={{ borderRadius: 1, mb: 1 }}
+                  >
+                    <Avatar sx={{ mr: 2 }}>
+                      {user.first_name ? user.first_name[0] : '?'}
+                    </Avatar>
+                    <ListItemText
+                      primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
+                    />
+                    <IconButton color="primary" size="small">
+                      <PersonAddIcon />
+                    </IconButton>
+                  </ListItemButton>
+                )) || null
               )}
             </List>
           </CardContent>
@@ -150,9 +197,9 @@ export default function Friends() {
               <Stack direction="column" spacing={3}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.name[0]}</Avatar>
+                    <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.first_name ? selectedFriend.first_name[0] : '?'}</Avatar>
                     <Stack>
-                      <Typography variant="h5">{selectedFriend.name}</Typography>
+                      <Typography variant="h5">{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {selectedFriend.status}
                       </Typography>
@@ -185,8 +232,8 @@ export default function Friends() {
                     <Grid item xs={4} key={friend.id}>
                       <Card variant="outlined" sx={{ p: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <Avatar>{friend.name[0]}</Avatar>
-                          <Typography variant="body1">{friend.name}</Typography>
+                          <Avatar>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
+                          <Typography variant="body1">{friend.first_name ? friend.first_name : '?'} {friend.last_name ? friend.last_name : '?'}</Typography>
                         </Stack>
                       </Card>
                     </Grid>
