@@ -46,52 +46,37 @@ export default function AccountMenuIcon() {
     handleClose(); // Close the menu after clicking on settings
   };
 
-  console.log("picture: ", picture)
 
   return (
     <React.Fragment>
       <Box sx={{ mr: '20px', pb: '2px', display: 'flex', alignItems: 'center', textAlign: 'center' }}>
-        <Avatar sx={{ width: 32, height: 32 }}>
-          {picture ? (
-            <img
-              src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
-              alt="User"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={(e) => console.error('Image failed to load:', e)}
-            />
-          ) : (
-            first_name?.charAt(0) || ''
-          )}
-        </Avatar>
-      </Box>
-      <Box sx={{ mr: '20px', pb: '2px', display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <Tooltip title="Account">
-          <Chip
-            avatar={
-              <Avatar sx={{}} variant="circular">
-                {picture ? (
-                  <>
-                    {console.log('Picture data:', picture)}
-                    <img
-                      src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
-                      alt="User"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => console.error('Image failed to load:', e)}
-                    />
-                  </>
-                ) : (
-                  first_name?.charAt(0) || ''
-                )}
-              </Avatar>
-            }
-            label={`${first_name || ''} ${last_name || ''}`}
+          <Avatar
             onClick={handleClick}
-            size="small"
             aria-controls={open ? 'account-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
-            sx={{ fontSize: '12px' }}
-          />
+            sx={{
+              cursor: 'pointer',
+              width: 24,
+              height: 24,
+              fontSize: '0.875rem'  // For the fallback initial letter
+            }}
+          >
+            {picture?.data ? (
+              <>
+                {console.log('Picture data:', picture)}
+                <img
+                  src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
+                  alt="User"
+                  style={{ width: 'inherit', height: 'inherit', objectFit: 'cover' }}
+                  onError={(e) => console.error('Image failed to load:', e)}
+                />
+              </>
+            ) : (
+              first_name?.charAt(0) || ''
+            )}
+          </Avatar>
         </Tooltip>
       </Box>
       <Menu
