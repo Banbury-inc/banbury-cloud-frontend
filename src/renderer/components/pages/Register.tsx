@@ -92,7 +92,10 @@ export default function SignUp() {
         data.get('firstName') as string,
         data.get('lastName') as string,
         data.get('username') as string,
-        data.get('password') as string
+        data.get('password') as string,
+        data.get('phone_number') as string,
+        data.get('email') as string,
+        data.get('picture') as string
       );
       console.log(result);
       if (result === 'success') {

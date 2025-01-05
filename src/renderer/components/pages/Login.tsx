@@ -273,10 +273,10 @@ export default function SignIn() {
         // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        
+
         if (req.url?.includes('/authentication/auth/callback')) {
           const code = new URL(req.url, 'http://localhost:3000').searchParams.get('code');
-          
+
           if (code) {
             try {
               const response = await axios.get(`${CONFIG.url}/authentication/auth/callback?code=${code}`);
@@ -289,7 +289,7 @@ export default function SignIn() {
                 const phone_number = response.data.user.phone_number;
                 const email = response.data.user.email;
                 const picture = response.data.user.picture;
-                
+
                 try {
                   // Try to get user info to check if user exists
                   const userInfoResponse = await axios.get<{
@@ -298,14 +298,21 @@ export default function SignIn() {
                     phone_number: string;
                     email: string;
                   }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
-                  
+
                   // User exists, set authenticated
                   setIsAuthenticated(true);
                 } catch (error) {
 
+                  console.log("username: ", username)
+                  console.log("first_name: ", first_name)
+                  console.log("last_name: ", last_name)
+                  console.log("phone_number: ", phone_number)
+                  console.log("email: ", email)
+                  console.log("picture: ", picture)
+
                   // User doesn't exist, register them
-                  const registerResponse = await handlers.users.registerUser(username, username, first_name, last_name);
-                  
+                  const registerResponse = await handlers.users.registerUser(username, username, first_name, last_name, phone_number, email, picture);
+
                   if (registerResponse === 'success') {
                     setIsAuthenticated(true);
                   } else {
@@ -313,12 +320,12 @@ export default function SignIn() {
                   }
                 }
 
-
+                // TODO: implement login error handling
 
                 localStorage.setItem('authToken', response.data.user.email);
                 setIsAuthenticated(true);
                 setShowMain(true);
-                
+
                 // Send success response to browser
                 res.writeHead(200, { 'Content-Type': 'text/html' });
                 res.end('<html><body><h1>Login successful! You can close this window.</h1><script>window.close();</script></body></html>');
@@ -330,7 +337,7 @@ export default function SignIn() {
               res.end('Authentication failed');
             }
           }
-          
+
           // Close the server after handling the callback
           server.close();
         }

@@ -17,8 +17,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { fontSize } from '@mui/system';
+import { CONFIG } from '../../config/config';
 export default function AccountMenuIcon() {
-  const { username, first_name, last_name, setFirstname, setLastname, redirect_to_login, setredirect_to_login } = useAuth();
+  const { username, first_name, last_name, picture, setFirstname, setLastname, redirect_to_login, setredirect_to_login } = useAuth();
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -45,15 +46,42 @@ export default function AccountMenuIcon() {
     handleClose(); // Close the menu after clicking on settings
   };
 
+  console.log("picture: ", picture)
 
   return (
     <React.Fragment>
+      <Box sx={{ mr: '20px', pb: '2px', display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+        <Avatar sx={{ width: 32, height: 32 }}>
+          {picture ? (
+            <img
+              src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
+              alt="User"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => console.error('Image failed to load:', e)}
+            />
+          ) : (
+            first_name?.charAt(0) || ''
+          )}
+        </Avatar>
+      </Box>
       <Box sx={{ mr: '20px', pb: '2px', display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <Tooltip title="Account">
           <Chip
             avatar={
               <Avatar sx={{}} variant="circular">
-                {first_name?.charAt(0) || ''}
+                {picture ? (
+                  <>
+                    {console.log('Picture data:', picture)}
+                    <img
+                      src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
+                      alt="User"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => console.error('Image failed to load:', e)}
+                    />
+                  </>
+                ) : (
+                  first_name?.charAt(0) || ''
+                )}
               </Avatar>
             }
             label={`${first_name || ''} ${last_name || ''}`}
@@ -103,7 +131,7 @@ export default function AccountMenuIcon() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar sx={{ width: 2, height: 2 }} /> Profile
+          <Avatar src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`} sx={{ width: 2, height: 2 }} /> Profile
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>

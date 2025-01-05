@@ -1,23 +1,30 @@
 import axios from 'axios';
 import { CONFIG } from '../../config/config';
 
-export async function registerUser(first_name: string,
-  last_name: string,
+export async function registerUser(
   username: string,
-  password_str: string) {
+  password_str: string,
+  first_name: string,
+  last_name: string,
+  phone_number: string,
+  email: string,
+  picture: string) {
 
   try {
-    
+
     const response = await axios.post<{
       result: string;
       username: string;
-    }>(`${CONFIG.url}/authentication/new_register/`, {
-      username,
+    }>(`${CONFIG.url}/authentication/register/`, {
+      username: username,
       password: password_str,
-      first_name,
-      last_name
+      first_name: first_name,
+      last_name: last_name,
+      phone_number: phone_number,
+      email: email,
+      picture: picture
     });
-    
+
     const result = response.data.result;
     if (result === 'success') {
       console.log("register success");

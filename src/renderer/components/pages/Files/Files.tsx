@@ -168,11 +168,13 @@ export default function Files() {
     sync_files,
     first_name,
     last_name,
+    picture,
     devices,
     setFirstname,
     setLastname,
     setDevices,
     setSyncFiles,
+    setPicture,
     redirect_to_login,
     setredirect_to_login,
     taskbox_expanded,
@@ -541,11 +543,19 @@ export default function Files() {
         last_name: string;
         phone_number: string;
         email: string;
+        picture: string;
       }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
       const { first_name, last_name } = userInfoResponse.data;
+
+      console.log('userResponse:', userInfoResponse.data);
+
       setFirstname(first_name);
       setLastname(last_name);
+      setPicture({
+        content_type: 'image/jpeg',
+        data: userInfoResponse.data.picture
+      });
     } catch (error) {
       console.error('Error fetching user info:', error);
     }
