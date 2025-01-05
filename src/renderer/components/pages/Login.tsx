@@ -33,6 +33,7 @@ import useHistory from 'react-router-dom';
 import crypto from 'crypto';
 import { Dispatch, SetStateAction } from 'react';
 import { neuranet } from '../../neuranet';
+import { handlers } from '../../handlers';
 import { CONFIG } from '../../config/config';
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { shell } from 'electron';
@@ -287,6 +288,7 @@ export default function SignIn() {
                 const last_name = response.data.user.last_name;
                 const phone_number = response.data.user.phone_number;
                 const email = response.data.user.email;
+                const picture = response.data.user.picture;
                 
                 try {
                   // Try to get user info to check if user exists
@@ -300,12 +302,11 @@ export default function SignIn() {
                   // User exists, set authenticated
                   setIsAuthenticated(true);
                 } catch (error) {
+
                   // User doesn't exist, register them
-                  const registerResponse = await axios.get(
-                    `${CONFIG.url}/authentication/new_register/${username}/${username}/${first_name}/${last_name}/`
-                  );
+                  const registerResponse = await handlers.users.registerUser(username, username, first_name, last_name);
                   
-                  if (registerResponse.data.result === 'success') {
+                  if (registerResponse === 'success') {
                     setIsAuthenticated(true);
                   } else {
                     console.error('Failed to register Google user');

@@ -8,10 +8,14 @@ export async function registerUser(first_name: string,
 
   try {
     
-    const response = await axios.get<{
+    const response = await axios.post<{
       result: string;
       username: string;
-    }>(`${CONFIG.url}/authentication/new_register/${username}/${password_str}/${first_name}/${last_name}/`, {
+    }>(`${CONFIG.url}/authentication/new_register/`, {
+      username,
+      password: password_str,
+      first_name,
+      last_name
     });
     
     const result = response.data.result;
