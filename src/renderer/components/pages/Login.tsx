@@ -34,6 +34,10 @@ import crypto from 'crypto';
 import { Dispatch, SetStateAction } from 'react';
 import { neuranet } from '../../neuranet';
 import { CONFIG } from '../../config/config';
+import { Google as GoogleIcon } from '@mui/icons-material';
+import { shell } from 'electron';
+import http from 'http';
+
 interface Message {
   type: string;
   content: string;
@@ -260,6 +264,91 @@ export default function SignIn() {
     }
   }, []);
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      // Create HTTP server before initiating OAuth flow
+      const server = http.createServer(async (req, res) => {
+        // Set CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        
+        if (req.url?.includes('/authentication/auth/callback')) {
+          const code = new URL(req.url, 'http://localhost:3000').searchParams.get('code');
+          
+          if (code) {
+            try {
+              const response = await axios.get(`${CONFIG.url}/authentication/auth/callback?code=${code}`);
+              if (response.data.success) {
+                console.log(response)
+                setUsername(response.data.user.email);
+                const username = response.data.user.email;
+                const first_name = response.data.user.first_name;
+                const last_name = response.data.user.last_name;
+                const phone_number = response.data.user.phone_number;
+                const email = response.data.user.email;
+                
+                try {
+                  // Try to get user info to check if user exists
+                  const userInfoResponse = await axios.get<{
+                    first_name: string;
+                    last_name: string;
+                    phone_number: string;
+                    email: string;
+                  }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
+                  
+                  // User exists, set authenticated
+                  setIsAuthenticated(true);
+                } catch (error) {
+                  // User doesn't exist, register them
+                  const registerResponse = await axios.get(
+                    `${CONFIG.url}/authentication/new_register/${username}/${username}/${first_name}/${last_name}/`
+                  );
+                  
+                  if (registerResponse.data.result === 'success') {
+                    setIsAuthenticated(true);
+                  } else {
+                    console.error('Failed to register Google user');
+                  }
+                }
+
+
+
+                localStorage.setItem('authToken', response.data.user.email);
+                setIsAuthenticated(true);
+                setShowMain(true);
+                
+                // Send success response to browser
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end('<html><body><h1>Login successful! You can close this window.</h1><script>window.close();</script></body></html>');
+              }
+            } catch (error) {
+              console.error('Callback Error:', error);
+              setserver_offline(true);
+              res.writeHead(500, { 'Content-Type': 'text/plain' });
+              res.end('Authentication failed');
+            }
+          }
+          
+          // Close the server after handling the callback
+          server.close();
+        }
+      });
+
+      // Start listening before opening OAuth URL
+      server.listen(3000, async () => {
+        const response = await axios.get(`${CONFIG.url}/authentication/google`);
+        shell.openExternal(response.data.authUrl);
+      });
+
+    } catch (error) {
+      console.error('OAuth Error:', error);
+      setserver_offline(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (isAuthenticated || showMain) { // Render Main component if authenticated or showMain is true
     return <Main />;
   }
@@ -336,11 +425,27 @@ export default function SignIn() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 2, mb: 1 }}
               // onClick={handleClick}
               disabled={loading} // Disable the button while loading
             >
               {loading ? <CircularProgress size={24} /> : 'Sign In'}
+            </Button>
+
+            <Typography variant="body2" align="center" sx={{ my: 1 }}>
+              - OR -
+            </Typography>
+
+
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GoogleIcon />}
+              onClick={handleGoogleLogin}
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              Sign in with Google
             </Button>
             <Grid container>
               <Grid item xs>
@@ -378,7 +483,7 @@ export default function SignIn() {
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
+        <Copyright sx={{ mt: 2 }} />
       </Container>
     </ThemeProvider>
   );
