@@ -168,10 +168,14 @@ export default function Files() {
     sync_files,
     first_name,
     last_name,
+    phone_number,
+    email,
     picture,
     devices,
     setFirstname,
     setLastname,
+    setPhoneNumber,
+    setEmail,
     setDevices,
     setSyncFiles,
     setPicture,
@@ -546,12 +550,14 @@ export default function Files() {
         picture: string;
       }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
-      const { first_name, last_name } = userInfoResponse.data;
+      const { first_name, last_name, phone_number, email } = userInfoResponse.data;
 
       console.log('userResponse:', userInfoResponse.data);
 
       setFirstname(first_name);
       setLastname(last_name);
+      setPhoneNumber(phone_number);
+      setEmail(email);
       setPicture({
         content_type: 'image/jpeg',
         data: userInfoResponse.data.picture

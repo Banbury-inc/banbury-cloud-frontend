@@ -18,7 +18,7 @@ import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import AI from './pages/AI';
-import Settings from './pages/Settings';
+import Settings from './pages/Settings/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -108,7 +108,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function PermanentDrawerLeft() {
   const location = useLocation();
   const theme = useTheme();
-  const initialActiveTab = location.state?.activeTab || 'Files';
+  const initialActiveTab = location.state?.activeTab || 'Settings';
   const [activeTab, setActiveTab] = React.useState(initialActiveTab);
   const { username, redirect_to_login, tasks, setTasks, setTaskbox_expanded, websocket, setSocket } = useAuth();
   const [open, setOpen] = React.useState(false);

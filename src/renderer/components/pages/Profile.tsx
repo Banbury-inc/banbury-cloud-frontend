@@ -189,7 +189,7 @@ export default function Profile() {
 
     setShowFirstnameTextField(!showFirstnameTextField);
 
-    handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
+    handlers.users.change_profile_info(new_first_name, lastname, username ?? '', email ?? '', "undefined", null);
   };
 
   const [showLastnameTextField, setShowLastnameTextField] = useState(false);
@@ -203,7 +203,7 @@ export default function Profile() {
   };
   const handleLastnameConfirmClick = async () => {
     try {
-      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username ?? '', email ?? '', "undefined", null);
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -223,7 +223,7 @@ export default function Profile() {
   };
   const handleUsernameConfirmClick = async () => {
     try {
-      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username ?? '', email ?? '', "undefined", null);
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -241,7 +241,7 @@ export default function Profile() {
   };
   const handleEmailConfirmClick = async () => {
     try {
-      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username ?? '', email ?? '', "undefined", null);
     } catch (error) {
       console.error('There was an error!', error);
 
@@ -260,7 +260,7 @@ export default function Profile() {
   };
   const handlePasswordConfirmClick = async () => {
     try {
-      handlers.users.change_profile_info(new_first_name, lastname, username, email, "undefined");
+      handlers.users.change_profile_info(new_first_name, lastname, username ?? '', email ?? '', "undefined", null);
     } catch (error) {
       console.error('There was an error!', error);
 
