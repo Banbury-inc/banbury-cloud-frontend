@@ -65,9 +65,8 @@ export default function AccountMenuIcon() {
           >
             {picture?.data ? (
               <>
-                {console.log('Picture data:', picture)}
                 <img
-                  src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`}
+                  src={`${CONFIG.url}/users/get_profile_picture/${username}/`}
                   alt="User"
                   style={{ width: 'inherit', height: 'inherit', objectFit: 'cover' }}
                   onError={(e) => console.error('Image failed to load:', e)}
@@ -116,7 +115,7 @@ export default function AccountMenuIcon() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar src={`${CONFIG.url}/profiles/get_profile_picture/${username}/`} sx={{ width: 2, height: 2 }} /> Profile
+          <Avatar src={`${CONFIG.url}/users/get_profile_picture/${username}/`} sx={{ width: 2, height: 2 }} /> Profile
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>
