@@ -14,6 +14,7 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import Files from './pages/Files/Files';
+import Friends from './pages/Friends/Friends';
 import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
@@ -181,7 +182,7 @@ export default function PermanentDrawerLeft() {
           {['Files',
             'Sync',
             'Devices',
-            'Profile'].map((text, index) => (
+            'Friends'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
                 <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
                   <Button
@@ -273,8 +274,8 @@ export default function PermanentDrawerLeft() {
               return <Devices />;
             case 'AI':
               return <AI />;
-            case 'Profile':
-              return <Profile />;
+            case 'Friends':
+              return <Friends />;
             case 'Settings':
               return <Settings />;
             default:
