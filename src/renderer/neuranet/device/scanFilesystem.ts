@@ -27,7 +27,7 @@ export async function scanFilesystem(username: string): Promise<string> {
       console.log('Failed to get scanned folders.');
       return 'Failed to get scanned folders';
     }
-    
+
     if (directoriesToScan.length === 0) {
       console.log('No folders selected for scanning.');
       return 'No folders to scan';
@@ -93,6 +93,8 @@ export async function scanFilesystem(username: string): Promise<string> {
           file_parent: path.dirname(filePath),
           original_device: os.hostname(),
           kind: stats.isDirectory() ? 'Folder' : getFileKind(filename),
+          shared_with: [],
+          is_public: false,
         };
 
         filesInfo.push(fileInfo);
