@@ -192,18 +192,19 @@ export default function Friends() {
               {activeSection === 'all-friends' ? (
                 friends.map((friend) => (
                   <ListItemButton
+                    dense
                     key={friend.id}
                     selected={selectedFriend?.id === friend.id}
                     onClick={() => setSelectedFriend(friend)}
                     sx={{
                       borderRadius: 1,
-                      mb: 1,
+                      mb: 0,
                       '&.Mui-selected': {
                         backgroundColor: 'action.selected',
                       },
                     }}
                   >
-                    <Avatar sx={{ mr: 2 }}>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
+                    <Avatar sx={{ mr: 2, width: 24, height: 24, fontSize: '12px' }}>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
                     <ListItemText
                       primary={`${friend.first_name || ''} ${friend.last_name || ''}`.trim() || 'Unknown User'}
                       secondary={friend.username}
