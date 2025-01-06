@@ -167,7 +167,19 @@ export default function Friends() {
               <Tab label="Friends" value="all-friends" />
               <Tab
                 label={
-                  <Badge badgeContent={friendRequests.length} color="error">
+                  <Badge 
+                    badgeContent={friendRequests.length} 
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        backgroundColor: '#ef4444',
+                        fontSize: '9px',
+                        height: '14px',
+                        minWidth: '14px',
+                        padding: '0 2px',
+                        right: '-10px',
+                      }
+                    }}
+                  >
                     Requests
                   </Badge>
                 }
