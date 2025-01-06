@@ -8,6 +8,7 @@ interface UserSearchResponse {
     first_name: string;
     last_name: string;
     status: string;
+    username: string;
   }>;
 }
 

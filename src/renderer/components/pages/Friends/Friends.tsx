@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import os from 'os';
 import Stack from '@mui/material/Stack';
 import { Button, Divider, FormControlLabel, FormGroup, Slider, Switch, TextField, Typography, useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -17,12 +16,14 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, InputAdornment, Badge, Avatar, Tabs, Tab } from '@mui/material';
 import { handlers } from '../../../handlers';
+import { useAuth } from '../../../context/AuthContext';
 
 interface SearchResult {
   id: number;
   first_name: string;
   last_name: string;
   status: string;
+  username: string;
 }
 
 export default function Friends() {
@@ -30,19 +31,41 @@ export default function Friends() {
   const [activeSection, setActiveSection] = useState('all-friends');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [updates, setUpdates] = useState<any[]>([]);
+  const { username } = useAuth();
 
-  // Mock data - replace with actual data from your backend
-  const [friends, setFriends] = useState([
-    { id: 1, first_name: 'John', last_name: 'Doe', status: 'online', stats: { files: 156, devices: 3, connections: 12 } },
-    { id: 2, first_name: 'Jane', last_name: 'Smith', status: 'offline', stats: { files: 89, devices: 2, connections: 8 } },
-  ]);
 
-  const [friendRequests, setFriendRequests] = useState([
-    { id: 3, first_name: 'Alice', last_name: 'Brown', status: 'pending' },
-  ]);
-
-  // Add new state for search results
+  const [friends, setFriends] = useState<any[]>([]);
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
+  useEffect(() => {
+    handlers.users.getFriends(username || '')
+      .then(response => {
+        if (response && response.data) {
+          setFriends(response.data.friends);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching friends:', error);
+      });
+  }, [username, updates]);
+
+
+
+  useEffect(() => {
+    handlers.users.getFriendRequests(username || '')
+      .then(response => {
+        if (response && response.data) {
+          setFriendRequests(response.data.friend_requests);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching friend requests:', error);
+      });
+  }, [username, updates]);
+
+
 
   // Update search handler to handle the API response correctly
   const handleSearch = (query: string) => {
@@ -65,6 +88,7 @@ export default function Friends() {
       setSearchResults([]);
     }
   };
+
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -159,10 +183,38 @@ export default function Friends() {
                   >
                     <Avatar sx={{ mr: 2 }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
                     <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} />
-                    <IconButton color="success" size="small">
+                    <IconButton color="success" size="small" onClick={() => {
+                      handlers.users.acceptFriendRequest(username || '', request.username || '')
+                        .then(() => {
+                          // Refresh both friends and requests lists
+                          handlers.users.getFriends(username || '')
+                            .then(response => {
+                              if (response && response.data) {
+                                setFriends(response.data.friends);
+                              }
+                            });
+                          handlers.users.getFriendRequests(username || '')
+                            .then(response => {
+                              if (response && response.data) {
+                                setFriendRequests(response.data.friend_requests);
+                              }
+                            });
+                        });
+                    }}>
                       <CheckIcon />
                     </IconButton>
-                    <IconButton color="error" size="small">
+                    <IconButton color="error" size="small" onClick={() => {
+                      handlers.users.rejectFriendRequest(username || '', request.username || '')
+                        .then(() => {
+                          // Refresh friend requests list
+                          handlers.users.getFriendRequests(username || '')
+                            .then(response => {
+                              if (response && response.data) {
+                                setFriendRequests(response.data.friend_requests);
+                              }
+                            });
+                        });
+                    }}>
                       <CloseIcon />
                     </IconButton>
                   </ListItemButton>
@@ -180,7 +232,10 @@ export default function Friends() {
                     <ListItemText
                       primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
                     />
-                    <IconButton color="primary" size="small">
+                    <IconButton color="primary" size="small" onClick={() => {
+                      handlers.users.sendFriendRequest(username || '', user.username || '')
+                      setUpdates(prevUpdates => [...prevUpdates, 'friend_request_sent']);
+                    }}>
                       <PersonAddIcon />
                     </IconButton>
                   </ListItemButton>
