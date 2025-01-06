@@ -138,6 +138,7 @@ export default function Friends() {
             <TextField
               fullWidth
               variant="outlined"
+              size="small"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -154,7 +155,14 @@ export default function Friends() {
             <Tabs
               value={activeSection}
               onChange={(e, newValue) => setActiveSection(newValue)}
-              sx={{ mb: 2 }}
+              sx={{
+                minHeight: '32px',
+                '& .MuiTab-root': {
+                  minHeight: '32px',
+                  padding: '6px 12px',
+                  fontSize: '12px'
+                }
+              }}
             >
               <Tab label="Friends" value="all-friends" />
               <Tab
@@ -194,7 +202,13 @@ export default function Friends() {
                 friendRequests.map((request) => (
                   <ListItemButton
                     key={request.id}
-                    sx={{ borderRadius: 1, mb: 1 }}
+                    sx={{
+                      borderRadius: 1,
+                      mb: 1,
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
+                      },
+                    }}
                   >
                     <Avatar sx={{ mr: 2 }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
                     <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} />
@@ -238,20 +252,22 @@ export default function Friends() {
                 // Updated search results section with null checks
                 searchResults?.map((user) => (
                   <ListItemButton
+                    dense
                     key={user.id}
-                    sx={{ borderRadius: 1, mb: 1 }}
+                    sx={{ borderRadius: 1, mb: 0  }}
                   >
-                    <Avatar sx={{ mr: 2 }}>
+                    <Avatar sx={{ mr: 2, width: 24, height: 24, fontSize: '12px' }}>
                       {user.first_name ? user.first_name[0] : '?'}
                     </Avatar>
                     <ListItemText
                       primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
+                      secondary={user.username}
                     />
                     <IconButton color="primary" size="small" onClick={() => {
                       handlers.users.sendFriendRequest(username || '', user.username || '')
                       setUpdates(prevUpdates => [...prevUpdates, 'friend_request_sent']);
                     }}>
-                      <PersonAddIcon />
+                      <PersonAddIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
                   </ListItemButton>
                 )) || null
