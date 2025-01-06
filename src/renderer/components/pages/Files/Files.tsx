@@ -94,6 +94,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           }}
         >
           <Checkbox
+            size="small"
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -727,15 +728,15 @@ export default function Files() {
           </Stack>
         </CardContent>
       </Card>
-      <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={0} sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <Stack>
           <Box display="flex" flexDirection="column" height="100%">
             <Card
               variant="outlined"
-              sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
+              sx={{ flexGrow: 0, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
             >
               <CardContent>
-                <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
+                <Grid container spacing={0} sx={{ flexGrow: 0, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                   <Grid item>
                     <FileTreeView />
                   </Grid>
@@ -817,6 +818,7 @@ export default function Files() {
                                 {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
                                   <Checkbox
                                     color="primary"
+                                    size="small"
                                     checked={isItemSelected}
                                     inputProps={{ 'aria-labelledby': labelId }}
                                   />

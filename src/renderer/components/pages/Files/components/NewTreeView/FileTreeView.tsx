@@ -317,6 +317,7 @@ export default function FileTreeView() {
         defaultExpandIcon={<ChevronRightIcon />}
         sx={{ width: '100%', flexGrow: 1, overflow: 'auto' }}
         onNodeSelect={handleNodeSelect}
+        defaultExpanded={['Core', 'Devices']}
       >
         {renderTreeItems(fileRows)}
       </TreeView>
