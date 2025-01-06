@@ -56,6 +56,8 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
     setSelectedUsers([]);
     setSearchResults([]);
     setSearchQuery('');
+    setIsSharing(false);
+    setShareSuccess(false);
   };
 
   const handleAddPeople = () => {
