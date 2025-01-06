@@ -49,7 +49,7 @@ import TaskBoxButton from '../../TaskBoxButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
-
+import ShareFileButton from '../../common/share_file_button';
 
 import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
@@ -58,6 +58,7 @@ import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
+import Dialog from '@mui/material/Dialog';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -184,6 +185,9 @@ export default function Files() {
     taskbox_expanded,
     setTaskbox_expanded,
   } = useAuth();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState('');
+
   const getSelectedFileNames = () => {
     return selected
       .map((id) => {
@@ -572,6 +576,15 @@ export default function Files() {
     fetchUserInfo();
   }, [username]);
 
+  const handleShareModalOpen = (fileName: string) => {
+    setSelectedFileName(fileName);
+    setIsShareModalOpen(true);
+  };
+
+  const handleShareModalClose = () => {
+    setIsShareModalOpen(false);
+  };
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -689,6 +702,12 @@ export default function Files() {
               <Grid item paddingRight={2} paddingLeft={1}>
                 <Tooltip title="Add to Sync">
                   <AddFileToSyncButton selectedFileNames={selectedFileNames} />
+                </Tooltip>
+                <Tooltip title="Share File">
+                  <ShareFileButton 
+                    selectedFileNames={selectedFileNames} 
+                    onShare={() => handleShareModalOpen(selectedFileNames[0])} 
+                  />
                 </Tooltip>
               </Grid>
             </Grid>
@@ -1010,6 +1029,13 @@ export default function Files() {
           </CardContent>
         </Card>
       </Stack>
+      <Dialog 
+        open={isShareModalOpen} 
+        onClose={handleShareModalClose}
+        maxWidth="sm"
+        fullWidth
+      >
+      </Dialog>
     </Box>
   );
 }
