@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper } from '@mui/material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -17,6 +17,8 @@ interface User {
   last_name: string;
   status: string;
   username: string;
+  email?: string;
+  avatar_url?: string;
 }
 
 const ShareButton = styled(Button)(({ theme }) => ({
@@ -44,6 +46,10 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
   const handleClose = () => {
     setAnchorEl(null);
+    setShowSearch(false);
+    setSelectedUsers([]);
+    setSearchResults([]);
+    setSearchQuery('');
   };
 
   const handleAddPeople = () => {
@@ -105,7 +111,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
         }}
         PaperProps={{
           sx: {
-            width: '200px',
+            width: '300px',
             backgroundColor: '#000000',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
@@ -117,7 +123,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
           },
         }}
       >
-        <Box sx={{ p: 1 }}>
+        <Box sx={{ p: 2 }}>
           <Stack spacing={1}>
             {!showSearch ? (
               <>
@@ -140,13 +146,12 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                   value={selectedUsers}
                   onChange={(event, newValue) => setSelectedUsers(newValue)}
                   getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-                  onInputChange={(event, value) => handleSearch(value)}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       autoFocus
                       size="small"
-                      placeholder="Search people..."
+                      placeholder={selectedUsers.length === 0 ? "Add an email or name" : ""}
                       sx={{
                         '& .MuiInputBase-root': {
                           color: 'white',
@@ -156,6 +161,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                       }}
                     />
                   )}
+                  onInputChange={(event, value) => handleSearch(value)}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
                       <Chip
@@ -166,16 +172,123 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                         sx={{
                           backgroundColor: 'rgba(255, 255, 255, 0.08)',
                           color: 'white',
+                          height: '24px',
+                          '& .MuiChip-label': {
+                            fontSize: '0.8rem',
+                            padding: '0 8px',
+                          },
+                          '& .MuiChip-deleteIcon': {
+                            fontSize: '16px',
+                            margin: '0 4px 0 -4px',
+                          }
                         }}
                       />
                     ))
                   }
+                  renderOption={(props, option) => (
+                    <Box component="li" {...props} sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      gap: 1.5,
+                      py: 1.5,
+                      px: 2,
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      '&:last-child': {
+                        borderBottom: 'none'
+                      }
+                    }}>
+                      {option.avatar_url ? (
+                        <Box
+                          component="img"
+                          src={option.avatar_url}
+                          alt=""
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            bgcolor: 'rgba(147, 51, 234, 0.8)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '15px',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {`${option.first_name[0]}${option.last_name[0]}`}
+                        </Box>
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ 
+                          color: 'white',
+                          fontSize: '15px',
+                          lineHeight: '20px',
+                          mb: 0.5
+                        }}>
+                          {`${option.first_name} ${option.last_name}`}
+                        </Typography>
+                        <Typography sx={{ 
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          fontSize: '13px',
+                          lineHeight: '16px'
+                        }}>
+                          {option.email || option.username}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                  PaperComponent={({ children, ...props }) => (
+                    <Paper
+                      {...props}
+                      sx={{
+                        bgcolor: '#1e1e1e',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        '& .MuiAutocomplete-option': {
+                          padding: 0,
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.08)',
+                          },
+                          '&.Mui-focused': {
+                            bgcolor: 'rgba(255, 255, 255, 0.12)',
+                          }
+                        }
+                      }}
+                    >
+                      <Typography sx={{ 
+                        px: 2, 
+                        py: 1.5, 
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '14px',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}>
+                        Suggested people
+                      </Typography>
+                      {children}
+                    </Paper>
+                  )}
                 />
-                {searchResults.map((user) => (
-                  <ShareButton key={user.id} onClick={() => console.log('Selected user:', user)}>
-                    <Typography fontSize="body1">{`${user.first_name} ${user.last_name}`}</Typography>
-                  </ShareButton>
-                ))}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 10, pt:10 }}>
+                  <Button 
+                    variant="contained" 
+                    size="small"
+                    onClick={() => {
+                      console.log('Sharing with:', selectedUsers);
+                      handleClose();
+                    }}
+                  >
+                    Share
+                  </Button>
+                </Box>
               </>
             )}
             
