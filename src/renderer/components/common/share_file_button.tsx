@@ -58,36 +58,41 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
+          horizontal: 'center',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right',
+          horizontal: 'center',
         }}
         PaperProps={{
           sx: {
-            width: '300px',
-            backgroundColor: '#1e1e1e',
+            width: '200px',
+            backgroundColor: '#000000',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
             mt: 1,
+            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)',
+            '& .MuiTypography-root': {
+              color: '#ffffff',
+            },
           },
         }}
       >
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 1 }}>
           <Stack spacing={1}>
             <ShareButton onClick={handleAddPeople}>
-              <PersonAddOutlinedIcon sx={{ mr: 2 }} />
-              <Typography>Add people</Typography>
+              <PersonAddOutlinedIcon fontSize="inherit" sx={{ mr: 1 }} />
+              <Typography fontSize="body1">Add people</Typography>
             </ShareButton>
             
             <ShareButton onClick={handleCopyLink}>
-              <LinkIcon sx={{ mr: 2 }} />
-              <Typography>Copy link</Typography>
+              <LinkIcon fontSize="inherit" sx={{ mr: 1 }} />
+              <Typography fontSize="body1">Copy link</Typography>
             </ShareButton>
           </Stack>
 
           {selectedFileNames.length === 1 && (
-            <Box sx={{ mt: 2, px: 1 }}>
+            <Box sx={{ mt: 1, px: 1 }}>
               <Typography variant="body2" color="text.secondary">
                 {selectedFileNames[0]}
               </Typography>
