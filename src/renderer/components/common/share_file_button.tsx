@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch } from '@mui/material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -8,6 +8,8 @@ import { handlers } from '../../handlers';
 import { neuranet } from '../../neuranet';
 import { useAuth } from '../../context/AuthContext';
 import CheckIcon from '@mui/icons-material/Check';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LockIcon from '@mui/icons-material/Lock';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -40,11 +42,12 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [showPermissions, setShowPermissions] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const { username } = useAuth();
   const [isSharing, setIsSharing] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
-
+  const [isPublic, setIsPublic] = useState(false);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -53,6 +56,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const handleClose = () => {
     setAnchorEl(null);
     setShowSearch(false);
+    setShowPermissions(false);
     setSelectedUsers([]);
     setSearchResults([]);
     setSearchQuery('');
@@ -62,6 +66,10 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
   const handleAddPeople = () => {
     setShowSearch(true);
+  };
+
+  const handlePermissions = () => {
+    setShowPermissions(true);
   };
 
   const handleCopyLink = () => {
@@ -160,11 +168,16 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
       >
         <Box sx={{ p: 2 }}>
           <Stack spacing={1}>
-            {!showSearch ? (
+            {!showSearch && !showPermissions ? (
               <>
                 <ShareButton onClick={handleAddPeople}>
                   <PersonAddOutlinedIcon fontSize="inherit" sx={{ mr: 1 }} />
                   <Typography fontSize="body1">Add people</Typography>
+                </ShareButton>
+
+                <ShareButton onClick={handlePermissions}>
+                  <LockOutlinedIcon fontSize="inherit" sx={{ mr: 1 }} />
+                  <Typography fontSize="body1">Permissions</Typography>
                 </ShareButton>
                 
                 <ShareButton onClick={handleCopyLink}>
@@ -174,6 +187,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
               </>
             ) : (
               <>
+                {showSearch && (
                 <Autocomplete
                   multiple
                   autoHighlight
@@ -310,11 +324,13 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                       </Typography>
                       {children}
                     </Paper>
-                  )}
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button 
-                    variant="contained" 
+                    )}
+                  />
+                )}
+                {showSearch && (  
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Button 
+                      variant="contained" 
                     size="small"
                     disabled={isSharing}
                     onClick={handleShare}
@@ -328,9 +344,58 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                     )}
                   </Button>
                 </Box>
+                )}
               </>
             )}
             
+
+            {showPermissions && (
+              <Box sx={{ 
+                p: 2, 
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  mb: 2
+                }}>
+                  <Typography>Make this file public and sharable</Typography>
+                  <Switch
+                    checked={isPublic}
+                    onChange={(e) => setIsPublic(e.target.checked)}
+                    size="small" 
+                    sx={{
+                      mt: 1,
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                        },
+                      },
+                      '& .MuiSwitch-thumb': {
+                        backgroundColor: '#fff',
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#2fca45',
+                      },
+                    }} />
+                </Box>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1,
+                  color: 'text.secondary'
+                }}>
+                  <LockIcon fontSize="small" />
+                  <Typography variant="body2">
+                    This file is currently private
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
             {selectedFileNames.length === 1 && (
               <Box sx={{ mt: 1, px: 1 }}>
                 <Typography variant="body2" color="text.secondary">
