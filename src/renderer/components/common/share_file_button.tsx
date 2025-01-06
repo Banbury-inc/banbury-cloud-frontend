@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress } from '@mui/material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import { handlers } from '../../handlers';
 import { neuranet } from '../../neuranet';
 import { useAuth } from '../../context/AuthContext';
+import CheckIcon from '@mui/icons-material/Check';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -41,6 +42,8 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const [showSearch, setShowSearch] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const { username } = useAuth();
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -90,6 +93,33 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
     handleSearch(query);
+  };
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    
+    try {
+      // Wait for all share operations to complete
+      await Promise.all(
+        selectedUsers.flatMap(user => 
+          selectedFileNames.map(file => 
+            neuranet.files.shareFile(file, username, user.username)
+          )
+        )
+      );
+
+      setIsSharing(false);
+      setShareSuccess(true);
+      
+      // Close after showing success for 2 seconds
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error sharing files:', error);
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -280,23 +310,20 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                     </Paper>
                   )}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 10, pt:10 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <Button 
                     variant="contained" 
                     size="small"
-                    onClick={() => {
-                      console.log('Sharing with:', selectedUsers);
-
-                      for (const user of selectedUsers) {
-                        for (const file of selectedFileNames) {
-                          const result = neuranet.files.shareFile(file, username, user.username);
-                          console.log('result', result);
-                        }
-                      }
-                      handleClose();
-                    }}
+                    disabled={isSharing}
+                    onClick={handleShare}
                   >
-                    Share
+                    {isSharing ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : shareSuccess ? (
+                      <CheckIcon sx={{ color: 'success.main' }} />
+                    ) : (
+                      'Share'
+                    )}
                   </Button>
                 </Box>
               </>
