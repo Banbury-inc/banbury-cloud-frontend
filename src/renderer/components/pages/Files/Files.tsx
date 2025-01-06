@@ -699,10 +699,12 @@ export default function Files() {
                 </Tooltip>
               </Grid>
               <Divider orientation="vertical" flexItem />
-              <Grid item paddingRight={2} paddingLeft={1}>
+              <Grid item paddingRight={1} paddingLeft={1}>
                 <Tooltip title="Add to Sync">
                   <AddFileToSyncButton selectedFileNames={selectedFileNames} />
                 </Tooltip>
+              </Grid>
+              <Grid item paddingRight={1}>
                 <Tooltip title="Share File">
                   <ShareFileButton 
                     selectedFileNames={selectedFileNames} 
