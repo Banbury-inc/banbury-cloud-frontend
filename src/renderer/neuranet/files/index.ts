@@ -7,3 +7,5 @@ export * from './downloadFileSyncFiles';
 export * from './runPipeline';
 export * from './addDeviceIdtoFileSyncFiles';
 export * from './shareFile';
+export * from './makeFilePublic';
+export * from './makeFilePrivate';

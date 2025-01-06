@@ -47,6 +47,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const { username } = useAuth();
   const [isSharing, setIsSharing] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [togglePublicSuccess, setTogglePublicSuccess] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -131,6 +132,50 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
       setIsSharing(false);
     }
   };
+
+
+  const handleMakePublic = async () => {
+    try {
+      // Wait for all share operations to complete
+      await Promise.all(
+        selectedFileNames.map(file => 
+          neuranet.files.makeFilePublic(username, file)
+        )
+      );
+      setTogglePublicSuccess(true);
+      
+      // Close after showing success for 2 seconds
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error making file public:', error);
+    }
+  };
+
+
+  const handleMakePrivate = async () => {
+    try {
+      // Wait for all share operations to complete
+      await Promise.all(
+        selectedFileNames.map(file => 
+          neuranet.files.makeFilePrivate(username, file)
+        )
+      );
+      setTogglePublicSuccess(true);
+
+      // Close after showing success for 2 seconds
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error making file private:', error);
+      setIsSharing(false);
+    }
+  };
+
 
   return (
     <>
@@ -365,7 +410,14 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                   <Typography>Make this file public and sharable</Typography>
                   <Switch
                     checked={isPublic}
-                    onChange={(e) => setIsPublic(e.target.checked)}
+                    onChange={(e) => {
+                      setIsPublic(e.target.checked);
+                      if (e.target.checked) {
+                        handleMakePublic();
+                      } else {
+                        handleMakePrivate();
+                      }
+                    }}
                     size="small" 
                     sx={{
                       mt: 1,
