@@ -213,20 +213,22 @@ export default function Friends() {
               ) : activeSection === 'requests' ? (
                 friendRequests.map((request) => (
                   <ListItemButton
+                    dense
                     key={request.id}
                     sx={{
                       borderRadius: 1,
-                      mb: 1,
+                      mb: 0,
                       '&.Mui-selected': {
                         backgroundColor: 'action.selected',
                       },
                     }}
                   >
-                    <Avatar sx={{ mr: 2 }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
-                    <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} />
+                    <Avatar sx={{ mr: 2, width: 24, height: 24, fontSize: '12px' }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
+                    <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} secondary={request.username} />
                     <IconButton color="success" size="small" onClick={() => {
                       handlers.users.acceptFriendRequest(username || '', request.username || '')
                         .then(() => {
+                          setUpdates(prevUpdates => [...prevUpdates, 'friend_request_accepted']);
                           // Refresh both friends and requests lists
                           handlers.users.getFriends(username || '')
                             .then(response => {
@@ -242,7 +244,7 @@ export default function Friends() {
                             });
                         });
                     }}>
-                      <CheckIcon />
+                      <CheckIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
                     <IconButton color="error" size="small" onClick={() => {
                       handlers.users.rejectFriendRequest(username || '', request.username || '')
@@ -256,7 +258,7 @@ export default function Friends() {
                             });
                         });
                     }}>
-                      <CloseIcon />
+                      <CloseIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
                   </ListItemButton>
                 ))
