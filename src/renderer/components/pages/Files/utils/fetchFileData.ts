@@ -38,12 +38,14 @@ export const fetchFileData = async (
             }
         );
 
+        console.log(fileInfoResponse.data.files);
+
         // Filter out files that already exist before returning
         const existingFileKeys = new Set(
             existingFiles.map(file => `${file.file_path}-${file.device_name}`)
         );
 
-        const uniqueNewFiles = fileInfoResponse.data.files.filter(file => 
+        const uniqueNewFiles = fileInfoResponse.data.files.filter(file =>
             !existingFileKeys.has(`${file.file_path}-${file.device_name}`)
         );
 

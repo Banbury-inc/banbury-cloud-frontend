@@ -13,6 +13,8 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     file_name: 'Core',
     file_size: '',
     file_path: '',
+    shared_with: [],
+    is_public: false,
     kind: 'Core',
     file_parent: '',
     date_uploaded: '',
@@ -40,6 +42,8 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
         date_uploaded: '',
         file_size: '',
         file_path: '',
+        shared_with: [],
+        is_public: false,
         helpers: 0,
         available: '',
         kind: 'Device',
@@ -79,6 +83,8 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
           file_size: '',
           helpers: 0,
           available: '',
+          shared_with: [],
+          is_public: false,
           // Only use the original file's path for the new node if it's the last part (actual file or directory)
           file_path: isLastPart ? file.file_path : `${currentNode!.file_path}/${part}`,
           kind: isLastPart ? file.kind : 'Folder', // If it's the last part, use the file's kind, otherwise 'Folder'

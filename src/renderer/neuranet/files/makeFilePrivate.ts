@@ -9,17 +9,18 @@ import { CONFIG } from '../../config/config';
 export async function makeFilePrivate(
     username: string | null,
     file_name: string,
+    device_name: string,
 ) {
 
     console.log('makeFilePrivate called with file_name: ', file_name, 'username: ', username);
     let user = username;
-    let device_name = neuranet.device.name();
     let url = ''
     try {
         url = `${CONFIG.url}/files/make_file_private/`;
         const response = await axios.post<{ status: string; message: string; }>(url, {
             file_name: file_name,
             username: username,
+            device_name: device_name,
         });
         const status = response.data.status;
 

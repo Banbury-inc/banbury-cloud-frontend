@@ -28,7 +28,7 @@ export const useFileData = (
   const fetchData_with_api = async () => {
     try {
       // Step 1: Fetch user information
-        //
+      //
       const userInfoResponse = await axios.get<{
         first_name: string;
         last_name: string;
@@ -143,6 +143,8 @@ export const useFileData = (
         file_size: file.file_size,
         kind: file.kind,
         file_path: file.file_path,
+        shared_with: file.shared_with,
+        is_public: file.is_public,
         date_uploaded: file.date_uploaded,
         deviceID: (index + 1).toString(),
         device_name: device.device_name,

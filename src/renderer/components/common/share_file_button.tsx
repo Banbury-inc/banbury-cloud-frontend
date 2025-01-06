@@ -13,6 +13,7 @@ import LockIcon from '@mui/icons-material/Lock';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
+  selectedFileInfo: any[];
   onShare: () => void;
 }
 
@@ -36,7 +37,10 @@ const ShareButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export default function ShareFileButton({ selectedFileNames, onShare }: ShareFileButtonProps) {
+export default function ShareFileButton({ selectedFileNames, selectedFileInfo, onShare }: ShareFileButtonProps) {
+  console.log('ShareFileButton - selectedFileInfo:', selectedFileInfo);
+  console.log('ShareFileButton - is_public value:', selectedFileInfo[0]?.is_public);
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,7 +56,11 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
+    setIsPublic(selectedFileInfo[0]?.is_public ?? false);
   };
+
+  console.log('isPublic', isPublic);
+
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -108,12 +116,12 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
   const handleShare = async () => {
     setIsSharing(true);
-    
+
     try {
       // Wait for all share operations to complete
       await Promise.all(
-        selectedUsers.flatMap(user => 
-          selectedFileNames.map(file => 
+        selectedUsers.flatMap(user =>
+          selectedFileNames.map(file =>
             neuranet.files.shareFile(file, username, user.username)
           )
         )
@@ -121,7 +129,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
       setIsSharing(false);
       setShareSuccess(true);
-      
+
       // Close after showing success for 2 seconds
       setTimeout(() => {
         handleClose();
@@ -135,15 +143,18 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
 
   const handleMakePublic = async () => {
+    console.log("selectedFileInfo", selectedFileInfo);
+    console.log("handling make public")
+    const device_name = selectedFileInfo[0].device_name;
     try {
       // Wait for all share operations to complete
       await Promise.all(
-        selectedFileNames.map(file => 
-          neuranet.files.makeFilePublic(username, file)
+        selectedFileNames.map(file =>
+          neuranet.files.makeFilePublic(username, file, device_name)
         )
       );
       setTogglePublicSuccess(true);
-      
+
       // Close after showing success for 2 seconds
       setTimeout(() => {
         handleClose();
@@ -156,11 +167,14 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
 
 
   const handleMakePrivate = async () => {
+    console.log("selectedFileInfo", selectedFileInfo);
+    console.log("handling make private")
+    const device_name = selectedFileInfo[0].device_name;
     try {
       // Wait for all share operations to complete
       await Promise.all(
-        selectedFileNames.map(file => 
-          neuranet.files.makeFilePrivate(username, file)
+        selectedFileNames.map(file =>
+          neuranet.files.makeFilePrivate(username, file, device_name)
         )
       );
       setTogglePublicSuccess(true);
@@ -224,7 +238,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                   <LockOutlinedIcon fontSize="inherit" sx={{ mr: 1 }} />
                   <Typography fontSize="body1">Permissions</Typography>
                 </ShareButton>
-                
+
                 <ShareButton onClick={handleCopyLink}>
                   <LinkIcon fontSize="inherit" sx={{ mr: 1 }} />
                   <Typography fontSize="body1">Copy link</Typography>
@@ -233,177 +247,177 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
             ) : (
               <>
                 {showSearch && (
-                <Autocomplete
-                  multiple
-                  autoHighlight
-                  options={searchResults}
-                  value={selectedUsers}
-                  onChange={(event, newValue) => setSelectedUsers(newValue)}
-                  getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      autoFocus
-                      size="small"
-                      placeholder={selectedUsers.length === 0 ? "Add an email or name" : ""}
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          color: 'white',
-                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
-                          '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.4)' },
-                        }
-                      }}
-                    />
-                  )}
-                  onInputChange={(event, value) => handleSearch(value)}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        {...getTagProps({ index })}
-                        key={option.id}
-                        label={`${option.first_name} ${option.last_name}`}
+                  <Autocomplete
+                    multiple
+                    autoHighlight
+                    options={searchResults}
+                    value={selectedUsers}
+                    onChange={(event, newValue) => setSelectedUsers(newValue)}
+                    getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        autoFocus
                         size="small"
+                        placeholder={selectedUsers.length === 0 ? "Add an email or name" : ""}
                         sx={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                          color: 'white',
-                          height: '24px',
-                          '& .MuiChip-label': {
-                            fontSize: '0.8rem',
-                            padding: '0 8px',
-                          },
-                          '& .MuiChip-deleteIcon': {
-                            fontSize: '16px',
-                            margin: '0 4px 0 -4px',
+                          '& .MuiInputBase-root': {
+                            color: 'white',
+                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
+                            '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.4)' },
                           }
                         }}
                       />
-                    ))
-                  }
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props} sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      gap: 1.5,
-                      py: 1.5,
-                      px: 2,
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                      '&:last-child': {
-                        borderBottom: 'none'
-                      }
-                    }}>
-                      {option.avatar_url ? (
-                        <Box
-                          component="img"
-                          src={option.avatar_url}
-                          alt=""
+                    )}
+                    onInputChange={(event, value) => handleSearch(value)}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip
+                          {...getTagProps({ index })}
+                          key={option.id}
+                          label={`${option.first_name} ${option.last_name}`}
+                          size="small"
                           sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            objectFit: 'cover'
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            color: 'white',
+                            height: '24px',
+                            '& .MuiChip-label': {
+                              fontSize: '0.8rem',
+                              padding: '0 8px',
+                            },
+                            '& .MuiChip-deleteIcon': {
+                              fontSize: '16px',
+                              margin: '0 4px 0 -4px',
+                            }
                           }}
                         />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            bgcolor: 'rgba(147, 51, 234, 0.8)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                      ))
+                    }
+                    renderOption={(props, option) => (
+                      <Box component="li" {...props} sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        py: 1.5,
+                        px: 2,
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        '&:last-child': {
+                          borderBottom: 'none'
+                        }
+                      }}>
+                        {option.avatar_url ? (
+                          <Box
+                            component="img"
+                            src={option.avatar_url}
+                            alt=""
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              bgcolor: 'rgba(147, 51, 234, 0.8)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '15px',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {`${option.first_name[0]}${option.last_name[0]}`}
+                          </Box>
+                        )}
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{
                             color: 'white',
                             fontSize: '15px',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {`${option.first_name[0]}${option.last_name[0]}`}
+                            lineHeight: '20px',
+                            mb: 0.5
+                          }}>
+                            {`${option.first_name} ${option.last_name}`}
+                          </Typography>
+                          <Typography sx={{
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            fontSize: '13px',
+                            lineHeight: '16px'
+                          }}>
+                            {option.email || option.username}
+                          </Typography>
                         </Box>
-                      )}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ 
-                          color: 'white',
-                          fontSize: '15px',
-                          lineHeight: '20px',
-                          mb: 0.5
-                        }}>
-                          {`${option.first_name} ${option.last_name}`}
-                        </Typography>
-                        <Typography sx={{ 
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontSize: '13px',
-                          lineHeight: '16px'
-                        }}>
-                          {option.email || option.username}
-                        </Typography>
                       </Box>
-                    </Box>
-                  )}
-                  PaperComponent={({ children, ...props }) => (
-                    <Paper
-                      {...props}
-                      sx={{
-                        bgcolor: '#1e1e1e',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        '& .MuiAutocomplete-option': {
-                          padding: 0,
-                          '&:hover': {
-                            bgcolor: 'rgba(255, 255, 255, 0.08)',
-                          },
-                          '&.Mui-focused': {
-                            bgcolor: 'rgba(255, 255, 255, 0.12)',
+                    )}
+                    PaperComponent={({ children, ...props }) => (
+                      <Paper
+                        {...props}
+                        sx={{
+                          bgcolor: '#1e1e1e',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          '& .MuiAutocomplete-option': {
+                            padding: 0,
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.08)',
+                            },
+                            '&.Mui-focused': {
+                              bgcolor: 'rgba(255, 255, 255, 0.12)',
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <Typography sx={{ 
-                        px: 2, 
-                        py: 1.5, 
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        fontSize: '14px',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-                      }}>
-                        Suggested people
-                      </Typography>
-                      {children}
-                    </Paper>
+                        }}
+                      >
+                        <Typography sx={{
+                          px: 2,
+                          py: 1.5,
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '14px',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          Suggested people
+                        </Typography>
+                        {children}
+                      </Paper>
                     )}
                   />
                 )}
-                {showSearch && (  
+                {showSearch && (
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Button 
-                      variant="contained" 
-                    size="small"
-                    disabled={isSharing}
-                    onClick={handleShare}
-                  >
-                    {isSharing ? (
-                      <CircularProgress size={20} color="inherit" />
-                    ) : shareSuccess ? (
-                      <CheckIcon sx={{ color: 'success.main' }} />
-                    ) : (
-                      'Share'
-                    )}
-                  </Button>
-                </Box>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      disabled={isSharing}
+                      onClick={handleShare}
+                    >
+                      {isSharing ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : shareSuccess ? (
+                        <CheckIcon sx={{ color: 'success.main' }} />
+                      ) : (
+                        'Share'
+                      )}
+                    </Button>
+                  </Box>
                 )}
               </>
             )}
-            
+
 
             {showPermissions && (
-              <Box sx={{ 
-                p: 2, 
+              <Box sx={{
+                p: 2,
                 borderRadius: 2,
                 bgcolor: 'background.paper',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
               }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   mb: 2
                 }}>
@@ -418,7 +432,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                         handleMakePrivate();
                       }
                     }}
-                    size="small" 
+                    size="small"
                     sx={{
                       mt: 1,
                       '& .MuiSwitch-switchBase.Mui-checked': {
@@ -434,15 +448,15 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                       },
                     }} />
                 </Box>
-                <Box sx={{ 
-                  display: 'flex', 
+                <Box sx={{
+                  display: 'flex',
                   alignItems: 'center',
                   gap: 1,
                   color: 'text.secondary'
                 }}>
                   <LockIcon fontSize="small" />
                   <Typography variant="body2">
-                    This file is currently private
+                    {isPublic ? "This file is public" : "This file is currently private"}
                   </Typography>
                 </Box>
               </Box>

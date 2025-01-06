@@ -69,6 +69,8 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
   { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
   { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  // { id: 'shared_with', numeric: false, label: 'Shared With', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'is_public', numeric: false, label: 'Public', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
@@ -152,6 +154,7 @@ export default function Files() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
+  const [selectedFileInfo, setSelectedFileInfo] = useState<any[]>([]);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
@@ -399,6 +402,12 @@ export default function Files() {
     setSelectedDeviceNames(newSelectedDeviceNames);
     console.log(newSelectedFileNames);
     console.log(selectedFileNames);
+    // Get file info for selected files and update selectedFileInfo state
+    const newSelectedFileInfo = newSelected
+      .map((id) => fileRows.find((file) => file.id === id))
+      .filter((file) => file !== undefined);
+    setSelectedFileInfo(newSelectedFileInfo);
+    console.log('Selected File Info:', newSelectedFileInfo);
   };
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
@@ -707,9 +716,10 @@ export default function Files() {
               </Grid>
               <Grid item paddingRight={1}>
                 <Tooltip title="Share File">
-                  <ShareFileButton 
-                    selectedFileNames={selectedFileNames} 
-                    onShare={() => handleShareModalOpen(selectedFileNames[0])} 
+                  <ShareFileButton
+                    selectedFileNames={selectedFileNames}
+                    selectedFileInfo={selectedFileInfo}
+                    onShare={() => handleShareModalOpen(selectedFileNames[0])}
                   />
                 </Tooltip>
               </Grid>
@@ -910,6 +920,19 @@ export default function Files() {
                                 </TableCell>
                               )}
 
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.is_public ? 'Public' : 'Private'}
+                              </TableCell>
+
                               {isCloudSync && (
                                 <TableCell
                                   align="left"
@@ -1033,8 +1056,8 @@ export default function Files() {
           </CardContent>
         </Card>
       </Stack>
-      <Dialog 
-        open={isShareModalOpen} 
+      <Dialog
+        open={isShareModalOpen}
         onClose={handleShareModalClose}
         maxWidth="sm"
         fullWidth
