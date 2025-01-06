@@ -31,6 +31,7 @@ export default function Friends() {
   const [activeSection, setActiveSection] = useState('all-friends');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [friendInfo, setFriendInfo] = useState<any>(null);
   const [updates, setUpdates] = useState<any[]>([]);
   const { username } = useAuth();
 
@@ -38,6 +39,20 @@ export default function Friends() {
   const [friends, setFriends] = useState<any[]>([]);
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
+
+  useEffect(() => {
+    handlers.users.getUserInfo(selectedFriend?.username || '')
+      .then(response => {
+        if (response && response.data) {
+          setFriendInfo(response.data.user_data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching friends:', error);
+      });
+  }, [selectedFriend, updates]);
+
 
   useEffect(() => {
     handlers.users.getFriends(username || '')
@@ -171,7 +186,7 @@ export default function Friends() {
                     <Avatar sx={{ mr: 2 }}>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
                     <ListItemText
                       primary={`${friend.first_name || ''} ${friend.last_name || ''}`.trim() || 'Unknown User'}
-                      secondary={friend.status}
+                      secondary={friend.username}
                     />
                   </ListItemButton>
                 ))
@@ -260,7 +275,10 @@ export default function Friends() {
                       </Typography>
                     </Stack>
                   </Stack>
-                  <IconButton color="error">
+                  <IconButton color="error" onClick={() => {
+                    handlers.users.removeFriend(username || '', selectedFriend.username || '')
+                    setUpdates(prevUpdates => [...prevUpdates, 'friend_removed']);
+                  }}>
                     <PersonRemoveIcon />
                   </IconButton>
                 </Box>
@@ -269,16 +287,22 @@ export default function Friends() {
 
                 <Typography variant="h6">Statistics</Typography>
                 <Grid container spacing={3}>
-                  {Object.entries(selectedFriend.stats).map(([key, value]) => (
-                    <Grid item xs={4} key={key}>
-                      <Card variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="h4" align="center">{String(value)}</Typography>
-                        <Typography variant="body2" align="center" color="text.secondary">
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
-                        </Typography>
-                      </Card>
+                  {selectedFriend.stats ? (
+                    Object.entries(selectedFriend.stats).map(([key, value]) => (
+                      <Grid item xs={4} key={key}>
+                        <Card variant="outlined" sx={{ p: 2 }}>
+                          <Typography variant="h4" align="center">{String(value)}</Typography>
+                          <Typography variant="body2" align="center" color="text.secondary">
+                            {key.charAt(0).toUpperCase() + key.slice(1)}
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    ))
+                  ) : (
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color="text.secondary">No statistics available</Typography>
                     </Grid>
-                  ))}
+                  )}
                 </Grid>
 
                 <Typography variant="h6">Mutual Friends</Typography>

@@ -21,7 +21,7 @@ export async function removeFriend(
       return 'success';
     }
     if (result === 'fail') {
-      console.log("remove friend failed");
+      console.log("remove friend failed, ", response);
       return 'failed';
     }
 
