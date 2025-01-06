@@ -8,8 +8,8 @@ import { CONFIG } from '../../config/config';
 
 export async function shareFile(
     file_name: string,
-    username: string,
-    friend_username: string,
+    username: string | null,
+    friend_username: string | null,
 ) {
 
 

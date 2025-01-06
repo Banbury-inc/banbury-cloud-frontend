@@ -5,6 +5,8 @@ import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
 import { styled } from '@mui/material/styles';
 import { handlers } from '../../handlers';
+import { neuranet } from '../../neuranet';
+import { useAuth } from '../../context/AuthContext';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -38,6 +40,7 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const { username } = useAuth();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -283,6 +286,13 @@ export default function ShareFileButton({ selectedFileNames, onShare }: ShareFil
                     size="small"
                     onClick={() => {
                       console.log('Sharing with:', selectedUsers);
+
+                      for (const user of selectedUsers) {
+                        for (const file of selectedFileNames) {
+                          const result = neuranet.files.shareFile(file, username, user.username);
+                          console.log('result', result);
+                        }
+                      }
                       handleClose();
                     }}
                   >
