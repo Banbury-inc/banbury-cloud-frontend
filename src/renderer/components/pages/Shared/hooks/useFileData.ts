@@ -144,12 +144,14 @@ export const useFileData = (
         kind: file.kind,
         file_path: file.file_path,
         date_uploaded: file.date_uploaded,
+        date_modified: file.date_modified,
         deviceID: (index + 1).toString(),
         device_name: device.device_name,
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
         file_priority: file.file_priority,
         device_ids: device.device_ids,
+        owner: file.owner,
       }));
     });
   };

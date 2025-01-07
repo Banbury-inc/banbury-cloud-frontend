@@ -9,6 +9,7 @@ export interface FileData {
   kind: string;
   deviceID: string;
   deviceName: string;
+  owner: string;
   children?: FileData[];
   original_device: string;
 }
@@ -23,12 +24,15 @@ export interface DatabaseData {
   file_path: string;
   file_type: string;
   deviceID: string;
+  owner: string;
   device_name: string;
   helpers: number;
   available: string;
   file_parent: string;
   children?: DatabaseData[];
   original_device: string;
+  is_public: boolean;
+  date_modified: string;
   global_file_path?: string;
   setGlobal_file_path?: (path: string) => void;
 } 

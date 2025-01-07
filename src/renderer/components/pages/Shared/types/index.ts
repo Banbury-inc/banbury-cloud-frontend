@@ -4,6 +4,7 @@ export interface DatabaseData {
   file_name: string;
   kind: string;
   date_uploaded: string;
+  date_modified: string;
   file_size: string;
   file_path: string;
   deviceID: string;
@@ -12,6 +13,7 @@ export interface DatabaseData {
   available: string;
   file_priority: string;
   device_ids: string[];
+  owner: string;
 }
 
 export type Order = 'asc' | 'desc';

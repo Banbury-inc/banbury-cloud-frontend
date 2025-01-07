@@ -65,8 +65,12 @@ import { fetchFileSyncData } from './utils/fetchFileSyncData';
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
-  { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
-  { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
+  { id: 'device_name', numeric: false, label: 'Device Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'owner', numeric: false, label: 'Owner', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'date_modified', numeric: false, label: 'Last Modified', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'date_uploaded', numeric: false, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
 
@@ -633,11 +637,9 @@ export default function Shared() {
                               </TableCell>
 
 
-
                               <TableCell
                                 align="left"
                                 padding="normal"
-                                onClick={(e) => e.stopPropagation()}
                                 sx={{
                                   borderBottomColor: '#424242',
                                   whiteSpace: 'nowrap',
@@ -645,54 +647,15 @@ export default function Shared() {
                                   textOverflow: 'ellipsis',
                                 }}
                               >
-                                <Box sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  width: '75%',
-                                  position: 'relative',
-                                  border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
-                                  borderRadius: '2px',  // Optional: slight rounding of corners
-                                }}>
-                                  <LinearProgress
-                                    variant="determinate"
-                                    value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
-                                    sx={{
-                                      flexGrow: 1,
-                                      height: 16,
-                                      backgroundColor: 'transparent',
-                                      borderRadius: '1px',  // Match the outer border radius
-                                      '& .MuiLinearProgress-bar': {
-                                        backgroundColor: (theme) => {
-                                          const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
-                                          if (percentage >= 80) return '#1DB954';
-                                          if (percentage >= 50) return '#CD853F';
-                                          return '#FF4444';
-                                        }
-                                      }
-                                    }}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      position: 'absolute',
-                                      width: '100%',
-                                      textAlign: 'center',
-                                      color: '#ffffff',
-                                      mixBlendMode: 'normal'
-                                    }}
-                                  >
-                                    {Array.isArray(row.device_ids) ?
-                                      `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` :
-                                      '0%'
-                                    }
-                                  </Typography>
-                                </Box>
+                                {typeof row.kind === 'string' 
+                                  ? row.kind.charAt(0).toUpperCase() + row.kind.slice(1)
+                                  : String(row.kind)}
                               </TableCell>
+
 
                               <TableCell
                                 align="left"
                                 padding="normal"
-                                onClick={(e) => e.stopPropagation()}
                                 sx={{
                                   borderBottomColor: '#424242',
                                   whiteSpace: 'nowrap',
@@ -700,24 +663,66 @@ export default function Shared() {
                                   textOverflow: 'ellipsis',
                                 }}
                               >
-                                <Rating
-                                  name={`priority-${row.id}`}
-                                  value={Number(row.file_priority)}
-                                  max={5}
-                                  onChange={(event, newValue) => handlePriorityChange(row, newValue)}
-                                  sx={{
-                                    fontSize: '16px',
-                                    '& .MuiRating-iconFilled': {
-                                      color: (theme) => {
-                                        const priority = Number(row.file_priority);
-                                        if (priority >= 4) return '#FF9500';
-                                        if (priority === 3) return '#FFCC00';
-                                        return '#1DB954';
-                                      }
-                                    }
-                                  }}
-                                />
+                                {row.available}
                               </TableCell>
+
+
+
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.device_name}
+                              </TableCell>
+
+
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.owner}
+                              </TableCell>
+
+
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.date_uploaded}
+                              </TableCell>
+
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.date_modified}
+                              </TableCell>
+
+
                             </TableRow>
                           );
                         })}
