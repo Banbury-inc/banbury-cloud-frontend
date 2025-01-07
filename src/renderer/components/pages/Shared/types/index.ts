@@ -13,6 +13,7 @@ export interface DatabaseData {
   available: string;
   file_priority: string;
   device_ids: string[];
+  original_device: string;
   owner: string;
 }
 

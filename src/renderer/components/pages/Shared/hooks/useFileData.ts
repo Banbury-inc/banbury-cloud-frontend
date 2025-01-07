@@ -147,6 +147,7 @@ export const useFileData = (
         date_modified: file.date_modified,
         deviceID: (index + 1).toString(),
         device_name: device.device_name,
+        original_device: device.device_name,
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
         file_priority: file.file_priority,

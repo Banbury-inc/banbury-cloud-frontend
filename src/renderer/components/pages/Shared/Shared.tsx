@@ -67,7 +67,7 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'file_size', numeric: false, label: 'Size', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'kind', numeric: false, label: 'Kind', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
-  { id: 'device_name', numeric: false, label: 'Device Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'original_device', numeric: false, label: 'Original Device', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'owner', numeric: false, label: 'Owner', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'date_modified', numeric: false, label: 'Last Modified', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'date_uploaded', numeric: false, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
@@ -678,7 +678,7 @@ export default function Shared() {
                                   textOverflow: 'ellipsis',
                                 }}
                               >
-                                {row.device_name}
+                                {row.original_device}
                               </TableCell>
 
 
