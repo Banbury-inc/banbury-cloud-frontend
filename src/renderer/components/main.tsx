@@ -8,9 +8,11 @@ import Typography from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
 import Icon from '@mui/material/Icon';
 import Divider from '@mui/material/Divider';
+import ShareIcon from '@mui/icons-material/Share';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import Files from './pages/Files/Files';
@@ -32,6 +34,7 @@ import Tooltip from '@mui/material/Tooltip';
 import os from 'os';
 import path from 'path';
 import { neuranet } from '../neuranet';
+import Shared from './pages/Shared/Shared';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -181,6 +184,7 @@ export default function PermanentDrawerLeft() {
         <List>
           {['Files',
             'Sync',
+            'Shared',
             'Devices',
             'Friends'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
@@ -205,8 +209,10 @@ export default function PermanentDrawerLeft() {
                           case 1:
                             return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
-                            return <DevicesIcon fontSize='inherit' />;
+                            return <PeopleOutlinedIcon fontSize='inherit' />;
                           case 3:
+                            return <DevicesIcon fontSize='inherit' />;
+                          case 4:
                             return <AccountBoxIcon fontSize='inherit' />;
                           default:
                             return null;
@@ -270,6 +276,8 @@ export default function PermanentDrawerLeft() {
               return <Files />;
             case 'Sync':
               return <Sync />;
+            case 'Shared':
+              return <Shared />;
             case 'Devices':
               return <Devices />;
             case 'AI':

@@ -66,6 +66,8 @@ export async function fetchData(
         file_parent: file.file_parent,
         original_device: file.original_device,
         available: device.online ? "Available" : "Unavailable",
+        shared_with: file.shared_with || [],
+        is_public: file.is_public || false
       }));
     });
 
