@@ -1,4 +1,5 @@
 export interface FileData {
+  _id: string;
   id: string;
   fileType: string;
   fileName: string;
@@ -16,6 +17,7 @@ export interface FileData {
 }
 
 export interface DatabaseData {
+  _id: string;
   id: string;
   file_name: string;
   kind: string;

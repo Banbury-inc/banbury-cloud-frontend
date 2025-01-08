@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import CheckIcon from '@mui/icons-material/Check';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LockIcon from '@mui/icons-material/Lock';
+import { CONFIG } from '../../config/config';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -38,8 +39,6 @@ const ShareButton = styled(Button)(({ theme }) => ({
 }));
 
 export default function ShareFileButton({ selectedFileNames, selectedFileInfo, onShare }: ShareFileButtonProps) {
-  console.log('ShareFileButton - selectedFileInfo:', selectedFileInfo);
-  console.log('ShareFileButton - is_public value:', selectedFileInfo[0]?.is_public);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -58,9 +57,6 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
     setAnchorEl(event.currentTarget);
     setIsPublic(selectedFileInfo[0]?.is_public ?? false);
   };
-
-  console.log('isPublic', isPublic);
-
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -81,8 +77,10 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
     setShowPermissions(true);
   };
 
-  const handleCopyLink = () => {
-    // Implement copy link functionality here
+  const handleCopyLink = async () => {
+    const file_id = selectedFileInfo[0]._id;
+    const link = `${CONFIG.url}filedownload/${username}/${file_id}`;
+    navigator.clipboard.writeText(link);
     handleClose();
   };
 
@@ -93,7 +91,6 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
       handlers.users.typeahead(query)
         .then(response => {
           if (response && response.data) {
-            console.log("response", response.data);
             setSearchResults(response.data.users || []);
           } else {
             setSearchResults([]);
@@ -143,8 +140,6 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
 
   const handleMakePublic = async () => {
-    console.log("selectedFileInfo", selectedFileInfo);
-    console.log("handling make public")
     const device_name = selectedFileInfo[0].device_name;
     try {
       // Wait for all share operations to complete
@@ -167,8 +162,6 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
 
   const handleMakePrivate = async () => {
-    console.log("selectedFileInfo", selectedFileInfo);
-    console.log("handling make private")
     const device_name = selectedFileInfo[0].device_name;
     try {
       // Wait for all share operations to complete

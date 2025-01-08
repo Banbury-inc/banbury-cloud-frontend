@@ -392,6 +392,7 @@ export default function Files() {
 
     const file_name = fileRows.find((file) => file.id === id)?.file_name;
     const device_name = fileRows.find((file) => file.id === id)?.device_name;
+    console.log(newSelected)
     const newSelectedFileNames = newSelected
       .map((id) => fileRows.find((file) => file.id === id)?.file_name)
       .filter((name) => name !== undefined) as string[];
@@ -407,7 +408,6 @@ export default function Files() {
       .map((id) => fileRows.find((file) => file.id === id))
       .filter((file) => file !== undefined);
     setSelectedFileInfo(newSelectedFileInfo);
-    console.log('Selected File Info:', newSelectedFileInfo);
   };
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
@@ -416,7 +416,6 @@ export default function Files() {
     console.log(websocket);
     setSelectedFiles(selected);
     console.log(selectedFileNames);
-    console.log('handling download click');
 
     let task_description = 'Downloading ' + selectedFileNames.join(', ');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);

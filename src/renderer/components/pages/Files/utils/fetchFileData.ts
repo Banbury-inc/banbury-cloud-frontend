@@ -38,7 +38,6 @@ export const fetchFileData = async (
             }
         );
 
-        console.log(fileInfoResponse.data.files);
 
         // Filter out files that already exist before returning
         const existingFileKeys = new Set(
