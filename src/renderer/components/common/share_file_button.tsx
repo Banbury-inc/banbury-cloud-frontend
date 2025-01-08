@@ -52,6 +52,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
   const [shareSuccess, setShareSuccess] = useState(false);
   const [togglePublicSuccess, setTogglePublicSuccess] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
+  const [copyLinkSuccess, setCopyLinkSuccess] = useState(false);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -67,6 +68,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
     setSearchQuery('');
     setIsSharing(false);
     setShareSuccess(false);
+    setCopyLinkSuccess(false);
   };
 
   const handleAddPeople = () => {
@@ -81,7 +83,15 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
     const file_id = selectedFileInfo[0]._id;
     const link = `${CONFIG.url}filedownload/${username}/${file_id}`;
     navigator.clipboard.writeText(link);
-    handleClose();
+
+
+    setCopyLinkSuccess(true);
+
+    // Close after showing success for 2 seconds
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+
   };
 
   // Update search handler to handle the API response correctly
@@ -234,7 +244,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
                 <ShareButton onClick={handleCopyLink}>
                   <LinkIcon fontSize="inherit" sx={{ mr: 1 }} />
-                  <Typography fontSize="body1">Copy link</Typography>
+                  <Typography fontSize="body1">{copyLinkSuccess ? <CheckIcon sx={{ color: 'success.main' }} /> : 'Copy link'}</Typography>
                 </ShareButton>
               </>
             ) : (
