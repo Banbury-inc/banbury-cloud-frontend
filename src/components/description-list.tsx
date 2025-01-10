@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-
+import React from 'react'
 export function DescriptionList({ className, ...props }: React.ComponentPropsWithoutRef<'dl'>) {
   return (
     <dl
