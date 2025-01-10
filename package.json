@@ -50,6 +50,7 @@
     "electron-updater": "^6.3.9",
     "fast-speedtest-api": "^0.3.2",
     "frameless-titlebar": "^2.1.4",
+    "framer-motion": "^11.17.0",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
