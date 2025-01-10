@@ -81,7 +81,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
   const handleCopyLink = async () => {
     const file_id = selectedFileInfo[0]._id;
-    const link = `http://banbury.io/filedownload/${username}/${file_id}`;
+    const link = `http://www.banbury.io/filedownload/${username}/${file_id}`;
     navigator.clipboard.writeText(link);
 
 
