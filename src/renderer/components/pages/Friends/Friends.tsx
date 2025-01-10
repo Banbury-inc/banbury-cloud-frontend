@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Stack from '@mui/material/Stack';
-import { Button, Divider, FormControlLabel, FormGroup, Slider, Switch, TextField, Typography, useMediaQuery } from '@mui/material';
+import { Divider, TextField, Typography, useMediaQuery } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { CardContent, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
@@ -17,6 +17,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, InputAdornment, Badge, Avatar, Tabs, Tab } from '@mui/material';
 import { handlers } from '../../../handlers';
 import { useAuth } from '../../../context/AuthContext';
+import { TailwindButton } from './Tailwindbutton';
+import { Button } from '../../../../components/button'
+import { Heading, Subheading } from '../../../../components/heading'
+import { Text } from '../../../../components/text'
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import { CircularProgress } from '@mui/material';
 
 interface SearchResult {
   id: number;
@@ -39,18 +47,24 @@ export default function Friends() {
   const [friends, setFriends] = useState<any[]>([]);
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [followDialog, setFollowDialog] = useState<'friends' | null>(null);
+  const [followList, setFollowList] = useState<any[]>([]);
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
 
   useEffect(() => {
-    handlers.users.getUserInfo(selectedFriend?.username || '')
-      .then(response => {
-        if (response && response.data) {
-          setFriendInfo(response.data.user_data);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching friends:', error);
-      });
+    if (selectedFriend) {
+      handlers.users.getUserInfo(selectedFriend?.username || '')
+        .then(response => {
+          if (response && response) {
+            console.log("response", response);
+            setFriendInfo(response);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching friends:', error);
+        });
+    }
   }, [selectedFriend, updates]);
 
 
@@ -104,6 +118,26 @@ export default function Friends() {
     }
   };
 
+  const handleOpenFriends = async () => {
+    setIsLoadingFriends(true);
+    setFollowDialog('friends');
+    try {
+      const response = await handlers.users.getUserFriends(selectedFriend.username);
+      if (response && response.data) {
+        setFollowList(response.data.friends);
+      }
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+      setFollowList([]);
+    }
+    setIsLoadingFriends(false);
+  };
+
+
+  const handleCloseDialog = () => {
+    setFollowDialog(null);
+    setFollowList([]);
+  };
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -167,8 +201,8 @@ export default function Friends() {
               <Tab label="Friends" value="all-friends" />
               <Tab
                 label={
-                  <Badge 
-                    badgeContent={friendRequests.length} 
+                  <Badge
+                    badgeContent={friendRequests.length}
                     sx={{
                       '& .MuiBadge-badge': {
                         backgroundColor: '#ef4444',
@@ -269,7 +303,7 @@ export default function Friends() {
                   <ListItemButton
                     dense
                     key={user.id}
-                    sx={{ borderRadius: 1, mb: 0  }}
+                    sx={{ borderRadius: 1, mb: 0 }}
                   >
                     <Avatar sx={{ mr: 2, width: 24, height: 24, fontSize: '12px' }}>
                       {user.first_name ? user.first_name[0] : '?'}
@@ -300,10 +334,28 @@ export default function Friends() {
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.first_name ? selectedFriend.first_name[0] : '?'}</Avatar>
                     <Stack>
-                      <Typography variant="h5">{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Typography>
+                      <Heading level={5}>{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Heading>
                       <Typography variant="body2" color="text.secondary">
-                        {selectedFriend.status}
+                        {selectedFriend.username}
                       </Typography>
+                      <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ cursor: 'pointer' }}
+                          onClick={handleOpenFriends}
+                        >
+                          <strong>{friendInfo?.friends?.length || 0}</strong> friends
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ cursor: 'pointer' }}
+                          onClick={handleOpenFriends}
+                        >
+                          <strong>{friendInfo?.friends?.length || 0}</strong> friends
+                        </Typography>
+                      </Stack>
                     </Stack>
                   </Stack>
                   <IconButton color="error" onClick={() => {
@@ -316,24 +368,28 @@ export default function Friends() {
 
                 <Divider />
 
-                <Typography variant="h6">Statistics</Typography>
-                <Grid container spacing={3}>
-                  {selectedFriend.stats ? (
-                    Object.entries(selectedFriend.stats).map(([key, value]) => (
-                      <Grid item xs={4} key={key}>
-                        <Card variant="outlined" sx={{ p: 2 }}>
-                          <Typography variant="h4" align="center">{String(value)}</Typography>
-                          <Typography variant="body2" align="center" color="text.secondary">
-                            {key.charAt(0).toUpperCase() + key.slice(1)}
-                          </Typography>
-                        </Card>
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="text.secondary">No statistics available</Typography>
-                    </Grid>
-                  )}
+                <Typography variant="h6">Personal Information</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">First Name</Typography>
+                    <Typography variant="body1">{friendInfo?.first_name || 'Not available'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">Last Name</Typography>
+                    <Typography variant="body1">{friendInfo?.last_name || 'Not available'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">Email address</Typography>
+                    <Typography variant="body1">{friendInfo?.email || 'Not available'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">Phone</Typography>
+                    <Typography variant="body1">{friendInfo?.phone || 'Not available'}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="text.secondary">Bio</Typography>
+                    <Typography variant="body1">{friendInfo?.bio || 'Not available'}</Typography>
+                  </Grid>
                 </Grid>
 
                 <Typography variant="h6">Mutual Friends</Typography>
@@ -358,6 +414,48 @@ export default function Friends() {
           </CardContent>
         </Card>
       </Stack>
+      <Dialog
+        open={followDialog !== null}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {followDialog === 'friends' ? 'Friends' : 'Following'}
+        </DialogTitle>
+        <DialogContent>
+          {isLoadingFriends ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress size={24} />
+            </Box>
+          ) : (
+            <List>
+              {followList.map((user) => (
+                <ListItemButton
+                  key={user.id}
+                  dense
+                  sx={{ borderRadius: 1 }}
+                >
+                  <Avatar
+                    sx={{ mr: 2, width: 32, height: 32, fontSize: '14px' }}
+                  >
+                    {user.first_name ? user.first_name[0] : '?'}
+                  </Avatar>
+                  <ListItemText
+                    primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
+                    secondary={user.username}
+                  />
+                </ListItemButton>
+              ))}
+              {followList.length === 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
+                  No {followDialog} found
+                </Typography>
+              )}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

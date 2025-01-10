@@ -6,16 +6,33 @@ export async function getUserInfo(username: string) {
   try {
     const response = await axios.get<{
       result: string;
-      user_data: any;
+      first_name: string;
+      last_name: string;
+      phone_number: string;
+      email: string;
+      picture: any;
+      devices: any;
+      friends: any[];
+      status: any;
     }>(
-      `${CONFIG.url}/users/get_user_info/${username}`
+      `${CONFIG.url}/users/getuserinfo/${username}`
     );
 
-    if (response.data.result === 'success') {
+    if (response.data.status === 'success') {
       console.log("get user info success");
-      return response;
+      const user_data = {
+        "first_name": response.data.first_name,
+        "last_name": response.data.last_name,
+        "phone_number": response.data.phone_number,
+        "email": response.data.email,
+        "picture": response.data.picture,
+        "devices": response.data.devices,
+        "friends": response.data.friends,
+      }
+      console.log("user_data", user_data);
+      return user_data;
     }
-    console.log("get user info failed");
+    console.log("get user info failed. response:", response);
     return null;
   } catch (error) {
     console.error('Error fetching data:', error);
