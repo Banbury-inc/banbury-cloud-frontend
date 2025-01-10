@@ -35,6 +35,7 @@ import os from 'os';
 import path from 'path';
 import { neuranet } from '../neuranet';
 import Shared from './pages/Shared/Shared';
+import FolderSharedOutlinedIcon from '@mui/icons-material/FolderSharedOutlined';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -203,17 +204,17 @@ export default function PermanentDrawerLeft() {
                     >
 
                       {(() => {
-                        switch (index % 4) {
+                        switch (index % 5) {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
                             return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
-                            return <PeopleOutlinedIcon fontSize='inherit' />;
+                            return <FolderSharedOutlinedIcon fontSize='inherit' />;
                           case 3:
                             return <DevicesIcon fontSize='inherit' />;
                           case 4:
-                            return <AccountBoxIcon fontSize='inherit' />;
+                            return <PeopleOutlinedIcon fontSize='inherit' />;
                           default:
                             return null;
                         }
