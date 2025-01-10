@@ -8,17 +8,20 @@ import Typography from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
 import Icon from '@mui/material/Icon';
 import Divider from '@mui/material/Divider';
+import ShareIcon from '@mui/icons-material/Share';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import Files from './pages/Files/Files';
+import Friends from './pages/Friends/Friends';
 import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import AI from './pages/AI';
-import Settings from './pages/Settings';
+import Settings from './pages/Settings/Settings';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -31,6 +34,8 @@ import Tooltip from '@mui/material/Tooltip';
 import os from 'os';
 import path from 'path';
 import { neuranet } from '../neuranet';
+import Shared from './pages/Shared/Shared';
+import FolderSharedOutlinedIcon from '@mui/icons-material/FolderSharedOutlined';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -180,8 +185,9 @@ export default function PermanentDrawerLeft() {
         <List>
           {['Files',
             'Sync',
+            'Shared',
             'Devices',
-            'Profile'].map((text, index) => (
+            'Friends'].map((text, index) => (
               <Tooltip title={text} key={text} placement="right">
                 <ListItem key={text} sx={{ padding: '2px', paddingTop: '2px' }}>
                   <Button
@@ -198,15 +204,17 @@ export default function PermanentDrawerLeft() {
                     >
 
                       {(() => {
-                        switch (index % 4) {
+                        switch (index % 5) {
                           case 0:
                             return <FolderOutlinedIcon fontSize='inherit' />;
                           case 1:
                             return <CloudOutlinedIcon fontSize='inherit' />;
                           case 2:
-                            return <DevicesIcon fontSize='inherit' />;
+                            return <FolderSharedOutlinedIcon fontSize='inherit' />;
                           case 3:
-                            return <AccountBoxIcon fontSize='inherit' />;
+                            return <DevicesIcon fontSize='inherit' />;
+                          case 4:
+                            return <PeopleOutlinedIcon fontSize='inherit' />;
                           default:
                             return null;
                         }
@@ -269,12 +277,14 @@ export default function PermanentDrawerLeft() {
               return <Files />;
             case 'Sync':
               return <Sync />;
+            case 'Shared':
+              return <Shared />;
             case 'Devices':
               return <Devices />;
             case 'AI':
               return <AI />;
-            case 'Profile':
-              return <Profile />;
+            case 'Friends':
+              return <Friends />;
             case 'Settings':
               return <Settings />;
             default:

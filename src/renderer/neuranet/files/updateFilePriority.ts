@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { neuranet } from '..'
 import * as DateUtils from '../../utils/dateUtils';
-import { useAuth } from '../../context/AuthContext';
 import { CONFIG } from '../../config/config';
 
 

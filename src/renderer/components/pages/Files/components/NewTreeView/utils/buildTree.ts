@@ -12,6 +12,8 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     file_name: file.file_name,
     file_size: file.file_size,
     file_path: file.file_path,
+    shared_with: file.shared_with,
+    is_public: file.is_public,
     kind: file.kind,
     helpers: file.helpers,
     date_uploaded: file.date_uploaded,
@@ -31,11 +33,14 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
 
   // Create the root "Core" node
   const coreNode: DatabaseData = {
+    _id: '',
     id: 'Core',
     file_type: 'directory',
     file_name: 'Core',
     file_size: '',
     file_path: '',
+    shared_with: [],
+    is_public: false,
     kind: 'Core',
     file_parent: '',
     date_uploaded: '',
@@ -49,11 +54,14 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
 
   // Create "Devices" and "Cloud Sync" nodes
   const devicesNode: DatabaseData = {
+    _id: '',
     id: 'Devices',
     file_type: 'directory',
     file_name: 'Devices',
     file_size: '',
     file_path: '',
+    shared_with: [],
+    is_public: false,
     kind: 'DevicesFolder',
     file_parent: 'Core',
     date_uploaded: '',
@@ -91,12 +99,15 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
     if (!devicesMap.has(uniqueDeviceKey)) {
       // Create a device node if it doesn't already exist in the map
       const deviceNode: DatabaseData = {
+        _id: file._id,
         id: `device-${uniqueDeviceKey.replace(/\s+/g, '-')}`, // Replace spaces with dashes for a cleaner ID
         file_type: 'directory',
         file_name: file.device_name || `Unnamed Device ${index}`,
         date_uploaded: '',
         file_size: '',
         file_path: '',
+        shared_with: [],
+        is_public: false,
         helpers: 0,
         available: '',
         kind: 'Device',
@@ -130,10 +141,13 @@ export function buildTree(files: DatabaseData[]): DatabaseData[] {
         // If the part doesn't exist, create a new node for this part
         const newNode: DatabaseData = {
           id: `${uniqueDeviceKey.replace(/\s+/g, '-')}-${part}-${partIndex}`,
+          _id: file._id,
           file_type: isLastPart ? file.file_type : 'directory', // Set as 'directory' if it's not the last part
           file_name: part, // Name the node after the current part of the path
           date_uploaded: '',
           file_size: '',
+          shared_with: [],
+          is_public: false,
           helpers: 0,
           available: '',
           // Only use the original file's path for the new node if it's the last part (actual file or directory)

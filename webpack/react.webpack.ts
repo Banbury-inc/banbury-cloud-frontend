@@ -32,6 +32,10 @@ const config: Configuration = {
         },
       },
       {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader", "postcss-loader"]
+      },
+      {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
         type: "asset/resource",
       },
@@ -55,7 +59,7 @@ const config: Configuration = {
   },
   plugins: [
     new HtmlWebpackPlugin({ template: path.resolve(rootPath, "index.html") }),
- ],
+  ],
 };
 export default config;
 

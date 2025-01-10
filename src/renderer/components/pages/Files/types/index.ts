@@ -5,6 +5,8 @@ export interface DatabaseData {
   date_uploaded: string;
   file_size: string;
   file_path: string;
+  shared_with: string[];
+  is_public: boolean;
   deviceID: string;
   device_name: string;
   helpers: number;

@@ -49,7 +49,7 @@ import TaskBoxButton from '../../TaskBoxButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
-
+import ShareFileButton from '../../common/share_file_button';
 
 import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
@@ -58,6 +58,7 @@ import { useFileData } from './hooks/useFileData';
 import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
+import Dialog from '@mui/material/Dialog';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -68,6 +69,8 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'available', numeric: false, label: 'Status', isVisibleOnSmallScreen: false, isVisibleNotOnCloudSync: true },
   { id: 'device_ids', numeric: false, label: 'Coverage', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
   { id: 'file_priority', numeric: false, label: 'Priority', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: false },
+  // { id: 'shared_with', numeric: false, label: 'Shared With', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
+  { id: 'is_public', numeric: false, label: 'Public', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
@@ -93,6 +96,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           }}
         >
           <Checkbox
+            size="small"
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -150,6 +154,7 @@ export default function Files() {
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
+  const [selectedFileInfo, setSelectedFileInfo] = useState<any[]>([]);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
@@ -168,16 +173,25 @@ export default function Files() {
     sync_files,
     first_name,
     last_name,
+    phone_number,
+    email,
+    picture,
     devices,
     setFirstname,
     setLastname,
+    setPhoneNumber,
+    setEmail,
     setDevices,
     setSyncFiles,
+    setPicture,
     redirect_to_login,
     setredirect_to_login,
     taskbox_expanded,
     setTaskbox_expanded,
   } = useAuth();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState('');
+
   const getSelectedFileNames = () => {
     return selected
       .map((id) => {
@@ -378,6 +392,7 @@ export default function Files() {
 
     const file_name = fileRows.find((file) => file.id === id)?.file_name;
     const device_name = fileRows.find((file) => file.id === id)?.device_name;
+    console.log(newSelected)
     const newSelectedFileNames = newSelected
       .map((id) => fileRows.find((file) => file.id === id)?.file_name)
       .filter((name) => name !== undefined) as string[];
@@ -388,6 +403,11 @@ export default function Files() {
     setSelectedDeviceNames(newSelectedDeviceNames);
     console.log(newSelectedFileNames);
     console.log(selectedFileNames);
+    // Get file info for selected files and update selectedFileInfo state
+    const newSelectedFileInfo = newSelected
+      .map((id) => fileRows.find((file) => file.id === id))
+      .filter((file) => file !== undefined);
+    setSelectedFileInfo(newSelectedFileInfo);
   };
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
@@ -396,7 +416,6 @@ export default function Files() {
     console.log(websocket);
     setSelectedFiles(selected);
     console.log(selectedFileNames);
-    console.log('handling download click');
 
     let task_description = 'Downloading ' + selectedFileNames.join(', ');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
@@ -541,11 +560,21 @@ export default function Files() {
         last_name: string;
         phone_number: string;
         email: string;
+        picture: string;
       }>(`${CONFIG.url}/users/getuserinfo/${username}/`);
 
-      const { first_name, last_name } = userInfoResponse.data;
+      const { first_name, last_name, phone_number, email } = userInfoResponse.data;
+
+      console.log('userResponse:', userInfoResponse.data);
+
       setFirstname(first_name);
       setLastname(last_name);
+      setPhoneNumber(phone_number);
+      setEmail(email);
+      setPicture({
+        content_type: 'image/jpeg',
+        data: userInfoResponse.data.picture
+      });
     } catch (error) {
       console.error('Error fetching user info:', error);
     }
@@ -555,6 +584,15 @@ export default function Files() {
   useEffect(() => {
     fetchUserInfo();
   }, [username]);
+
+  const handleShareModalOpen = (fileName: string) => {
+    setSelectedFileName(fileName);
+    setIsShareModalOpen(true);
+  };
+
+  const handleShareModalClose = () => {
+    setIsShareModalOpen(false);
+  };
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -670,9 +708,18 @@ export default function Files() {
                 </Tooltip>
               </Grid>
               <Divider orientation="vertical" flexItem />
-              <Grid item paddingRight={2} paddingLeft={1}>
+              <Grid item paddingRight={1} paddingLeft={1}>
                 <Tooltip title="Add to Sync">
                   <AddFileToSyncButton selectedFileNames={selectedFileNames} />
+                </Tooltip>
+              </Grid>
+              <Grid item paddingRight={1}>
+                <Tooltip title="Share File">
+                  <ShareFileButton
+                    selectedFileNames={selectedFileNames}
+                    selectedFileInfo={selectedFileInfo}
+                    onShare={() => handleShareModalOpen(selectedFileNames[0])}
+                  />
                 </Tooltip>
               </Grid>
             </Grid>
@@ -690,15 +737,15 @@ export default function Files() {
           </Stack>
         </CardContent>
       </Card>
-      <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={0} sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <Stack>
           <Box display="flex" flexDirection="column" height="100%">
             <Card
               variant="outlined"
-              sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
+              sx={{ flexGrow: 0, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
             >
               <CardContent>
-                <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
+                <Grid container spacing={0} sx={{ flexGrow: 0, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                   <Grid item>
                     <FileTreeView />
                   </Grid>
@@ -780,6 +827,7 @@ export default function Files() {
                                 {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
                                   <Checkbox
                                     color="primary"
+                                    size="small"
                                     checked={isItemSelected}
                                     inputProps={{ 'aria-labelledby': labelId }}
                                   />
@@ -870,6 +918,19 @@ export default function Files() {
                                   {row.available}
                                 </TableCell>
                               )}
+
+                              <TableCell
+                                align="left"
+                                padding="normal"
+                                sx={{
+                                  borderBottomColor: '#424242',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {row.is_public ? 'Public' : 'Private'}
+                              </TableCell>
 
                               {isCloudSync && (
                                 <TableCell
@@ -994,6 +1055,13 @@ export default function Files() {
           </CardContent>
         </Card>
       </Stack>
+      <Dialog
+        open={isShareModalOpen}
+        onClose={handleShareModalClose}
+        maxWidth="sm"
+        fullWidth
+      >
+      </Dialog>
     </Box>
   );
 }

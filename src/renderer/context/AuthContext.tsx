@@ -1,10 +1,18 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+interface ImageData {
+  content_type: string;
+  data: string;
+}
+
 interface AuthContextType {
   username: string | null;
   password: string | null;
   first_name: string | null;
   last_name: string | null;
+  phone_number: string | null;
+  email: string | null;
+  picture: ImageData | null;
   updates: number;
   devices: any[] | null;
   files: any[] | [];
@@ -19,6 +27,9 @@ interface AuthContextType {
   setPassword: (password: string | null) => void;
   setFirstname: (first_name: string | null) => void;
   setLastname: (last_name: string | null) => void;
+  setPhoneNumber: (phone_number: string | null) => void;
+  setEmail: (email: string | null) => void;
+  setPicture: (picture: ImageData | null) => void;
   setGlobal_file_path: (global_file_path: string | null) => void;
   setGlobal_file_path_device: (global_file_path_device: string | null) => void;
   setFileRows: (fileRows: any[]) => void;
@@ -48,6 +59,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [password, setPass] = useState<string | null>(null);
   const [first_name, setFirst] = useState<string | null>(null);
   const [last_name, setLast] = useState<string | null>(null);
+  const [phone_number, setCellNumber] = useState<string | null>(null);
+  const [email, setmail] = useState<string | null>(null);
+  const [picture, setPicture] = useState<ImageData | null>(null);
   const [updates, setUp] = useState<number>(1);
   const [devices, setDev] = useState<any[] | null>(null);
   const [files, setFi] = useState<any[] | any[]>([]);
@@ -71,6 +85,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const setFirstname = (first_name: string | null) => {
     setFirst(first_name);
   };
+  const setPhoneNumber = (phone_number: string | null) => {
+    setCellNumber(phone_number);
+  };
+  const setEmail = (email: string | null) => {
+    setmail(email);
+  };
   const setGlobal_file_path = (global_file_path: string | null) => {
     setFile(global_file_path);
   };
@@ -79,6 +99,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
   const setLastname = (last_name: string | null) => {
     setLast(last_name);
+  };
+  const setPic = (picture: ImageData | null) => {
+    setPicture(picture);
   };
   const setUpdates = (updates: number) => {
     setUp(updates);
@@ -116,11 +139,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       password,
       first_name,
       last_name,
+      phone_number,
+      email,
       devices,
       files,
       sync_files,
       tasks,
       fileRows,
+      picture,
       global_file_path,
       global_file_path_device,
       files_is_loading,
@@ -130,6 +156,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setPassword,
       setFirstname,
       setLastname,
+      setPhoneNumber,
+      setEmail,
+      setPicture,
       setDevices,
       set_Files,
       setSyncFiles,

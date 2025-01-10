@@ -8,7 +8,7 @@ import Main from "./main";
 import { AuthProvider } from "../context/AuthContext";
 import TitleBar from 'frameless-titlebar';
 import { BrowserWindow } from 'electron';
-
+import './index.css';
 // Define the Platform type
 type Platform = 'win32' | 'linux' | 'darwin';
 

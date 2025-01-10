@@ -36,6 +36,7 @@ export const newUseFileData = (
     return devices.flatMap((device, deviceIndex) => {
       const deviceFiles = files.filter((file) => file.device_name === device.device_name);
       return deviceFiles.map((file, fileIndex) => ({
+        _id: file._id,
         id: `${device.device_name}-${file.file_path}-${deviceIndex}-${fileIndex}`,
         file_name: file.file_name,
         file_size: file.file_size,
@@ -47,6 +48,8 @@ export const newUseFileData = (
         helpers: 0,
         available: device.online ? 'Available' : 'Unavailable',
         priority: file.priority,
+        shared_with: file.shared_with,
+        is_public: file.is_public,
         device_ids: device.device_ids,
       }));
     });

@@ -1,4 +1,5 @@
 export interface FileData {
+  _id: string;
   id: string;
   fileType: string;
   fileName: string;
@@ -11,9 +12,12 @@ export interface FileData {
   deviceName: string;
   children?: FileData[];
   original_device: string;
+  shared_with: string[];
+  is_public: boolean;
 }
 
 export interface DatabaseData {
+  _id: string;
   id: string;
   file_name: string;
   kind: string;
@@ -21,6 +25,8 @@ export interface DatabaseData {
   file_size: string;
   file_path: string;
   file_type: string;
+  shared_with: string[];
+  is_public: boolean;
   deviceID: string;
   device_name: string;
   helpers: number;

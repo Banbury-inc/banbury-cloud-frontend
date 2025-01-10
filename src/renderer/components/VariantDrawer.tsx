@@ -24,7 +24,7 @@ import ListItemText from '@mui/material/ListItemText';
 import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 import Devices from "./pages/Devices"
-
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 
 
 const drawerWidth = 240;
@@ -143,7 +143,7 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Files', 'Sync', 'Devices', 'Profile'].map((text, index) => (
+          {['Files', 'Sync', 'Devices', 'Profile', 'Friends'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 onClick={() => setActiveTab(text)}
@@ -170,6 +170,8 @@ export default function MiniDrawer() {
                         return <DevicesIcon />;
                       case 3:
                         return <AccountBoxOutlinedIcon />;
+                      case 4:
+                        return <PeopleOutlinedIcon />;
                       default:
                         return null; // Just in case
                     }

@@ -30,13 +30,15 @@ export async function fetchData(
     }
 
     const [userInfoResponse, deviceInfoResponse, fileInfoResponse] = await Promise.all([
-      axios.get<{ first_name: string; last_name: string; }>(`${CONFIG.url}/users/getuserinfo/${username}/`),
+      axios.get<{ first_name: string; last_name: string; phone_number: string; email: string; picture: string; }>(`${CONFIG.url}/users/getuserinfo/${username}/`),
       axios.get<{ devices: any[]; }>(`${CONFIG.url}/devices/getdeviceinfo/${username}/`),
       axios.get<{ files: any[]; }>(`${CONFIG.url}/files/getfileinfo/${username}/`)
     ]);
 
+    console.log("userInfoResponse: ", userInfoResponse.data)
+
     // Update user info
-    const { first_name, last_name } = userInfoResponse.data;
+    const { first_name, last_name, phone_number, email, picture } = userInfoResponse.data;
     callbacks.setFirstname(first_name);
     callbacks.setLastname(last_name);
 
@@ -64,6 +66,8 @@ export async function fetchData(
         file_parent: file.file_parent,
         original_device: file.original_device,
         available: device.online ? "Available" : "Unavailable",
+        shared_with: file.shared_with || [],
+        is_public: file.is_public || false
       }));
     });
 

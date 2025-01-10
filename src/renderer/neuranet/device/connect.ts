@@ -128,6 +128,7 @@ export function createWebSocketConnection(
       run_device_predictions_loop: CONFIG.run_device_predictions_loop,
     };
     socket.send(JSON.stringify(message));
+    console.log("Sent message:", message);
 
     // Call the callback function with the socket
     callback(socket);
@@ -135,6 +136,7 @@ export function createWebSocketConnection(
 
   // Message event: When a message or file is received from the server
   socket.onmessage = async function (event: any) {
+    console.log("Received message:", event);
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
@@ -238,6 +240,7 @@ export function createWebSocketConnection(
 
         // Handle existing request types
         if (data.request_type === 'file_request') {
+          console.log("Received file request:", data);
           // const directory_name: string = 'BCloud';
           const file_path = data.file_path;
           const directory_name: string = file_path;
