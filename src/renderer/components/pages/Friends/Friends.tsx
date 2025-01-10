@@ -25,6 +25,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { CircularProgress } from '@mui/material';
+import Skeleton from '@mui/material/Skeleton';
 
 interface SearchResult {
   id: number;
@@ -50,19 +51,23 @@ export default function Friends() {
   const [followDialog, setFollowDialog] = useState<'friends' | null>(null);
   const [followList, setFollowList] = useState<any[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+  const [isLoadingFriendInfo, setIsLoadingFriendInfo] = useState(false);
 
 
   useEffect(() => {
     if (selectedFriend) {
+      setIsLoadingFriendInfo(true);
       handlers.users.getUserInfo(selectedFriend?.username || '')
         .then(response => {
           if (response && response) {
-            console.log("response", response);
             setFriendInfo(response);
           }
         })
         .catch(error => {
           console.error('Error fetching friends:', error);
+        })
+        .finally(() => {
+          setIsLoadingFriendInfo(false);
         });
     }
   }, [selectedFriend, updates]);
@@ -123,8 +128,11 @@ export default function Friends() {
     setFollowDialog('friends');
     try {
       const response = await handlers.users.getUserFriends(selectedFriend.username);
-      if (response && response.data) {
-        setFollowList(response.data.friends);
+      console.log("response", response);
+      if (response && response.data && Array.isArray(response.data.friends.friends)) {
+        setFollowList(response.data.friends.friends);
+      } else {
+        setFollowList([]);
       }
     } catch (error) {
       console.error('Error fetching friends:', error);
@@ -332,31 +340,36 @@ export default function Friends() {
               <Stack direction="column" spacing={3}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.first_name ? selectedFriend.first_name[0] : '?'}</Avatar>
-                    <Stack>
-                      <Heading level={5}>{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Heading>
-                      <Typography variant="body2" color="text.secondary">
-                        {selectedFriend.username}
-                      </Typography>
-                      <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ cursor: 'pointer' }}
-                          onClick={handleOpenFriends}
-                        >
-                          <strong>{friendInfo?.friends?.length || 0}</strong> friends
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ cursor: 'pointer' }}
-                          onClick={handleOpenFriends}
-                        >
-                          <strong>{friendInfo?.friends?.length || 0}</strong> friends
-                        </Typography>
-                      </Stack>
-                    </Stack>
+                    {isLoadingFriendInfo ? (
+                      <>
+                        <Skeleton variant="circular" width={64} height={64} />
+                        <Stack>
+                          <Skeleton variant="text" width={200} height={32} />
+                          <Skeleton variant="text" width={150} height={24} />
+                          <Skeleton variant="text" width={100} height={24} sx={{ mt: 1 }} />
+                        </Stack>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.first_name ? selectedFriend.first_name[0] : '?'}</Avatar>
+                        <Stack>
+                          <Heading level={5}>{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Heading>
+                          <Typography variant="body2" color="text.secondary">
+                            {selectedFriend.username}
+                          </Typography>
+                          <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ cursor: 'pointer' }}
+                              onClick={handleOpenFriends}
+                            >
+                              <strong>{friendInfo?.friends?.length || 0}</strong> Friends
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </>
+                    )}
                   </Stack>
                   <IconButton color="error" onClick={() => {
                     handlers.users.removeFriend(username || '', selectedFriend.username || '')
@@ -370,40 +383,45 @@ export default function Friends() {
 
                 <Typography variant="h6">Personal Information</Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">First Name</Typography>
-                    <Typography variant="body1">{friendInfo?.first_name || 'Not available'}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">Last Name</Typography>
-                    <Typography variant="body1">{friendInfo?.last_name || 'Not available'}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">Email address</Typography>
-                    <Typography variant="body1">{friendInfo?.email || 'Not available'}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">Phone</Typography>
-                    <Typography variant="body1">{friendInfo?.phone || 'Not available'}</Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">Bio</Typography>
-                    <Typography variant="body1">{friendInfo?.bio || 'Not available'}</Typography>
-                  </Grid>
-                </Grid>
-
-                <Typography variant="h6">Mutual Friends</Typography>
-                <Grid container spacing={2}>
-                  {friends.slice(0, 3).map((friend) => (
-                    <Grid item xs={4} key={friend.id}>
-                      <Card variant="outlined" sx={{ p: 2 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <Avatar>{friend.first_name ? friend.first_name[0] : '?'}</Avatar>
-                          <Typography variant="body1">{friend.first_name ? friend.first_name : '?'} {friend.last_name ? friend.last_name : '?'}</Typography>
-                        </Stack>
-                      </Card>
-                    </Grid>
-                  ))}
+                  {isLoadingFriendInfo ? (
+                    <>
+                      <Grid item xs={6}>
+                        <Skeleton variant="text" width={100} height={20} />
+                        <Skeleton variant="text" width={150} height={24} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Skeleton variant="text" width={100} height={20} />
+                        <Skeleton variant="text" width={150} height={24} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Skeleton variant="text" width={100} height={20} />
+                        <Skeleton variant="text" width={150} height={24} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Skeleton variant="text" width={100} height={20} />
+                        <Skeleton variant="text" width={150} height={24} />
+                      </Grid>
+                    </>
+                  ) : (
+                    <>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">First Name</Typography>
+                        <Typography variant="body1">{friendInfo?.first_name || 'Not available'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Last Name</Typography>
+                        <Typography variant="body1">{friendInfo?.last_name || 'Not available'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Email address</Typography>
+                        <Typography variant="body1">{friendInfo?.email || 'Not available'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Phone</Typography>
+                        <Typography variant="body1">{friendInfo?.phone_number || 'Not available'}</Typography>
+                      </Grid>
+                    </>
+                  )}
                 </Grid>
               </Stack>
             ) : (
