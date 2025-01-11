@@ -17,6 +17,7 @@ function resetAccumulatedData() {
 
 // Function to handle the received file chunk in binary form
 export function handleReceivedFileChunk(data: ArrayBuffer) {
+  console.log("handleReceivedFileChunk", data)
   // Convert ArrayBuffer to Buffer and ensure it's a valid chunk
   try {
     const chunkBuffer = Buffer.from(data);
@@ -147,6 +148,16 @@ export async function createWebSocketConnection(
       try {
         const data = JSON.parse(event.data);
 
+        // Add handling for transfer room setup
+        if (data.request_type === 'file_request' && data.transfer_room) {
+          // Store the transfer room for this file transfer
+          const message = {
+            message_type: "join_transfer_room",
+            transfer_room: data.transfer_room
+          };
+          socket.send(JSON.stringify(message));
+        }
+
         switch (data.message) {
           case 'Start file transfer':
             // Reset accumulated data at the start of new transfer
@@ -263,8 +274,6 @@ export async function createWebSocketConnection(
             return 'file_not_found';
           });
 
-          console.log("socket", socket)
-
 
           // Add handlers for reading and sending the file
           fileStream.on('data', (chunk) => {
@@ -305,18 +314,29 @@ export async function createWebSocketConnection(
 
 // Function to send a download request using the provided socket
 export function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
-  console.log("socket", socket)
-  console.log("file_name", file_name)
-  console.log("fileinfo", fileInfo)
+  const requesting_device_id = neuranet.device.getDeviceId(username);
+  const sending_device_id = fileInfo[0]?.device_id;
+
+  // Create the same transfer room name format as backend
+  const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
+
   const message = {
     message_type: "download_request",
     username: username,
     file_name: file_name,
-    file_path: file_path,  // This will now be the actual directory path
+    file_path: file_path,
     file_info: fileInfo,
     requesting_device_name: os.hostname(),
-    requesting_device_id: neuranet.device.getDeviceId(username),
+    requesting_device_id: requesting_device_id,
+    transfer_room: transfer_room  // Include transfer room in request
   };
+
+  // Join transfer room before sending request
+  socket.send(JSON.stringify({
+    message_type: "join_transfer_room",
+    transfer_room: transfer_room
+  }));
+
   socket.send(JSON.stringify(message));
 }
 
