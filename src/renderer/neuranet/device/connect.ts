@@ -96,7 +96,7 @@ function handleTransferError(
 }
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
-export function createWebSocketConnection(
+export async function createWebSocketConnection(
   username: string,
   device_name: string,
   taskInfo: any,
@@ -111,8 +111,10 @@ export function createWebSocketConnection(
   let socket: WebSocket;
 
   const url_ws = CONFIG.url_ws;
+  const device_id = await neuranet.device.getDeviceId(username);
+  const entire_url_ws = `${url_ws}${device_id}/`;
   // Replace the URL with your WebSocket endpoint
-  socket = new WebSocketClient(url_ws);
+  socket = new WebSocketClient(entire_url_ws);
 
   // Set WebSocket to receive binary data as a string
   socket.binaryType = 'arraybuffer';
@@ -121,9 +123,9 @@ export function createWebSocketConnection(
   socket.onopen = function () {
 
     const message = {
-      message: `Initiate live data connection`,
+      message_type: `initiate_live_data_connection`,
       username: username,
-      requesting_device_name: device_name,
+      device_name: device_name,
       run_device_info_loop: CONFIG.run_device_info_loop,
       run_device_predictions_loop: CONFIG.run_device_predictions_loop,
     };
