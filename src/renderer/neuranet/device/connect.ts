@@ -17,25 +17,33 @@ function resetAccumulatedData() {
 
 // Function to handle the received file chunk in binary form
 export function handleReceivedFileChunk(data: ArrayBuffer) {
-  console.log("handleReceivedFileChunk", data)
+  console.log("Handling received file chunk, size:", data.byteLength);
+
   // Convert ArrayBuffer to Buffer and ensure it's a valid chunk
   try {
     const chunkBuffer = Buffer.from(data);
     if (chunkBuffer.length > 0) {
+      console.log("Adding chunk to accumulated data, size:", chunkBuffer.length);
       accumulatedData.push(chunkBuffer);
+    } else {
+      console.warn("Received empty chunk, skipping");
     }
   } catch (error) {
     console.error('Error processing file chunk:', error);
+    throw error; // Rethrow to handle in the caller
   }
 }
 
 // Function to save the accumulated file after all chunks are received
 function saveFile(fileName: string, file_path: string) {
+  console.log("Saving file:", fileName, "from path:", file_path);
+  console.log("Total accumulated chunks:", accumulatedData.length);
 
   try {
     // Always save to Downloads folder
     const userHomeDirectory = os.homedir();
     const downloadsPath = path.join(userHomeDirectory, 'Downloads');
+    console.log("Saving to downloads path:", downloadsPath);
 
     // Create Downloads directory if it doesn't exist
     if (!fs.existsSync(downloadsPath)) {
@@ -44,15 +52,19 @@ function saveFile(fileName: string, file_path: string) {
 
     // Create final file path in Downloads
     const filePath = path.join(downloadsPath, fileName);
+    console.log("Final file path:", filePath);
 
     // Combine all chunks and verify we have data
     const completeBuffer = Buffer.concat(accumulatedData);
+    console.log("Complete file size:", completeBuffer.length);
+
     if (completeBuffer.length === 0) {
       throw new Error('No data accumulated to save');
     }
 
     // Write file synchronously to ensure completion
     fs.writeFileSync(filePath, completeBuffer);
+    console.log("File written successfully");
 
     // Clear accumulated data only after successful save
     resetAccumulatedData();
@@ -143,81 +155,91 @@ export async function createWebSocketConnection(
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
+      console.log("Received file chunk, length:", event.data.byteLength);
       handleReceivedFileChunk(event.data);
     } else {
       try {
         const data = JSON.parse(event.data);
+        console.log("Received JSON message:", data);
 
-        // Add handling for transfer room setup
-        if (data.request_type === 'file_request' && data.transfer_room) {
-          // Store the transfer room for this file transfer
-          const message = {
-            message_type: "join_transfer_room",
-            transfer_room: data.transfer_room
-          };
-          socket.send(JSON.stringify(message));
-        }
+        // Handle both message types for file completion
+        if (data.message === 'File sent successfully' || data.type === 'file_sent_successfully') {
+          console.log("File transfer complete, saving file:", data.file_name);
+          try {
+            const result = saveFile(data.file_name, data.file_path || '');
+            console.log("File saved successfully:", result);
 
-        switch (data.message) {
-          case 'Start file transfer':
-            // Reset accumulated data at the start of new transfer
-            resetAccumulatedData();
-            break;
+            // Send completion confirmation
+            const final_message = {
+              message_type: 'file_transaction_complete', // Changed to match expected message type
+              username: username,
+              requesting_device_name: device_name,
+              sending_device_name: data.sending_device_name,
+              file_name: data.file_name,
+              file_path: data.file_path
+            };
+            socket.send(JSON.stringify(final_message));
+            console.log("Sent completion confirmation:", final_message);
 
-          case 'File sent successfully':
-          case 'File transfer complete':
-          case 'File transaction complete':
-            if (data.file_name) {  // Only save if we have a filename
-              try {
-                const result = saveFile(data.file_name, data.file_path || '');
-                // Send completion confirmation
-                const final_message = {
-                  message: 'File transaction complete',
-                  username: username,
-                  requesting_device_name: device_name,
-                  sending_device_name: data.sending_device_name,
-                  file_name: data.file_name,
-                  file_path: data.file_path
-                };
-                socket.send(JSON.stringify(final_message));
-                console.log(`Sent completion confirmation:`, final_message);
-              } catch (error) {
-                console.error('Error saving file:', error);
-                handleTransferError(
-                  'save_error',
-                  data.file_name,
-                  tasks,
-                  setTasks,
-                  setTaskbox_expanded
-                );
-              }
+            // Update task status if available
+            if (tasks && setTasks) {
+              const updatedTasks = tasks.map((task: any) =>
+                task.file_name === data.file_name
+                  ? { ...task, status: 'complete' }
+                  : task
+              );
+              setTasks(updatedTasks);
             }
-            break;
+          } catch (error) {
+            console.error('Error saving file:', error);
+            handleTransferError(
+              'save_error',
+              data.file_name,
+              tasks,
+              setTasks,
+              setTaskbox_expanded
+            );
+          }
+        } else {
+          // Handle other message types in switch statement
+          switch (data.message) {
+            case 'Start file transfer':
+              console.log("Starting new file transfer");
+              resetAccumulatedData();
+              break;
 
-          case 'File not found':
-            console.log(`File not found: ${data.file_name}`);
-            return 'file_not_found';
+            case 'File transfer complete':
+            case 'File transaction complete':
+              // These cases are now handled above
+              break;
 
-          case 'Device offline':
-            console.log(`Device offline: ${data.sending_device_name}`);
-            return 'device_offline';
-
-          case 'Permission denied':
-            console.log(`Permission denied for file: ${data.file_name}`);
-            return 'permission_denied';
-
-          case 'Transfer failed':
-            console.log(`Transfer failed for file: ${data.file_name}`);
-            if (tasks && setTasks && setTaskbox_expanded) {
+            case 'File not found':
+              console.log(`File not found: ${data.file_name}`);
               handleTransferError(
-                'transfer_failed',
+                'file_not_found',
                 data.file_name,
                 tasks,
                 setTasks,
                 setTaskbox_expanded
               );
-            }
-            return 'transfer_failed';
+              break;
+
+            case 'Device offline':
+              console.log(`Device offline: ${data.sending_device_name}`);
+              handleTransferError(
+                'device_offline',
+                data.file_name,
+                tasks,
+                setTasks,
+                setTaskbox_expanded,
+                data.sending_device_name
+              );
+              break;
+
+            default:
+              console.log("Unhandled message type:", data.message);
+              break;
+          }
         }
 
         if (data.request_type === 'device_info') {
@@ -280,7 +302,7 @@ export async function createWebSocketConnection(
 
           fileStream.on('end', () => {
             const message = {
-              message: 'File sent successfully',
+              message_type: 'file_sent_successfully',
               username: username,
               requesting_device_name: data.requesting_device_name,
               sending_device_name: device_name,
@@ -291,8 +313,7 @@ export async function createWebSocketConnection(
           });
         }
       } catch (error) {
-        console.error('Invalid message format:', error);
-        return 'invalid_response';
+        console.error('Error processing message:', error);
       }
     }
   };
