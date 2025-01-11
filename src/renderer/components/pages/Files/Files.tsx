@@ -335,6 +335,7 @@ export default function Files() {
           username ?? '',
           selectedFileNames,
           selectedDeviceNames,
+          selectedFileInfo,
           taskInfo,
           tasks || [],
           setTasks,
@@ -408,6 +409,7 @@ export default function Files() {
       .map((id) => fileRows.find((file) => file.id === id))
       .filter((file) => file !== undefined);
     setSelectedFileInfo(newSelectedFileInfo);
+    console.log(newSelectedFileInfo);
   };
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
@@ -415,8 +417,6 @@ export default function Files() {
   const handleDownloadClick = async () => {
     console.log(websocket);
     setSelectedFiles(selected);
-    console.log(selectedFileNames);
-
     let task_description = 'Downloading ' + selectedFileNames.join(', ');
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
@@ -426,6 +426,7 @@ export default function Files() {
       username ?? '',
       selectedFileNames,
       selectedDeviceNames,
+      selectedFileInfo,
       taskInfo,
       tasks || [],
       setTasks,

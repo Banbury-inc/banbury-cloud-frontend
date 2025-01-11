@@ -3,7 +3,7 @@ import os from 'os';
 import { neuranet } from '../../neuranet'
 import { useAuth } from '../../context/AuthContext';
 
-export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any, websocket: WebSocket): Promise<string> {
+export function downloadFile(username: string, files: string[], devices: string[], fileInfo: any, taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any, websocket: WebSocket): Promise<string> {
   return new Promise((resolve, reject) => {
     if (files.length === 0 || devices.length === 0) {
       reject('No file selected');
@@ -37,7 +37,8 @@ export function downloadFile(username: string, files: string[], devices: string[
     websocket.addEventListener('message', messageHandler);
 
     // Send the download request
-    neuranet.device.download_request(username, files[0], files[0], websocket, taskInfo);
+    console.log("files", files)
+    neuranet.device.download_request(username, files[0], files[0], fileInfo, websocket, taskInfo);
 
     // Optional: Add timeout
     setTimeout(() => {

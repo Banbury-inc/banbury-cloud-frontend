@@ -254,6 +254,7 @@ export default function Devices() {
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
+  const [selectedFileInfo, setSelectedFileInfo] = useState<any[]>([]);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(100);
@@ -565,6 +566,7 @@ export default function Devices() {
           username ?? '',
           selectedDeviceNames,
           selectedDeviceNames,
+          selectedFileInfo,
           taskInfo,
           tasks || [],
           setTasks,
@@ -1198,23 +1200,23 @@ export default function Devices() {
                                   highest performing devices.
                                 </Typography>
                               </Box>
-                              <Switch 
-                              checked={useDeviceinFileSync}
-                              onChange={(e) => setUseDeviceinFileSync(e.target.checked)}
-                              size="small" sx={{
-                                mt: 1,
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                              <Switch
+                                checked={useDeviceinFileSync}
+                                onChange={(e) => setUseDeviceinFileSync(e.target.checked)}
+                                size="small" sx={{
+                                  mt: 1,
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(76, 175, 80, 0.08)',
+                                    },
                                   },
-                                },
-                                '& .MuiSwitch-thumb': {
-                                  backgroundColor: '#fff',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#2fca45',
-                                },
-                              }} />
+                                  '& .MuiSwitch-thumb': {
+                                    backgroundColor: '#fff',
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#2fca45',
+                                  },
+                                }} />
                             </Box>
                           </Stack>
                         </Grid>

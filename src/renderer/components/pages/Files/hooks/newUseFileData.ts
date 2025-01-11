@@ -51,6 +51,7 @@ export const newUseFileData = (
         shared_with: file.shared_with,
         is_public: file.is_public,
         device_ids: device.device_ids,
+        device_id: file.device_id,
       }));
     });
   };

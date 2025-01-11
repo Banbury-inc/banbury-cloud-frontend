@@ -148,6 +148,7 @@ export default function Sync() {
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const [selectedDeviceNames, setSelectedDeviceNames] = useState<string[]>([]);
+  const [selectedFileInfo, setSelectedFileInfo] = useState<any[]>([]);
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
@@ -308,6 +309,7 @@ export default function Sync() {
           username ?? '',
           selectedFileNames,
           selectedDeviceNames,
+          selectedFileInfo,
           taskInfo,
           tasks || [],
           setTasks,

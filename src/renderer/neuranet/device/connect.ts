@@ -301,13 +301,17 @@ export async function createWebSocketConnection(
 }
 
 // Function to send a download request using the provided socket
-export function download_request(username: string, file_name: string, file_path: string, socket: WebSocket, taskInfo: any) {
+export function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
+  console.log("socket", socket)
+  console.log("file_name", file_name)
   const message = {
-    message: "Download Request",
+    message_type: "download_request",
     username: username,
     file_name: file_name,
     file_path: file_path,  // This will now be the actual directory path
+    file_info: fileInfo,
     requesting_device_name: os.hostname(),
+    requesting_device_id: neuranet.device.getDeviceId(username),
   };
   socket.send(JSON.stringify(message));
 }
