@@ -305,7 +305,9 @@ export async function createWebSocketConnection(
               message_type: 'file_sent_successfully',
               username: username,
               requesting_device_name: data.requesting_device_name,
+              requesting_device_id: data.requesting_device_id,
               sending_device_name: device_name,
+              sending_device_id: device_id,
               file_name: data.file_name,
               file_path: data.file_path
             };
