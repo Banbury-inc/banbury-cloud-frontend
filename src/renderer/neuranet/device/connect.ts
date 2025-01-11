@@ -254,12 +254,10 @@ export async function createWebSocketConnection(
         // Handle existing request types
         if (data.request_type === 'file_request') {
           console.log("Received file request:", data);
-          // const directory_name: string = 'BCloud';
           const file_path = data.file_path;
           const directory_name: string = file_path;
           const directory_path: string = path.join(os.homedir(), directory_name);
           const file_save_path: string = path.join(directory_path);
-
 
           const fileStream = fs.createReadStream(file_path);
 
@@ -273,7 +271,6 @@ export async function createWebSocketConnection(
             socket.send(JSON.stringify(message));
             return 'file_not_found';
           });
-
 
           // Add handlers for reading and sending the file
           fileStream.on('data', (chunk) => {
@@ -313,12 +310,18 @@ export async function createWebSocketConnection(
 }
 
 // Function to send a download request using the provided socket
-export function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
-  const requesting_device_id = neuranet.device.getDeviceId(username);
+export async function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
+  const requesting_device_id = await neuranet.device.getDeviceId(username);
   const sending_device_id = fileInfo[0]?.device_id;
 
   // Create the same transfer room name format as backend
   const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
+
+  // Join transfer room before sending request
+  socket.send(JSON.stringify({
+    message_type: "join_transfer_room",
+    transfer_room: transfer_room
+  }));
 
   const message = {
     message_type: "download_request",
@@ -328,14 +331,8 @@ export function download_request(username: string, file_name: string, file_path:
     file_info: fileInfo,
     requesting_device_name: os.hostname(),
     requesting_device_id: requesting_device_id,
-    transfer_room: transfer_room  // Include transfer room in request
-  };
-
-  // Join transfer room before sending request
-  socket.send(JSON.stringify({
-    message_type: "join_transfer_room",
     transfer_room: transfer_room
-  }));
+  };
 
   socket.send(JSON.stringify(message));
 }
