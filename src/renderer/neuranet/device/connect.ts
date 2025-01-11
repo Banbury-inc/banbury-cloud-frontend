@@ -263,6 +263,9 @@ export async function createWebSocketConnection(
             return 'file_not_found';
           });
 
+          console.log("socket", socket)
+
+
           // Add handlers for reading and sending the file
           fileStream.on('data', (chunk) => {
             console.log('Sending chunk: ', chunk)
@@ -304,6 +307,7 @@ export async function createWebSocketConnection(
 export function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
   console.log("socket", socket)
   console.log("file_name", file_name)
+  console.log("fileinfo", fileInfo)
   const message = {
     message_type: "download_request",
     username: username,
