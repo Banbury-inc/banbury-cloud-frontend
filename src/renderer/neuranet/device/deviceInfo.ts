@@ -246,6 +246,20 @@ export async function ip_address(): Promise<string> {
   return ip_address || 'Unknown';
 }
 
+export async function mac_address(): Promise<string> {
+  try {
+    const networkData = await si.networkInterfaces();
+    // Check if networkData is an array and has at least one interface
+    if (Array.isArray(networkData) && networkData.length > 0) {
+      return networkData[0].mac || 'Unknown';
+    }
+    return 'Unknown';
+  } catch (error) {
+    console.error('Error retrieving MAC address:', error);
+    return 'Unknown';
+  }
+}
+
 export async function battery_status(): Promise<number> {
   try {
     const batteryData = await si.battery();

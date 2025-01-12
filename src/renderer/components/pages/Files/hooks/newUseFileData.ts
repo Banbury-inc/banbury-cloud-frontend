@@ -51,6 +51,7 @@ export const newUseFileData = (
         shared_with: file.shared_with,
         is_public: file.is_public,
         device_ids: device.device_ids,
+        device_id: file.device_id,
       }));
     });
   };
@@ -129,6 +130,34 @@ export const newUseFileData = (
     }
 
   }, [global_file_path, global_file_path_device, files, sync_files, devices, disableFetch, username, setFirstname, setLastname, setDevices]);
+
+  // Add effect to listen for device status changes
+  useEffect(() => {
+    const handleDeviceStatusChange = () => {
+      // Refetch device data when status changes
+      fetchDeviceData(username || '', disableFetch, global_file_path || '', {
+        setFirstname,
+        setLastname,
+        setDevices,
+      })
+        .then((new_devices) => {
+          if (new_devices) {
+            setDevices(new_devices);
+          }
+        })
+        .catch((error) => {
+          console.error("Error refreshing device data:", error);
+        });
+    };
+
+    // Listen for device status changes
+    fileWatcherEmitter.on('deviceStatusChange', handleDeviceStatusChange);
+
+    // Cleanup listener
+    return () => {
+      fileWatcherEmitter.off('deviceStatusChange', handleDeviceStatusChange);
+    };
+  }, [username, disableFetch, global_file_path, setFirstname, setLastname, setDevices]);
 
 
 

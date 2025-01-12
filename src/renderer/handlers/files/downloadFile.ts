@@ -3,14 +3,16 @@ import os from 'os';
 import { neuranet } from '../../neuranet'
 import { useAuth } from '../../context/AuthContext';
 
-export function downloadFile(username: string, files: string[], devices: string[], taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any, websocket: WebSocket): Promise<string> {
+export function downloadFile(username: string, files: string[], devices: string[], fileInfo: any, taskInfo: any, tasks: any[], setTasks: any, setTaskbox_expanded: any, websocket: WebSocket): Promise<string> {
   return new Promise((resolve, reject) => {
     if (files.length === 0 || devices.length === 0) {
       reject('No file selected');
       return;
     }
 
-    // Add message handler for this specific file transfer
+    // Create timeout ID that we can clear later
+    let timeoutId: NodeJS.Timeout;
+
     const messageHandler = (event: MessageEvent) => {
       if (typeof event.data === 'string') {
         try {
@@ -18,12 +20,14 @@ export function downloadFile(username: string, files: string[], devices: string[
 
           // Check for success conditions
           if (data.message === 'File transaction complete' && data.file_name === files[0]) {
+            clearTimeout(timeoutId); // Clear the timeout
             websocket.removeEventListener('message', messageHandler);
             resolve('success');
           }
 
           // Check for error conditions
           if (['File not found', 'Device offline', 'Permission denied', 'Transfer failed'].includes(data.message)) {
+            clearTimeout(timeoutId); // Clear the timeout
             websocket.removeEventListener('message', messageHandler);
             reject(data.message);
           }
@@ -37,13 +41,14 @@ export function downloadFile(username: string, files: string[], devices: string[
     websocket.addEventListener('message', messageHandler);
 
     // Send the download request
-    neuranet.device.download_request(username, files[0], files[0], websocket, taskInfo);
+    console.log("files", files)
+    neuranet.device.download_request(username, files[0], files[0], fileInfo, websocket, taskInfo);
 
-    // Optional: Add timeout
-    setTimeout(() => {
+    // Store the timeout ID so we can clear it
+    timeoutId = setTimeout(() => {
       websocket.removeEventListener('message', messageHandler);
       reject('Download request timed out');
-    }, 30000); // 30 second timeout
+    }, 30000);
   });
 }
 

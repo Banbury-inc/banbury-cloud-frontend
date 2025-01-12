@@ -147,6 +147,42 @@ export default function Friends() {
     setFollowList([]);
   };
 
+  // Add WebSocket effect
+  useEffect(() => {
+    const connectWebSocket = async () => {
+      const socket = await neuranet.device.connect(
+        username || '',
+        [],
+        () => {},
+        () => {}
+      );
+
+      socket.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.request_type === "friend_request") {
+            // Reload friend requests
+            handlers.users.getFriendRequests(username || '')
+              .then(response => {
+                if (response && response.data) {
+                  setFriendRequests(response.data.friend_requests);
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching friend requests:', error);
+              });
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      });
+    };
+
+    if (username) {
+      connectWebSocket();
+    }
+  }, [username]);
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -354,9 +390,22 @@ export default function Friends() {
                         <Avatar sx={{ width: 64, height: 64 }}>{selectedFriend.first_name ? selectedFriend.first_name[0] : '?'}</Avatar>
                         <Stack>
                           <Heading level={5}>{selectedFriend.first_name ? selectedFriend.first_name : '?'} {selectedFriend.last_name ? selectedFriend.last_name : '?'}</Heading>
-                          <Typography variant="body2" color="text.secondary">
-                            {selectedFriend.username}
-                          </Typography>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography variant="body2" color="text.secondary">
+                              {selectedFriend.username}
+                            </Typography>
+                            <Box
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                backgroundColor: selectedFriend?.online ? '#22c55e' : '#94a3b8',
+                              }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              {selectedFriend?.online ? 'Online' : 'Offline'}
+                            </Typography>
+                          </Stack>
                           <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
                             <Typography
                               variant="body2"
