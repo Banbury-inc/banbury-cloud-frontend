@@ -109,6 +109,54 @@ function handleTransferError(
 }
 
 // Function to create a WebSocket connection and invoke the callback after the connection is open
+// Add reconnection configuration
+const RECONNECT_CONFIG = {
+  initialDelay: 1000, // Start with 1 second delay
+  maxDelay: 30000,    // Max delay of 30 seconds
+  maxAttempts: 5      // Maximum number of reconnection attempts
+};
+
+// Add state for reconnection
+let reconnectAttempt = 0;
+let reconnectTimeout: NodeJS.Timeout | null = null;
+
+// Add reconnection function
+function attemptReconnect(
+  username: string,
+  device_name: string,
+  taskInfo: any,
+  tasks: any[],
+  setTasks: (tasks: any[]) => void,
+  setTaskbox_expanded: (expanded: boolean) => void,
+  callback: (socket: WebSocket) => void
+) {
+  if (reconnectAttempt >= RECONNECT_CONFIG.maxAttempts) {
+    console.error('Max reconnection attempts reached');
+    return;
+  }
+
+  const delay = Math.min(
+    RECONNECT_CONFIG.initialDelay * Math.pow(2, reconnectAttempt),
+    RECONNECT_CONFIG.maxDelay
+  );
+
+  console.log(`Attempting reconnection in ${delay}ms (attempt ${reconnectAttempt + 1})`);
+
+  reconnectTimeout = setTimeout(() => {
+    createWebSocketConnection(
+      username,
+      device_name,
+      taskInfo,
+      tasks,
+      setTasks,
+      setTaskbox_expanded,
+      callback
+    );
+  }, delay);
+
+  reconnectAttempt++;
+}
+
 export async function createWebSocketConnection(
   username: string,
   device_name: string,
@@ -134,6 +182,8 @@ export async function createWebSocketConnection(
 
   // Open event: When the connection is established
   socket.onopen = function () {
+    console.log('WebSocket connection established');
+    reconnectAttempt = 0; // Reset attempt counter on successful connection
 
     const message = {
       message_type: `initiate_live_data_connection`,
@@ -327,15 +377,38 @@ export async function createWebSocketConnection(
   };
 
   // Close event: When the WebSocket connection is closed
-  socket.onclose = function () {
+  socket.onclose = function (event) {
+    console.log('WebSocket connection closed:', event.code, event.reason);
+    
+    // Don't attempt reconnection if the closure was intentional (code 1000)
+    if (event.code !== 1000) {
+      attemptReconnect(
+        username,
+        device_name,
+        taskInfo,
+        tasks,
+        setTasks,
+        setTaskbox_expanded,
+        callback
+      );
+    }
     return 'connection_closed';
   };
 
   // Error event: When an error occurs with the WebSocket connection
   socket.onerror = function (error: any) {
-    console.error('WebSocket error: ', error);
+    console.error('WebSocket error:', error);
     return 'connection_error';
   };
+}
+
+// Add cleanup function to prevent memory leaks
+export function cleanupWebSocket() {
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
+  reconnectAttempt = 0;
 }
 
 // Function to send a download request using the provided socket
