@@ -24,7 +24,7 @@ export const CONFIG = {
       //return 'http://3.84.158.138:8080';
       return 'http://www.api.dev.banbury.io';
     } else if (this.semi_local) {
-      return 'http://10.123.1.59:8080/';
+      return 'http://192.168.1.218:8080/';
     } else {
       return 'http://localhost:8080/';
     }
@@ -39,7 +39,7 @@ export const CONFIG = {
       return `ws://www.api.dev.banbury.io/ws/consumer/`;
     }
     else if (this.semi_local) {
-      return `ws://10.123.1.59:8082/ws/consumer/`;
+      return `ws://192.168.1.218:8082/ws/consumer/`;
     } else {
       return `ws://0.0.0.0:8082/ws/consumer/`;
     }
