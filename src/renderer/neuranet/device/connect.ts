@@ -7,6 +7,7 @@ import { neuranet } from '../../neuranet'
 import { CONFIG } from '../../config/config';
 import { useAuth } from '../../context/AuthContext';
 import { Socket } from 'net';
+import { wakeOnLan, isValidMacAddress } from './wol';
 
 // Add state all file chunks with a reset function
 let accumulatedData: Buffer[] = [];
@@ -370,6 +371,31 @@ export async function createWebSocketConnection(
             console.error('Invalid download queue format received:', download_queue);
           }
         }
+
+        if (data.request_type === "wake_device") {
+          try {
+            const result = await wakeDevice(data.mac_address);
+            const response = {
+              message_type: 'wake_device_response',
+              username: username,
+              device_name: device_name,
+              success: result,
+              mac_address: data.mac_address
+            };
+            socket.send(JSON.stringify(response));
+          } catch (error) {
+            console.error('Error in wake device request:', error);
+            const response = {
+              message_type: 'wake_device_response',
+              username: username,
+              device_name: device_name,
+              success: false,
+              error: (error as Error).message,
+              mac_address: data.mac_address
+            };
+            socket.send(JSON.stringify(response));
+          }
+        }
       } catch (error) {
         console.error('Error processing message:', error);
       }
@@ -439,6 +465,20 @@ export async function download_request(username: string, file_name: string, file
   socket.send(JSON.stringify(message));
 }
 
+// Add this new function
+export async function wakeDevice(macAddress: string): Promise<boolean> {
+  try {
+    if (!isValidMacAddress(macAddress)) {
+      throw new Error('Invalid MAC address format');
+    }
+
+    const result = await wakeOnLan(macAddress);
+    return result;
+  } catch (error) {
+    console.error('Error waking device:', error);
+    throw error;
+  }
+}
 
 // Usage of the functions
 const username = 'mmills';
