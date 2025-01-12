@@ -163,7 +163,7 @@ export async function createWebSocketConnection(
         console.log("Received JSON message:", data);
 
         // Handle messages based on type and message fields
-        if (data.type === "direct_message" && data.message === "file_request") {
+        if (data.message === "file_request") {
           console.log("Received file request:", data);
           const file_path = data.file_path;
           const file_name = data.file_name;
