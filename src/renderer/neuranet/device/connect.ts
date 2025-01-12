@@ -182,13 +182,6 @@ export async function createWebSocketConnection(
               socket.send(JSON.stringify(message));
             });
 
-            // Send start transfer message
-            const startMessage = {
-              message_type: 'start_file_transfer',
-              file_name: file_name,
-              transfer_room: transfer_room
-            };
-            socket.send(JSON.stringify(startMessage));
 
             // Add handlers for reading and sending the file
             fileStream.on('data', (chunk) => {
