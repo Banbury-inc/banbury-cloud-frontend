@@ -157,7 +157,7 @@ export default function UploadProgress({ uploads }: UploadProgressProps) {
                     <Typography sx={{ color: 'white' }}>{upload.filename}</Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                       {upload.status === 'uploading' 
-                        ? `Uploading ${upload.uploadedSize}mb / ${upload.totalSize}mb - ${upload.timeRemaining}s left...`
+                        ? `Uploading ${Math.round(upload.uploadedSize / (1024 * 1024))}MB / ${Math.round(upload.totalSize / (1024 * 1024))}MB - ${upload.timeRemaining}s left...`
                         : `Uploaded to Files`
                       }
                     </Typography>
@@ -185,6 +185,9 @@ export default function UploadProgress({ uploads }: UploadProgressProps) {
                     <Button
                       variant="contained"
                       size="small"
+                      sx={{
+                        fontSize: '12px',
+                      }}
                     >
                       Copy link
                     </Button>

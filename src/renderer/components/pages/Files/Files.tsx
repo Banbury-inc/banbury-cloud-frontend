@@ -60,7 +60,9 @@ import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import Dialog from '@mui/material/Dialog';
 import UploadProgress from '../../common/upload_progress';
-import DownloadProgress from '../../common/download_progress';
+import DownloadProgress from '../../common/download_progress/download_progress';
+import { addDownloadsInfo, getDownloadsInfo } from '../../common/download_progress/add_downloads_info';
+import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -418,11 +420,23 @@ export default function Files() {
 
   const handleDownloadClick = async () => {
     try {
-      console.log(websocket);
       setSelectedFiles(selected);
       let task_description = 'Downloading ' + selectedFileNames.join(', ');
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-      setTaskbox_expanded(true);
+
+      // Initialize download progress for selected files
+      const initialDownloads = selectedFileInfo.map(fileInfo => ({
+        filename: fileInfo.file_name,
+        fileType: fileInfo.kind || 'Unknown',
+        progress: 0,
+        status: 'downloading' as const,
+        totalSize: fileInfo.file_size || 0,
+        downloadedSize: 0,
+        timeRemaining: undefined
+      }));
+      
+      // Add to downloads tracking
+      addDownloadsInfo(initialDownloads);
       
       // Add timeout promise
       const timeoutPromise = new Promise((_, reject) => {
@@ -608,7 +622,7 @@ export default function Files() {
     setIsShareModalOpen(false);
   };
 
-  const uploads = [
+  const old_uploads = [
     {
       filename: 'family_deer.mp4',
       fileType: 'MP4',
@@ -621,7 +635,7 @@ export default function Files() {
     // ... other uploads
   ];
 
-  const downloads = [
+  const old_downloads = [
     {
       filename: 'family_deer.mp4',
       fileType: 'MP4',
@@ -633,6 +647,51 @@ export default function Files() {
     },
   ];
 
+  // Add new state for downloads
+  const [downloads, setDownloads] = useState<{
+    filename: string;
+    fileType: string;
+    progress: number;
+    status: 'downloading' | 'completed' | 'failed' | 'skipped';
+    totalSize: number;
+    downloadedSize: number;
+    timeRemaining?: number;
+  }[]>([]);
+
+  // Add effect to subscribe to download updates
+  useEffect(() => {
+    // Set up interval to check for download updates
+    const downloadUpdateInterval = setInterval(() => {
+      const currentDownloads = getDownloadsInfo();
+      setDownloads(currentDownloads);
+    }, 1000); // Check every second
+
+    // Cleanup interval on unmount
+    return () => clearInterval(downloadUpdateInterval);
+  }, []);
+
+  // Add new state for uploads
+  const [uploads, setUploads] = useState<{
+    filename: string;
+    fileType: string;
+    progress: number;
+    status: 'uploading' | 'completed' | 'failed' | 'skipped';
+    totalSize: number;
+    uploadedSize: number;
+    timeRemaining?: number;
+  }[]>([]);
+
+  // Add effect to subscribe to upload updates
+  useEffect(() => {
+    // Set up interval to check for upload updates
+    const uploadUpdateInterval = setInterval(() => {
+      const currentUploads = getUploadsInfo();
+      setUploads(currentUploads);
+    }, 1000); // Check every second
+
+    // Cleanup interval on unmount
+    return () => clearInterval(uploadUpdateInterval);
+  }, []);
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>

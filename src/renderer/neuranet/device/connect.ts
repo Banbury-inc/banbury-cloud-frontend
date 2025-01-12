@@ -8,6 +8,8 @@ import { CONFIG } from '../../config/config';
 import { useAuth } from '../../context/AuthContext';
 import { Socket } from 'net';
 import { wakeOnLan, isValidMacAddress } from './wol';
+import { addDownloadsInfo } from '../../components/common/download_progress/add_downloads_info';
+import { addUploadsInfo } from '../../components/common/upload_progress/add_uploads_info';
 
 // Add state all file chunks with a reset function
 let accumulatedData: Buffer[] = [];
@@ -208,6 +210,14 @@ export async function createWebSocketConnection(
     if (event.data instanceof ArrayBuffer) {
       console.log("Received file chunk, length:", event.data.byteLength);
       handleReceivedFileChunk(event.data);
+      
+      // Calculate total received bytes
+      const totalReceived = accumulatedData.reduce((sum, chunk) => sum + chunk.length, 0);
+      
+      // Update progress for the current file transfer
+      if (taskInfo?.fileInfo) {
+        updateDownloadProgress(taskInfo.fileInfo, totalReceived);
+      }
     } else {
       try {
         const data = JSON.parse(event.data);
@@ -222,6 +232,26 @@ export async function createWebSocketConnection(
 
           try {
             const fileStream = fs.createReadStream(file_path);
+            
+            // Get file stats to know the total size
+            const stats = fs.statSync(file_path);
+            const fileInfo = {
+              file_name: file_name,
+              file_size: stats.size,
+              kind: path.extname(file_name).slice(1) || 'Unknown'
+            };
+            
+            // Initialize upload progress
+            const initialUploadInfo = {
+              filename: fileInfo.file_name,
+              fileType: fileInfo.kind,
+              progress: 0,
+              status: 'uploading' as const,
+              totalSize: fileInfo.file_size,
+              uploadedSize: 0,
+              timeRemaining: undefined
+            };
+            addUploadsInfo([initialUploadInfo]);
 
             fileStream.on('error', () => {
               const message = {
@@ -233,11 +263,12 @@ export async function createWebSocketConnection(
               socket.send(JSON.stringify(message));
             });
 
-
             // Add handlers for reading and sending the file
             fileStream.on('data', (chunk) => {
               console.log('Sending chunk, size:', chunk.length);
               socket.send(chunk);
+              // Track upload progress with our enhanced fileInfo
+              handleUploadProgress(chunk, fileInfo);
             });
 
             fileStream.on('end', () => {
@@ -251,6 +282,21 @@ export async function createWebSocketConnection(
                 file_path: file_path
               };
               socket.send(JSON.stringify(message));
+              
+              // Ensure we mark the upload as completed
+              if (data.file_info) {
+                const uploadInfo = {
+                  filename: data.file_info.file_name,
+                  fileType: data.file_info.kind || 'Unknown',
+                  progress: 100,
+                  status: 'completed' as const,
+                  totalSize: data.file_info.file_size || 0,
+                  uploadedSize: data.file_info.file_size || 0,
+                  timeRemaining: undefined
+                };
+                addUploadsInfo([uploadInfo]);
+                fileUploadProgress.delete(data.file_info.file_name);
+              }
             });
           } catch (error) {
             console.error('Error reading file:', error);
@@ -442,10 +488,23 @@ export async function download_request(username: string, file_name: string, file
   const requesting_device_id = await neuranet.device.getDeviceId(username);
   const sending_device_id = fileInfo[0]?.device_id;
 
-  // Create the same transfer room name format as backend
-  const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
+  // Create download progress object
+  const downloadInfo = {
+    filename: fileInfo[0]?.file_name || file_name,
+    fileType: fileInfo[0]?.kind || 'Unknown',
+    progress: 0,
+    status: 'downloading' as const,
+    totalSize: fileInfo[0]?.file_size || 0,
+    downloadedSize: 0,
+    timeRemaining: undefined
+  };
 
-  // Join transfer room before sending request
+  // Add to downloads tracking
+  const downloads = addDownloadsInfo([downloadInfo]);
+
+  // Create transfer room and send request
+  const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
+  
   socket.send(JSON.stringify({
     message_type: "join_transfer_room",
     transfer_room: transfer_room
@@ -465,6 +524,23 @@ export async function download_request(username: string, file_name: string, file
   socket.send(JSON.stringify(message));
 }
 
+// Add a new function to update download progress
+export function updateDownloadProgress(fileInfo: any, bytesReceived: number) {
+  const totalSize = fileInfo[0]?.file_size || 0;
+  const progress = (bytesReceived / totalSize) * 100;
+  
+  // Update the downloads info with new progress
+  addDownloadsInfo([{
+    filename: fileInfo[0]?.file_name,
+    fileType: fileInfo[0]?.kind,
+    progress: progress,
+    status: progress === 100 ? 'completed' as const : 'downloading' as const,
+    totalSize: totalSize,
+    downloadedSize: bytesReceived,
+    // Could add time remaining calculation here if needed
+  }]);
+}
+
 // Add this new function
 export async function wakeDevice(macAddress: string): Promise<boolean> {
   try {
@@ -477,6 +553,42 @@ export async function wakeDevice(macAddress: string): Promise<boolean> {
   } catch (error) {
     console.error('Error waking device:', error);
     throw error;
+  }
+}
+
+// Add a map to track total bytes uploaded for each file
+const fileUploadProgress = new Map<string, number>();
+
+// Update the handleUploadProgress function
+export function handleUploadProgress(chunk: string | Buffer, fileInfo: any) {
+  const fileName = fileInfo.file_name;
+  const chunkSize = chunk.length;
+  const totalSize = fileInfo.file_size || 0;
+
+  // Update the total bytes uploaded for this file
+  const currentProgress = fileUploadProgress.get(fileName) || 0;
+  const newProgress = currentProgress + chunkSize;
+  fileUploadProgress.set(fileName, newProgress);
+
+  // Calculate progress percentage
+  const progressPercentage = (newProgress / totalSize) * 100;
+
+  const uploadInfo = {
+    filename: fileName,
+    fileType: fileInfo.kind || 'Unknown',
+    progress: progressPercentage,
+    status: progressPercentage >= 100 ? 'completed' as const : 'uploading' as const,
+    totalSize: totalSize,
+    uploadedSize: newProgress,
+    timeRemaining: undefined
+  };
+
+  // Update progress through the upload tracking system
+  addUploadsInfo([uploadInfo]);
+
+  // Clean up completed uploads
+  if (progressPercentage >= 100) {
+    fileUploadProgress.delete(fileName);
   }
 }
 

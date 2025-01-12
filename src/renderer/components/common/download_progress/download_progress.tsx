@@ -101,7 +101,7 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
             alignItems: 'center',
             mb: 2
           }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>Uploads</Typography>
+            <Typography variant="h6" sx={{ color: 'white' }}>Downloads</Typography>
             <IconButton sx={{ color: 'white' }} onClick={handleClose}>
               <ExpandMoreIcon />
             </IconButton>
@@ -109,7 +109,7 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
 
           {/* Tabs */}
           <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-            {['All uploads', 'Completed', 'Skipped', 'Failed'].map((tab) => (
+            {['All downloads', 'Completed', 'Skipped', 'Failed'].map((tab) => (
               <Button
                 key={tab}
                 variant={selectedTab === tab.toLowerCase() ? 'contained' : 'text'}
@@ -158,7 +158,7 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
                     <Typography sx={{ color: 'white' }}>{download.filename}</Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                       {download.status === 'downloading' 
-                        ? `Downloading ${download.downloadedSize}mb / ${download.totalSize}mb - ${download.timeRemaining}s left...`
+                        ? `Downloading ${(download.downloadedSize / (1024 * 1024)).toFixed(1)}mb / ${(download.totalSize / (1024 * 1024)).toFixed(1)}mb - ${download.timeRemaining}s left...`
                         : `Downloaded to Files`
                       }
                     </Typography>
