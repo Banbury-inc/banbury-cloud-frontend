@@ -58,7 +58,7 @@ export default function AddFileToSyncButton({ selectedFileNames }: { selectedFil
 
 
   return (
-    <Tooltip title="Add File to File Sync">
+    <Tooltip title="Add to Sync">
       <LoadingButton
         onClick={handleAddFileToSync}
         loading={loading}
