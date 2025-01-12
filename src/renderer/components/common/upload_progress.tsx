@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import UploadIcon from '@mui/icons-material/Upload'; // For the trigger button
 
-interface ProgressProps {
+interface UploadProgressProps {
   uploads: {
     filename: string;
     fileType: string;
@@ -25,7 +25,7 @@ interface ProgressProps {
   }[];
 }
 
-export default function Progress({ uploads }: ProgressProps) {
+export default function UploadProgress({ uploads }: UploadProgressProps) {
   const [selectedTab, setSelectedTab] = useState<'all' | 'completed' | 'skipped' | 'failed'>('all');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 

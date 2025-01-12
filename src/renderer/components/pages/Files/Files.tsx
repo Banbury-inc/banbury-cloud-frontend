@@ -59,7 +59,8 @@ import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import Dialog from '@mui/material/Dialog';
-import Progress from '../../common/progress';
+import UploadProgress from '../../common/upload_progress';
+import DownloadProgress from '../../common/download_progress';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -620,6 +621,18 @@ export default function Files() {
     // ... other uploads
   ];
 
+  const downloads = [
+    {
+      filename: 'family_deer.mp4',
+      fileType: 'MP4',
+      progress: 13.5,
+      status: 'downloading' as 'downloading' | 'failed' | 'completed' | 'skipped',
+      totalSize: 200,
+      downloadedSize: 27,
+      timeRemaining: 21
+    },
+  ];
+
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -755,7 +768,8 @@ export default function Files() {
               <Grid item>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <Progress uploads={uploads} />
+                    <UploadProgress uploads={uploads} />
+                    <DownloadProgress downloads={downloads} />
                     <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
