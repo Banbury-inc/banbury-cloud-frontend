@@ -415,35 +415,46 @@ export default function Files() {
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
   const handleDownloadClick = async () => {
-    console.log(websocket);
-    setSelectedFiles(selected);
-    let task_description = 'Downloading ' + selectedFileNames.join(', ');
-    let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-    setTaskbox_expanded(true);
-    console.log(selectedFileNames);
+    try {
+      console.log(websocket);
+      setSelectedFiles(selected);
+      let task_description = 'Downloading ' + selectedFileNames.join(', ');
+      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+      setTaskbox_expanded(true);
+      
+      // Add timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Download request timed out')), 30000); // 30 second timeout
+      });
 
-    let response = await handlers.files.downloadFile(
-      username ?? '',
-      selectedFileNames,
-      selectedDeviceNames,
-      selectedFileInfo,
-      taskInfo,
-      tasks || [],
-      setTasks,
-      setTaskbox_expanded,
-      websocket as unknown as WebSocket,
-    );
+      // Race between the download and timeout
+      const response = await Promise.race([
+        handlers.files.downloadFile(
+          username ?? '',
+          selectedFileNames,
+          selectedDeviceNames,
+          selectedFileInfo,
+          taskInfo,
+          tasks || [],
+          setTasks,
+          setTaskbox_expanded,
+          websocket as unknown as WebSocket,
+        ),
+        timeoutPromise
+      ]);
 
-    if (response === 'No file selected' || response === 'file_not_found') {
-      let task_result = await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+      if (response === 'No file selected' || response === 'file_not_found') {
+        await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
+      } else if (response === 'success') {
+        await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+      }
+
+      setSelected([]);
+    } catch (error) {
+      console.error('Download error:', error);
+      setSelected([]);
+      // Optionally show error to user via toast/alert
     }
-    if (response === 'success') {
-      let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-    }
-
-    console.log(response);
-
-    setSelected([]);
   };
 
   const handleAddDeviceClick = async () => {

@@ -10,7 +10,9 @@ export function downloadFile(username: string, files: string[], devices: string[
       return;
     }
 
-    // Add message handler for this specific file transfer
+    // Create timeout ID that we can clear later
+    let timeoutId: NodeJS.Timeout;
+
     const messageHandler = (event: MessageEvent) => {
       if (typeof event.data === 'string') {
         try {
@@ -18,12 +20,14 @@ export function downloadFile(username: string, files: string[], devices: string[
 
           // Check for success conditions
           if (data.message === 'File transaction complete' && data.file_name === files[0]) {
+            clearTimeout(timeoutId); // Clear the timeout
             websocket.removeEventListener('message', messageHandler);
             resolve('success');
           }
 
           // Check for error conditions
           if (['File not found', 'Device offline', 'Permission denied', 'Transfer failed'].includes(data.message)) {
+            clearTimeout(timeoutId); // Clear the timeout
             websocket.removeEventListener('message', messageHandler);
             reject(data.message);
           }
@@ -40,11 +44,11 @@ export function downloadFile(username: string, files: string[], devices: string[
     console.log("files", files)
     neuranet.device.download_request(username, files[0], files[0], fileInfo, websocket, taskInfo);
 
-    // Optional: Add timeout
-    setTimeout(() => {
+    // Store the timeout ID so we can clear it
+    timeoutId = setTimeout(() => {
       websocket.removeEventListener('message', messageHandler);
       reject('Download request timed out');
-    }, 30000); // 30 second timeout
+    }, 30000);
   });
 }
 
