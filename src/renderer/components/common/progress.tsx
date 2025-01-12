@@ -46,22 +46,16 @@ export default function Progress({ uploads }: ProgressProps) {
   return (
     <>
       <Button
-        aria-describedby={id}
         onClick={handleClick}
-        sx={{
-          minWidth: 'auto',
-          p: 1,
-          position: 'relative',
-          color: 'white'
-        }}
+        sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
-        <UploadIcon />
+        <UploadIcon sx={{ fontSize: 'inherit' }} />
         {activeUploads > 0 && (
           <Box
             sx={{
               position: 'absolute',
-              top: 0,
-              right: 0,
+              top: -6,
+              right: -6,
               bgcolor: 'error.main',
               borderRadius: '50%',
               width: 16,
@@ -69,7 +63,7 @@ export default function Progress({ uploads }: ProgressProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '0.75rem',
+              fontSize: '0.5rem',
             }}
           >
             {activeUploads}
