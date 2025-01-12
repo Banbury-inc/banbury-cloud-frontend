@@ -18,6 +18,7 @@ describe('downloadFile', () => {
   const mockDevices = ['device1', 'device2'];
   const mockTaskInfo = { id: 'task1' };
   const mockTasks: any[] = [];
+  const mockFileInfo = { id: 'file1' };
   const mockSetTasks = jest.fn();
   const mockSetTaskboxExpanded = jest.fn();
   const mockWebsocket = new WebSocket('ws://mock-url');
@@ -45,6 +46,7 @@ describe('downloadFile', () => {
       mockUsername,
       [],
       mockDevices,
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
@@ -58,6 +60,7 @@ describe('downloadFile', () => {
       mockUsername,
       mockFiles,
       [],
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
@@ -71,6 +74,7 @@ describe('downloadFile', () => {
       mockUsername,
       mockFiles,
       mockDevices,
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
@@ -95,6 +99,7 @@ describe('downloadFile', () => {
       mockUsername,
       mockFiles,
       mockDevices,
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
@@ -114,6 +119,7 @@ describe('downloadFile', () => {
       mockUsername,
       mockFiles,
       mockDevices,
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,
@@ -133,6 +139,7 @@ describe('downloadFile', () => {
       mockUsername,
       mockFiles,
       mockDevices,
+      mockFileInfo,
       mockTaskInfo,
       mockTasks,
       mockSetTasks,

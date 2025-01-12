@@ -14,6 +14,7 @@ export async function getUserInfo(username: string) {
       devices: any;
       friends: any[];
       status: any;
+      online: boolean;
     }>(
       `${CONFIG.url}/users/getuserinfo/${username}`
     );
@@ -28,6 +29,7 @@ export async function getUserInfo(username: string) {
         "picture": response.data.picture,
         "devices": response.data.devices,
         "friends": response.data.friends,
+        "online": response.data.online,
       }
       console.log("user_data", user_data);
       return user_data;
