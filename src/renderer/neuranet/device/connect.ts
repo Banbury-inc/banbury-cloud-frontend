@@ -162,8 +162,63 @@ export async function createWebSocketConnection(
         const data = JSON.parse(event.data);
         console.log("Received JSON message:", data);
 
-        // Handle both message types for file completion
-        if (data.message === 'File sent successfully' || data.type === 'file_sent_successfully') {
+        // Handle messages based on type and message fields
+        if (data.type === "direct_message" && data.message === "file_request") {
+          console.log("Received file request:", data);
+          const file_path = data.file_path;
+          const file_name = data.file_name;
+          const transfer_room = data.transfer_room;
+
+          try {
+            const fileStream = fs.createReadStream(file_path);
+
+            fileStream.on('error', () => {
+              const message = {
+                message_type: 'file_not_found',
+                username: username,
+                requesting_device_name: data.requesting_device_name,
+                file_name: file_name,
+              };
+              socket.send(JSON.stringify(message));
+            });
+
+            // Send start transfer message
+            const startMessage = {
+              message_type: 'start_file_transfer',
+              file_name: file_name,
+              transfer_room: transfer_room
+            };
+            socket.send(JSON.stringify(startMessage));
+
+            // Add handlers for reading and sending the file
+            fileStream.on('data', (chunk) => {
+              console.log('Sending chunk, size:', chunk.length);
+              socket.send(chunk);
+            });
+
+            fileStream.on('end', () => {
+              const message = {
+                message_type: 'file_sent_successfully',
+                username: username,
+                requesting_device_id: data.requesting_device_id,
+                sending_device_name: device_name,
+                sending_device_id: device_id,
+                file_name: file_name,
+                file_path: file_path
+              };
+              socket.send(JSON.stringify(message));
+            });
+          } catch (error) {
+            console.error('Error reading file:', error);
+            const message = {
+              message_type: 'file_not_found',
+              username: username,
+              requesting_device_name: data.requesting_device_name,
+              file_name: file_name,
+            };
+            socket.send(JSON.stringify(message));
+          }
+        } else if (data.type === "file_sent_successfully" || data.message === "File sent successfully") {
           console.log("File transfer complete, saving file:", data.file_name);
           try {
             const result = saveFile(data.file_name, data.file_path || '');
@@ -271,48 +326,6 @@ export async function createWebSocketConnection(
           } else {
             console.error('Invalid download queue format received:', download_queue);
           }
-        }
-
-        // Handle existing request types
-        if (data.request_type === 'file_request') {
-          console.log("Received file request:", data);
-          const file_path = data.file_path;
-          const directory_name: string = file_path;
-          const directory_path: string = path.join(os.homedir(), directory_name);
-          const file_save_path: string = path.join(directory_path);
-
-          const fileStream = fs.createReadStream(file_path);
-
-          fileStream.on('error', () => {
-            const message = {
-              message: 'File not found',
-              username: username,
-              requesting_device_name: data.requesting_device_name,
-              file_name: data.file_name,
-            };
-            socket.send(JSON.stringify(message));
-            return 'file_not_found';
-          });
-
-          // Add handlers for reading and sending the file
-          fileStream.on('data', (chunk) => {
-            console.log('Sending chunk: ', chunk)
-            socket.send(chunk);
-          });
-
-          fileStream.on('end', () => {
-            const message = {
-              message_type: 'file_sent_successfully',
-              username: username,
-              requesting_device_name: data.requesting_device_name,
-              requesting_device_id: data.requesting_device_id,
-              sending_device_name: device_name,
-              sending_device_id: device_id,
-              file_name: data.file_name,
-              file_path: data.file_path
-            };
-            socket.send(JSON.stringify(message));
-          });
         }
       } catch (error) {
         console.error('Error processing message:', error);
