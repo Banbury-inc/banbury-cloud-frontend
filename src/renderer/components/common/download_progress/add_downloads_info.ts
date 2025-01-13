@@ -41,7 +41,9 @@ export function addDownloadsInfo(newDownloads: DownloadInfo[]): DownloadInfo[] {
         activeDownloads[downloadingIndex] = {
           ...activeDownloads[downloadingIndex],
           downloadedSize: newDownload.downloadedSize,
-          progress: (newDownload.downloadedSize / activeDownloads[downloadingIndex].totalSize) * 100
+          progress: (newDownload.downloadedSize / activeDownloads[downloadingIndex].totalSize) * 100,
+          status: newDownload.progress === 100 ? 'completed' : 'downloading',
+          timeRemaining
         };
       }
     } else {
@@ -75,7 +77,8 @@ export function addDownloadsInfo(newDownloads: DownloadInfo[]): DownloadInfo[] {
   activeDownloads = activeDownloads.filter(
     download => download.status === 'downloading' ||
       download.status === 'failed' ||
-      (download.status === 'completed' && download.progress < 100)
+      download.status === 'skipped' ||
+      download.status === 'completed'
   );
 
   return [...activeDownloads];

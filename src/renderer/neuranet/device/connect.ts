@@ -157,6 +157,16 @@ function saveFile(fileName: string, file_path: string) {
     fs.writeFileSync(filePath, completeBuffer);
     console.log("File written successfully");
 
+    addDownloadsInfo([{
+      filename: fileName,
+      fileType: 'Unknown',
+      progress: 100,
+      status: 'completed' as const,
+      totalSize: 0,
+      downloadedSize: completeBuffer.length,
+      timeRemaining: undefined
+    }]);
+
     // Clear accumulated data only after successful save
     resetAccumulatedData();
     return 'success';

@@ -95,8 +95,8 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
       >
         <Box sx={{ p: 2 }}>
           {/* Header */}
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             mb: 2
@@ -157,15 +157,15 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ color: 'white' }}>{download.filename}</Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                      {download.status === 'downloading' 
+                      {download.status === 'downloading'
                         ? `Downloading ${(download.downloadedSize / (1024 * 1024)).toFixed(1)}mb / ${(download.totalSize / (1024 * 1024)).toFixed(1)}mb - ${download.timeRemaining}s left...`
                         : `Downloaded to Files`
                       }
                     </Typography>
                     {download.status === 'downloading' && (
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={download.progress} 
+                      <LinearProgress
+                        variant="determinate"
+                        value={download.progress}
                         sx={{ mt: 1 }}
                       />
                     )}
@@ -173,7 +173,7 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
 
                   {/* Action Button */}
                   {download.status === 'downloading' ? (
-                    <Button 
+                    <Button
                       variant="contained"
                       size="small"
                       sx={{
@@ -186,6 +186,9 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
                     <Button
                       variant="contained"
                       size="small"
+                      sx={{
+                        fontSize: '12px',
+                      }}
                     >
                       Copy link
                     </Button>
