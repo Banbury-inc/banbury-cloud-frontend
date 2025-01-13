@@ -19,21 +19,110 @@ function resetAccumulatedData() {
 }
 
 // Function to handle the received file chunk in binary form
-export function handleReceivedFileChunk(data: ArrayBuffer) {
-  console.log("Handling received file chunk, size:", data.byteLength);
-
+export function handleReceivedFileChunk(data: ArrayBuffer, downloadDetails: {
+  filename: string | null;
+  fileType: string | null;
+  totalSize: number;
+}) {
   try {
     const chunkBuffer = Buffer.from(data);
     if (chunkBuffer.length > 0) {
-      console.log("Adding chunk to accumulated data, size:", chunkBuffer.length);
       accumulatedData.push(chunkBuffer);
-    } else {
-      console.warn("Received empty chunk, skipping");
+
+      // Calculate total received bytes
+      const totalReceived = accumulatedData.reduce((sum, chunk) => sum + chunk.length, 0);
+
+      // Update download progress
+      const downloadInfo = {
+        filename: downloadDetails.filename || 'Unknown',
+        fileType: downloadDetails.fileType || 'Unknown',
+        progress: (totalReceived / downloadDetails.totalSize) * 100,
+        status: 'downloading' as const,
+        totalSize: downloadDetails.totalSize,
+        downloadedSize: totalReceived,
+        timeRemaining: calculateTimeRemaining(
+          totalReceived,
+          downloadDetails.totalSize,
+          downloadDetails.filename || 'Unknown'
+        )
+      };
+
+      console.log("Download info:", downloadInfo);
+
+      addDownloadsInfo([downloadInfo]);
     }
   } catch (error) {
     console.error('Error processing file chunk:', error);
     throw error;
   }
+}
+
+// Add a map to track download speed calculations
+const downloadSpeedTracker = new Map<string, {
+  lastUpdate: number;
+  lastSize: number;
+  speedSamples: number[];
+  lastTimeRemaining?: number;
+}>();
+
+function calculateTimeRemaining(downloadedSize: number, totalSize: number, filename: string): number | undefined {
+  if (totalSize <= downloadedSize) {
+    return undefined;
+  }
+
+  const now = Date.now();
+  const tracker = downloadSpeedTracker.get(filename) || {
+    lastUpdate: now,
+    lastSize: 0,
+    speedSamples: [],
+    lastTimeRemaining: undefined
+  };
+
+  // Calculate current speed (bytes per second)
+  const timeDiff = (now - tracker.lastUpdate) / 1000; // Convert to seconds
+  const sizeDiff = downloadedSize - tracker.lastSize;
+
+  if (timeDiff > 0) {
+    const currentSpeed = sizeDiff / timeDiff;
+
+    // Keep last 5 speed samples for averaging
+    tracker.speedSamples.push(currentSpeed);
+    if (tracker.speedSamples.length > 5) {
+      tracker.speedSamples.shift();
+    }
+
+    // Calculate average speed
+    const averageSpeed = tracker.speedSamples.reduce((a, b) => a + b, 0) / tracker.speedSamples.length;
+
+    // Update tracker
+    tracker.lastUpdate = now;
+    tracker.lastSize = downloadedSize;
+
+    // Calculate remaining time in seconds
+    const remainingBytes = totalSize - downloadedSize;
+    const timeRemaining = Math.ceil(remainingBytes / averageSpeed);
+
+    // Store the new time remaining
+    tracker.lastTimeRemaining = timeRemaining > 0 ? timeRemaining : 1;
+    downloadSpeedTracker.set(filename, tracker);
+
+    return tracker.lastTimeRemaining;
+  }
+
+  // Update tracker but keep the last known time remaining
+  downloadSpeedTracker.set(filename, {
+    ...tracker,
+    lastUpdate: now,
+    lastSize: downloadedSize
+  });
+
+  // Return the last known time remaining or a rough estimate
+  return tracker.lastTimeRemaining || Math.ceil((totalSize - downloadedSize) / 1000000);
+}
+
+// Add cleanup function for downloads
+export function cleanupDownloadTracker(filename: string) {
+  downloadSpeedTracker.delete(filename);
 }
 
 // Function to save the accumulated file after all chunks are received
@@ -159,10 +248,22 @@ function attemptReconnect(
   reconnectAttempt++;
 }
 
+// Add this interface near the top of the file
+interface TaskInfo {
+  task_name: string;
+  task_device: string;
+  task_status: string;
+  fileInfo?: {
+    file_name: string;
+    file_size: number;
+    kind: string;
+  }[];
+}
+
 export async function createWebSocketConnection(
   username: string,
   device_name: string,
-  taskInfo: any,
+  taskInfo: TaskInfo,
   tasks: any[],
   setTasks: (tasks: any[]) => void,
   setTaskbox_expanded: (expanded: boolean) => void,
@@ -207,16 +308,21 @@ export async function createWebSocketConnection(
 
     // Check if the received data is binary (ArrayBuffer)
     if (event.data instanceof ArrayBuffer) {
-      console.log("Received file chunk, length:", event.data.byteLength);
-      handleReceivedFileChunk(event.data);
+      const downloadDetails = {
+        filename: 'Unknown',
+        fileType: 'Unknown',
+        totalSize: 0,
+        progress: 0,
+        status: 'downloading' as const,
+        downloadedSize: 0,
+        timeRemaining: undefined
+      };
+      handleReceivedFileChunk(event.data, downloadDetails);
 
       // Calculate total received bytes
-      const totalReceived = accumulatedData.reduce((sum, chunk) => sum + chunk.length, 0);
+      const downloadedSize = accumulatedData.reduce((sum, chunk) => sum + chunk.length, 0);
 
-      // Update progress for the current file transfer
-      if (taskInfo?.fileInfo) {
-        updateDownloadProgress(taskInfo.fileInfo, totalReceived);
-      }
+
     } else {
       try {
         const data = JSON.parse(event.data);
@@ -483,7 +589,16 @@ export function cleanupWebSocket() {
 }
 
 // Function to send a download request using the provided socket
-export async function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: any) {
+export async function download_request(username: string, file_name: string, file_path: string, fileInfo: any, socket: WebSocket, taskInfo: TaskInfo) {
+  // Update taskInfo with the file information
+  taskInfo.fileInfo = [{
+    file_name: fileInfo[0]?.file_name || file_name,
+    file_size: fileInfo[0]?.file_size || 0,
+    kind: fileInfo[0]?.kind || 'Unknown'
+  }];
+
+  console.log("Updated taskInfo:", taskInfo);
+
   const requesting_device_id = await neuranet.device.getDeviceId(username);
   const sending_device_id = fileInfo[0]?.device_id;
 
@@ -614,7 +729,7 @@ const username = 'mmills';
 const file_name = 'Logo.png';
 const file_path = path.join(os.homedir(), 'Downloads');  // Use a proper path
 const device_name = os.hostname();
-const taskInfo = {
+const taskInfo: TaskInfo = {
   task_name: 'download_file',
   task_device: device_name,
   task_status: 'in_progress',

@@ -10,6 +10,8 @@ export function downloadFile(username: string, files: string[], devices: string[
       return;
     }
 
+    console.log("Downloading file:", files[0], fileInfo, taskInfo);
+
     // Create timeout ID that we can clear later
     let timeoutId: NodeJS.Timeout;
 
@@ -41,7 +43,7 @@ export function downloadFile(username: string, files: string[], devices: string[
     websocket.addEventListener('message', messageHandler);
 
     // Send the download request
-    console.log("files", files)
+    console.log("fileInfo", fileInfo)
     neuranet.device.download_request(username, files[0], files[0], fileInfo, websocket, taskInfo);
 
     // Store the timeout ID so we can clear it
