@@ -22,7 +22,6 @@ function resetAccumulatedData() {
 export function handleReceivedFileChunk(data: ArrayBuffer) {
   console.log("Handling received file chunk, size:", data.byteLength);
 
-  // Convert ArrayBuffer to Buffer and ensure it's a valid chunk
   try {
     const chunkBuffer = Buffer.from(data);
     if (chunkBuffer.length > 0) {
@@ -33,7 +32,7 @@ export function handleReceivedFileChunk(data: ArrayBuffer) {
     }
   } catch (error) {
     console.error('Error processing file chunk:', error);
-    throw error; // Rethrow to handle in the caller
+    throw error;
   }
 }
 
@@ -210,10 +209,10 @@ export async function createWebSocketConnection(
     if (event.data instanceof ArrayBuffer) {
       console.log("Received file chunk, length:", event.data.byteLength);
       handleReceivedFileChunk(event.data);
-      
+
       // Calculate total received bytes
       const totalReceived = accumulatedData.reduce((sum, chunk) => sum + chunk.length, 0);
-      
+
       // Update progress for the current file transfer
       if (taskInfo?.fileInfo) {
         updateDownloadProgress(taskInfo.fileInfo, totalReceived);
@@ -232,7 +231,7 @@ export async function createWebSocketConnection(
 
           try {
             const fileStream = fs.createReadStream(file_path);
-            
+
             // Get file stats to know the total size
             const stats = fs.statSync(file_path);
             const fileInfo = {
@@ -240,7 +239,7 @@ export async function createWebSocketConnection(
               file_size: stats.size,
               kind: path.extname(file_name).slice(1) || 'Unknown'
             };
-            
+
             // Initialize upload progress
             const initialUploadInfo = {
               filename: fileInfo.file_name,
@@ -282,7 +281,7 @@ export async function createWebSocketConnection(
                 file_path: file_path
               };
               socket.send(JSON.stringify(message));
-              
+
               // Ensure we mark the upload as completed
               if (data.file_info) {
                 const uploadInfo = {
@@ -451,7 +450,7 @@ export async function createWebSocketConnection(
   // Close event: When the WebSocket connection is closed
   socket.onclose = function (event) {
     console.log('WebSocket connection closed:', event.code, event.reason);
-    
+
     // Don't attempt reconnection if the closure was intentional (code 1000)
     if (event.code !== 1000) {
       attemptReconnect(
@@ -488,6 +487,30 @@ export async function download_request(username: string, file_name: string, file
   const requesting_device_id = await neuranet.device.getDeviceId(username);
   const sending_device_id = fileInfo[0]?.device_id;
 
+  // Create unique transfer room name
+  const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
+
+  // First join the transfer room
+  await new Promise<void>((resolve) => {
+    const joinMessage = {
+      message_type: "join_transfer_room",
+      transfer_room: transfer_room
+    };
+
+    socket.send(JSON.stringify(joinMessage));
+
+    // Wait for confirmation that we've joined the room
+    const handleJoinConfirmation = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "transfer_room_joined" && data.transfer_room === transfer_room) {
+        socket.removeEventListener('message', handleJoinConfirmation);
+        resolve();
+      }
+    };
+
+    socket.addEventListener('message', handleJoinConfirmation);
+  });
+
   // Create download progress object
   const downloadInfo = {
     filename: fileInfo[0]?.file_name || file_name,
@@ -500,16 +523,9 @@ export async function download_request(username: string, file_name: string, file
   };
 
   // Add to downloads tracking
-  const downloads = addDownloadsInfo([downloadInfo]);
+  addDownloadsInfo([downloadInfo]);
 
-  // Create transfer room and send request
-  const transfer_room = `transfer_${sending_device_id}_${requesting_device_id}`;
-  
-  socket.send(JSON.stringify({
-    message_type: "join_transfer_room",
-    transfer_room: transfer_room
-  }));
-
+  // Now send the actual download request
   const message = {
     message_type: "download_request",
     username: username,
@@ -518,6 +534,7 @@ export async function download_request(username: string, file_name: string, file
     file_info: fileInfo,
     requesting_device_name: os.hostname(),
     requesting_device_id: requesting_device_id,
+    sending_device_id: sending_device_id,
     transfer_room: transfer_room
   };
 
@@ -528,7 +545,7 @@ export async function download_request(username: string, file_name: string, file
 export function updateDownloadProgress(fileInfo: any, bytesReceived: number) {
   const totalSize = fileInfo[0]?.file_size || 0;
   const progress = (bytesReceived / totalSize) * 100;
-  
+
   // Update the downloads info with new progress
   addDownloadsInfo([{
     filename: fileInfo[0]?.file_name,
