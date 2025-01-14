@@ -78,22 +78,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell
-          padding="checkbox"
-          sx={{
-            backgroundColor: 'background.paper',
-          }}
-        >
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts',
-            }}
-          />
-        </TableCell>
         {headCells
           .filter((headCell: HeadCell) => {
             return true;
@@ -431,9 +415,6 @@ export default function Logs() {
                     {isLoading
                       ? Array.from(new Array(rowsPerPage)).map((_, index) => (
                         <TableRow key={`skeleton-${index}`}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
                           <TableCell>
                             <Skeleton variant="text" width="100%" />
                           </TableCell>
@@ -470,16 +451,6 @@ export default function Logs() {
                               onMouseEnter={() => setHoveredRowId(row._id as string)}
                               onMouseLeave={() => setHoveredRowId(null)}
                             >
-                              <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
-                                {hoveredRowId === row._id || isItemSelected ? (
-                                  <Checkbox
-                                    color="primary"
-                                    checked={isItemSelected}
-                                    inputProps={{ 'aria-labelledby': labelId }}
-                                  />
-                                ) : null}
-                              </TableCell>
-
                               <TableCell
                                 sx={{
                                   borderBottomColor: '#424242',
