@@ -140,12 +140,21 @@ export default function NotificationsButton({ }: {
           }
         }}
       >
-        <Box sx={{ p: 2 }}>
+        <Box sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           <Box sx={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mb: 2
+            p: 2,
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            bgcolor: 'rgba(54,54,54,255)',
           }}>
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
               Notifications
@@ -167,57 +176,62 @@ export default function NotificationsButton({ }: {
               </Button>
             )}
           </Box>
-
-          <Stack spacing={1}>
-            {notifications.map((notification) => (
-              <Box
-                key={notification._id}
-                sx={{
-                  p: 1.5,
-                  borderRadius: 1,
-                  opacity: notification.read ? 0.7 : 1,
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.05)'
-                  },
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ color: 'white', mb: 0.5 }}>
-                    {notification.title}
-                  </Typography>
-                  {notification.description && (
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
-                      {notification.description}
+          <Box sx={{
+            overflowY: 'auto',
+            flex: 1,
+            p: 2
+          }}>
+            <Stack spacing={1}>
+              {notifications.map((notification) => (
+                <Box
+                  key={notification._id}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 1,
+                    opacity: notification.read ? 0.7 : 1,
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.05)'
+                    },
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ color: 'white', mb: 0.5 }}>
+                      {notification.title}
                     </Typography>
+                    {notification.description && (
+                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                        {notification.description}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                      {formatTimestamp(notification.timestamp)}
+                    </Typography>
+                  </Box>
+                  {!notification.read && (
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markNotificationAsRead(notification._id);
+                        setNotifications(notifications.map(n =>
+                          n._id === notification._id ? { ...n, read: true } : n
+                        ));
+                      }}
+                      sx={{
+                        ml: 1,
+                        color: 'rgba(255,255,255,0.5)',
+                        '&:hover': { color: 'white' }
+                      }}
+                    >
+                      <DoneIcon fontSize="small" />
+                    </IconButton>
                   )}
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                    {formatTimestamp(notification.timestamp)}
-                  </Typography>
                 </Box>
-                {!notification.read && (
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      markNotificationAsRead(notification._id);
-                      setNotifications(notifications.map(n =>
-                        n._id === notification._id ? { ...n, read: true } : n
-                      ));
-                    }}
-                    sx={{
-                      ml: 1,
-                      color: 'rgba(255,255,255,0.5)',
-                      '&:hover': { color: 'white' }
-                    }}
-                  >
-                    <DoneIcon fontSize="small" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
+              ))}
+            </Stack>
+          </Box>
         </Box>
       </Popover>
     </>
