@@ -394,6 +394,9 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
                     <Button
                       variant="contained"
                       size="small"
+                      sx={{
+                        fontSize: '12px',
+                      }}
                       disabled={isSharing}
                       onClick={handleShare}
                     >

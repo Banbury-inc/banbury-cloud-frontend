@@ -44,8 +44,7 @@ import * as utils from '../../../utils';
 import AccountMenuIcon from '../../common/AccountMenuIcon';
 import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
-import TaskBox from '../../TaskBox';
-import TaskBoxButton from '../../TaskBoxButton';
+import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
@@ -59,7 +58,27 @@ import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import Dialog from '@mui/material/Dialog';
+import UploadProgress from '../../common/upload_progress';
+import DownloadProgress from '../../common/download_progress/download_progress';
+import { addDownloadsInfo, getDownloadsInfo } from '../../common/download_progress/add_downloads_info';
+import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
+import NotificationsButton from '../../common/notifications/NotificationsButton';
 
+// Rename the interface to avoid collision with DOM Notification
+interface UserNotification {
+  id: string;
+  type: 'share' | 'upload' | 'system';
+  title: string;
+  timestamp: string;
+  read: boolean;
+  folderName?: string;
+  actionLabel?: string;
+}
+
+interface NotificationResponse {
+  result: 'success' | 'fail';
+  notifications: UserNotification[];
+}
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
@@ -416,12 +435,24 @@ export default function Files() {
 
   const handleDownloadClick = async () => {
     try {
-      console.log(websocket);
       setSelectedFiles(selected);
       let task_description = 'Downloading ' + selectedFileNames.join(', ');
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-      setTaskbox_expanded(true);
-      
+
+      // Initialize download progress for selected files
+      const initialDownloads = selectedFileInfo.map(fileInfo => ({
+        filename: fileInfo.file_name,
+        fileType: fileInfo.kind || 'Unknown',
+        progress: 0,
+        status: 'downloading' as const,
+        totalSize: fileInfo.file_size || 0,
+        downloadedSize: 0,
+        timeRemaining: undefined
+      }));
+
+      // Add to downloads tracking
+      addDownloadsInfo(initialDownloads);
+
       // Add timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Download request timed out')), 30000); // 30 second timeout
@@ -606,6 +637,81 @@ export default function Files() {
     setIsShareModalOpen(false);
   };
 
+  const old_uploads = [
+    {
+      filename: 'family_deer.mp4',
+      fileType: 'MP4',
+      progress: 13.5,
+      status: 'uploading' as 'uploading' | 'failed' | 'completed' | 'skipped',
+      totalSize: 200,
+      uploadedSize: 27,
+      timeRemaining: 21
+    },
+    // ... other uploads
+  ];
+
+  const old_downloads = [
+    {
+      filename: 'family_deer.mp4',
+      fileType: 'MP4',
+      progress: 13.5,
+      status: 'downloading' as 'downloading' | 'failed' | 'completed' | 'skipped',
+      totalSize: 200,
+      downloadedSize: 27,
+      timeRemaining: 21
+    },
+  ];
+
+
+
+
+
+  // Add new state for downloads
+  const [downloads, setDownloads] = useState<{
+    filename: string;
+    fileType: string;
+    progress: number;
+    status: 'downloading' | 'completed' | 'failed' | 'skipped';
+    totalSize: number;
+    downloadedSize: number;
+    timeRemaining?: number;
+  }[]>([]);
+
+  // Add effect to subscribe to download updates
+  useEffect(() => {
+    // Set up interval to check for download updates
+    const downloadUpdateInterval = setInterval(() => {
+      const currentDownloads = getDownloadsInfo();
+      setDownloads(currentDownloads);
+    }, 1000); // Check every second
+
+    // Cleanup interval on unmount
+    return () => clearInterval(downloadUpdateInterval);
+  }, []);
+
+  // Add new state for uploads
+  const [uploads, setUploads] = useState<{
+    filename: string;
+    fileType: string;
+    progress: number;
+    status: 'uploading' | 'completed' | 'failed' | 'skipped';
+    totalSize: number;
+    uploadedSize: number;
+    timeRemaining?: number;
+  }[]>([]);
+
+  // Add effect to subscribe to upload updates
+  useEffect(() => {
+    // Set up interval to check for upload updates
+    const uploadUpdateInterval = setInterval(() => {
+      const currentUploads = getUploadsInfo();
+      setUploads(currentUploads);
+    }, 1000); // Check every second
+
+    // Cleanup interval on unmount
+    return () => clearInterval(uploadUpdateInterval);
+  }, []);
+
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -740,7 +846,11 @@ export default function Files() {
               <Grid item>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <TaskBoxButton />
+                    <UploadProgress uploads={uploads} />
+                    <DownloadProgress downloads={downloads} />
+                    <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

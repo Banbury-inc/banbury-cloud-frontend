@@ -9,7 +9,7 @@ import AccountMenuIcon from '../../common/AccountMenuIcon';
 import Card from '@mui/material/Card';
 import { List, ListItemButton, ListItemText } from '@mui/material';
 import { neuranet } from '../../../neuranet'
-import TaskBoxButton from '../../TaskBoxButton';
+import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import App from './App';
 import CloudSync from './CloudSync';
 import Public_Profile from './Public_Profile';
@@ -56,7 +56,6 @@ export default function Settings() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

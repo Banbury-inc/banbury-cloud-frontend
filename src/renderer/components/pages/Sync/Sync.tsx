@@ -45,8 +45,7 @@ import AccountMenuIcon from '../../common/AccountMenuIcon';
 import RemoveFileFromSyncButton from './components/remove_file_from_sync_button/remove_file_from_sync_button';
 import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
-import TaskBox from '../../TaskBox';
-import TaskBoxButton from '../../TaskBoxButton';
+import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
@@ -492,7 +491,6 @@ export default function Sync() {
               <Grid item>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>
