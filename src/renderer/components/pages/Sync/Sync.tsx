@@ -59,6 +59,7 @@ import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import { fetchFileSyncData } from './utils/fetchFileSyncData';
+import NotificationsButton from '../../common/notifications/NotificationsButton';
 
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
@@ -491,6 +492,9 @@ export default function Sync() {
               <Grid item>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
+                    <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

@@ -66,6 +66,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 import { CONFIG } from '../../config/config';
+import NotificationsButton from '../common/notifications/NotificationsButton';
 
 
 // Update the interface to match device data
@@ -922,6 +923,9 @@ export default function Devices() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
+                    <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

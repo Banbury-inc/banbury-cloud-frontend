@@ -13,6 +13,7 @@ import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import App from './App';
 import CloudSync from './CloudSync';
 import Public_Profile from './Public_Profile';
+import NotificationsButton from '../../common/notifications/NotificationsButton';
 
 interface Section {
   id: string;
@@ -56,6 +57,9 @@ export default function Settings() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
+                    <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>
