@@ -47,7 +47,7 @@ import fs from 'fs';
 import { neuranet } from '../../neuranet';
 import { formatRAM } from '../../utils';
 import { fileWatcherEmitter } from '../../neuranet/device/watchdog';
-import TaskBoxButton from '../TaskBoxButton';
+import TaskBoxButton from '../common/notifications/NotificationsButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
@@ -922,7 +922,6 @@ export default function Devices() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

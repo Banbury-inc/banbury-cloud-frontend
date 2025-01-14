@@ -44,6 +44,12 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
   // Show upload count badge if there are active uploads
   const activeDownloads = downloads.filter(download => download.status === 'downloading').length;
 
+  // Add this filtering logic before the return statement
+  const filteredDownloads = downloads.filter(download => {
+    if (selectedTab === 'all') return true;
+    return download.status === selectedTab;
+  });
+
   return (
     <>
       <Button
@@ -131,12 +137,12 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
 
           {/* Upload List */}
           <Stack spacing={2}>
-            {downloads.length === 0 ? (
+            {filteredDownloads.length === 0 ? (
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', py: 4 }}>
-                No downloads in progress
+                No downloads in this category
               </Typography>
             ) : (
-              downloads.map((download) => (
+              filteredDownloads.map((download) => (
                 <Box
                   key={download.filename}
                   sx={{

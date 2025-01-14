@@ -8,7 +8,7 @@ import AccountMenuIcon from '../../common/AccountMenuIcon';
 import Card from '@mui/material/Card';
 import { List, ListItemButton, ListItemText } from '@mui/material';
 import { neuranet } from '../../../neuranet'
-import TaskBoxButton from '../../TaskBoxButton';
+import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
@@ -26,6 +26,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { CircularProgress } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
+import NotificationsButton from '../../common/notifications/NotificationsButton';
 
 interface SearchResult {
   id: number;
@@ -153,8 +154,8 @@ export default function Friends() {
       const socket = await neuranet.device.connect(
         username || '',
         [],
-        () => {},
-        () => {}
+        () => { },
+        () => { }
       );
 
       socket.addEventListener('message', (event) => {
@@ -200,7 +201,6 @@ export default function Friends() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
-                    <TaskBoxButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

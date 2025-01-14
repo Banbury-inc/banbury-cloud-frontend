@@ -44,8 +44,7 @@ import * as utils from '../../../utils';
 import AccountMenuIcon from '../../common/AccountMenuIcon';
 import FileTreeView from './components/NewTreeView/FileTreeView';
 import NewInputFileUploadButton from '../../newuploadfilebutton';
-import TaskBox from '../../TaskBox';
-import TaskBoxButton from '../../TaskBoxButton';
+import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
@@ -63,7 +62,23 @@ import UploadProgress from '../../common/upload_progress';
 import DownloadProgress from '../../common/download_progress/download_progress';
 import { addDownloadsInfo, getDownloadsInfo } from '../../common/download_progress/add_downloads_info';
 import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
+import NotificationsButton from '../../common/notifications/NotificationsButton';
 
+// Rename the interface to avoid collision with DOM Notification
+interface UserNotification {
+  id: string;
+  type: 'share' | 'upload' | 'system';
+  title: string;
+  timestamp: string;
+  read: boolean;
+  folderName?: string;
+  actionLabel?: string;
+}
+
+interface NotificationResponse {
+  result: 'success' | 'fail';
+  notifications: UserNotification[];
+}
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
@@ -434,10 +449,10 @@ export default function Files() {
         downloadedSize: 0,
         timeRemaining: undefined
       }));
-      
+
       // Add to downloads tracking
       addDownloadsInfo(initialDownloads);
-      
+
       // Add timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Download request timed out')), 30000); // 30 second timeout
@@ -647,6 +662,40 @@ export default function Files() {
     },
   ];
 
+
+
+  // Add new state for notifications
+  const [notifications, setNotifications] = useState<any>([]);
+
+  // Add effect to subscribe to notification updates
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await neuranet.notifications.getNotifications(username ?? '');
+        if (response.result === 'success') {
+          setNotifications(response.notifications);
+        }
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchNotifications();
+
+    // Set up interval
+    const notificationUpdateInterval = setInterval(fetchNotifications, 5000); // Check every 5 seconds
+
+    // Cleanup
+    return () => {
+      mounted = false;
+      clearInterval(notificationUpdateInterval);
+    };
+  }, [username]);
+
+
   // Add new state for downloads
   const [downloads, setDownloads] = useState<{
     filename: string;
@@ -829,7 +878,7 @@ export default function Files() {
                   <Stack direction="row">
                     <UploadProgress uploads={uploads} />
                     <DownloadProgress downloads={downloads} />
-                    <TaskBoxButton />
+                    <NotificationsButton notifications={notifications} setNotifications={setNotifications} />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

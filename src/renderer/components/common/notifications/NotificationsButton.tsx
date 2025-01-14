@@ -1,0 +1,167 @@
+import * as React from 'react';
+import { Box, Button, Typography, Popover, IconButton, Stack, Divider } from '@mui/material';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
+import { formatDistanceToNow } from 'date-fns';
+
+interface UserNotification {
+  id: string;
+  type: 'friend_request' | 'share' | 'upload' | 'system';
+  title: string;
+  description: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export default function NotificationsButton({ notifications, setNotifications }: {
+  notifications: UserNotification[],
+  setNotifications: (notifications: UserNotification[]) => void
+}) {
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'notifications-popover' : undefined;
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return 'Invalid date';
+    }
+  };
+
+  return (
+    <>
+      <Button
+        onClick={handleClick}
+        sx={{
+          paddingLeft: '4px',
+          paddingRight: '4px',
+          minWidth: '30px',
+          position: 'relative'
+        }}
+      >
+        <NotificationsOutlinedIcon sx={{ fontSize: 'inherit' }} />
+        {unreadCount > 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -6,
+              right: -6,
+              bgcolor: 'error.main',
+              borderRadius: '50%',
+              width: 16,
+              height: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.5rem',
+            }}
+          >
+            {unreadCount}
+          </Box>
+        )}
+      </Button>
+
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1A1A1A',
+            width: '400px',
+            maxHeight: '80vh',
+            borderRadius: '12px',
+          }
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2
+          }}>
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
+              Notifications
+            </Typography>
+            {unreadCount > 0 && (
+              <Button
+                onClick={handleMarkAllAsRead}
+                size="small"
+                sx={{
+                  color: 'rgba(255,255,255,0.7)',
+                  textTransform: 'none',
+                  '&:hover': {
+                    color: 'white',
+                    backgroundColor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+              >
+                Mark all as read
+              </Button>
+            )}
+          </Box>
+
+          <Stack spacing={1}>
+            {notifications.map((notification) => (
+              <Box
+                key={notification.id}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 1,
+                  opacity: notification.read ? 0.7 : 1,
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.05)'
+                  }
+                }}
+              >
+                <Typography sx={{ color: 'white', mb: 0.5 }}>
+                  {notification.title}
+                </Typography>
+                {notification.description && (
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                    {notification.description}
+                  </Typography>
+                )}
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {formatTimestamp(notification.timestamp)}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      </Popover>
+    </>
+  );
+}
+
