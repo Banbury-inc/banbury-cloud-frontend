@@ -64,6 +64,7 @@ export default function DownloadProgress({ downloads }: DownloadProgressProps) {
               top: -6,
               right: -6,
               bgcolor: 'error.main',
+              borderBottom: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '50%',
               width: 16,
               height: 16,
