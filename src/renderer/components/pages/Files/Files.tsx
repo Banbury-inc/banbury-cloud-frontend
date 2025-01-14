@@ -664,36 +664,6 @@ export default function Files() {
 
 
 
-  // Add new state for notifications
-  const [notifications, setNotifications] = useState<any>([]);
-
-  // Add effect to subscribe to notification updates
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchNotifications = async () => {
-      try {
-        const response = await neuranet.notifications.getNotifications(username ?? '');
-        if (response.result === 'success') {
-          setNotifications(response.notifications);
-        }
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-      }
-    };
-
-    // Initial fetch
-    fetchNotifications();
-
-    // Set up interval
-    const notificationUpdateInterval = setInterval(fetchNotifications, 5000); // Check every 5 seconds
-
-    // Cleanup
-    return () => {
-      mounted = false;
-      clearInterval(notificationUpdateInterval);
-    };
-  }, [username]);
 
 
   // Add new state for downloads
@@ -878,7 +848,7 @@ export default function Files() {
                   <Stack direction="row">
                     <UploadProgress uploads={uploads} />
                     <DownloadProgress downloads={downloads} />
-                    <NotificationsButton notifications={notifications} setNotifications={setNotifications} />
+                    <NotificationsButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

@@ -10,6 +10,7 @@ import { Socket } from 'net';
 import { wakeOnLan, isValidMacAddress } from './wol';
 import { addDownloadsInfo } from '../../components/common/download_progress/add_downloads_info';
 import { addUploadsInfo } from '../../components/common/upload_progress/add_uploads_info';
+import { fetchNotifications } from '../../components/common/notifications/fetchNotifications';
 
 // Add state all file chunks with a reset function
 let accumulatedData: Buffer[] = [];
@@ -556,6 +557,9 @@ export async function createWebSocketConnection(
             };
             socket.send(JSON.stringify(response));
           }
+        }
+        if (data.type === "notification_update") {
+          console.log("Received notification:", data);
         }
       } catch (error) {
         console.error('Error processing message:', error);

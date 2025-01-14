@@ -201,6 +201,7 @@ export default function Friends() {
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
+                    <NotificationsButton />
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

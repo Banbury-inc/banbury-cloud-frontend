@@ -4,9 +4,14 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import { formatDistanceToNow } from 'date-fns';
+import { getNotifications, markNotificationAsRead } from '../../../neuranet/notifications';
+import DoneIcon from '@mui/icons-material/Done';
+import { useAuth } from '../../../context/AuthContext';
+import { fetchNotifications } from './fetchNotifications';
+import { neuranet } from '../../../neuranet';
 
 interface UserNotification {
-  id: string;
+  _id: string;
   type: 'friend_request' | 'share' | 'upload' | 'system';
   title: string;
   description: string;
@@ -14,10 +19,41 @@ interface UserNotification {
   read: boolean;
 }
 
-export default function NotificationsButton({ notifications, setNotifications }: {
-  notifications: UserNotification[],
-  setNotifications: (notifications: UserNotification[]) => void
+
+export default function NotificationsButton({ }: {
 }) {
+
+  const { username, websocket } = useAuth();
+  const [notifications, setNotifications] = React.useState<UserNotification[]>([]);
+
+  React.useEffect(() => {
+    if (!username || !websocket) return;
+
+    // Initial fetch
+    fetchNotifications(username, setNotifications);
+
+    // Add websocket listener
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'notification_update') {
+          console.log("notification_update received");
+          fetchNotifications(username, setNotifications);
+        }
+      } catch (error) {
+        console.error('Error parsing websocket message:', error);
+      }
+    };
+
+    websocket.addEventListener('message', handleMessage);
+
+    // Cleanup
+    return () => {
+      websocket.removeEventListener('message', handleMessage);
+    };
+  }, [username, websocket]);
+
+
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -31,6 +67,7 @@ export default function NotificationsButton({ notifications, setNotifications }:
   const handleMarkAllAsRead = () => {
     setNotifications(notifications.map(notif => ({ ...notif, read: true })));
   };
+
 
   const open = Boolean(anchorEl);
   const id = open ? 'notifications-popover' : undefined;
@@ -135,27 +172,50 @@ export default function NotificationsButton({ notifications, setNotifications }:
           <Stack spacing={1}>
             {notifications.map((notification) => (
               <Box
-                key={notification.id}
+                key={notification._id}
                 sx={{
                   p: 1.5,
                   borderRadius: 1,
                   opacity: notification.read ? 0.7 : 1,
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.05)'
-                  }
+                  },
+                  display: 'flex',
+                  justifyContent: 'space-between'
                 }}
               >
-                <Typography sx={{ color: 'white', mb: 0.5 }}>
-                  {notification.title}
-                </Typography>
-                {notification.description && (
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
-                    {notification.description}
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ color: 'white', mb: 0.5 }}>
+                    {notification.title}
                   </Typography>
+                  {notification.description && (
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                      {notification.description}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    {formatTimestamp(notification.timestamp)}
+                  </Typography>
+                </Box>
+                {!notification.read && (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markNotificationAsRead(notification._id);
+                      setNotifications(notifications.map(n =>
+                        n._id === notification._id ? { ...n, read: true } : n
+                      ));
+                    }}
+                    sx={{
+                      ml: 1,
+                      color: 'rgba(255,255,255,0.5)',
+                      '&:hover': { color: 'white' }
+                    }}
+                  >
+                    <DoneIcon fontSize="small" />
+                  </IconButton>
                 )}
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                  {formatTimestamp(notification.timestamp)}
-                </Typography>
               </Box>
             ))}
           </Stack>
