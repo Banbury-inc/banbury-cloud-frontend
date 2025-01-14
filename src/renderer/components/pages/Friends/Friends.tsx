@@ -27,6 +27,8 @@ import DialogContent from '@mui/material/DialogContent';
 import { CircularProgress } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
+import UploadProgress from '../../common/upload_progress';
+import DownloadProgress from '../../common/download_progress/download_progress';
 
 interface SearchResult {
   id: number;
@@ -202,6 +204,8 @@ export default function Friends() {
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                   <Stack direction="row">
                     <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>

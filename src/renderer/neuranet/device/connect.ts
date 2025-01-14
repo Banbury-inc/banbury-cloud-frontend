@@ -307,7 +307,6 @@ export async function createWebSocketConnection(
       run_device_predictions_loop: CONFIG.run_device_predictions_loop,
     };
     socket.send(JSON.stringify(message));
-    console.log("Sent message:", message);
 
     // Call the callback function with the socket
     callback(socket);
@@ -557,9 +556,6 @@ export async function createWebSocketConnection(
             };
             socket.send(JSON.stringify(response));
           }
-        }
-        if (data.type === "notification_update") {
-          console.log("Received notification:", data);
         }
       } catch (error) {
         console.error('Error processing message:', error);

@@ -37,7 +37,6 @@ export default function NotificationsButton({ }: {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'notification_update') {
-          console.log("notification_update received");
           fetchNotifications(username, setNotifications);
         }
       } catch (error) {

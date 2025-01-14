@@ -12,23 +12,17 @@ export async function markNotificationAsRead(
     const response = await axios.post<{ result: string; }>(url, {
         notification_id: notification_id,
     });
-    console.log(response);
     const result = response.data.result;
     console.log(result);
 
     if (result === 'success') {
 
-        console.log("mark notification as read success");
-
         return result;
     }
     if (result === 'fail') {
-        console.log("mark notification as read failed");
         return 'failed';
     }
     else {
-        console.log("mark notification as read failed");
-        console.log(result);
         return 'failed';
     }
 }

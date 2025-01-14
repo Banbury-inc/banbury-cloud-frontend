@@ -849,6 +849,8 @@ export default function Files() {
                     <UploadProgress uploads={uploads} />
                     <DownloadProgress downloads={downloads} />
                     <NotificationsButton />
+                  </Stack>
+                  <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
                   </Stack>
                 </Box>
