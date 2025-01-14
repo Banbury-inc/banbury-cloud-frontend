@@ -1,14 +1,15 @@
 import * as React from 'react';
-import { Box, Button, Typography, Popover, IconButton, Stack, Divider } from '@mui/material';
+import { Box, Button, Typography, Popover, IconButton, Stack, Divider, Tooltip } from '@mui/material';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import { formatDistanceToNow } from 'date-fns';
-import { getNotifications, markNotificationAsRead } from '../../../neuranet/notifications';
+import { deleteNotification, getNotifications, markNotificationAsRead } from '../../../neuranet/notifications';
 import DoneIcon from '@mui/icons-material/Done';
 import { useAuth } from '../../../context/AuthContext';
 import { fetchNotifications } from './fetchNotifications';
 import { neuranet } from '../../../neuranet';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface UserNotification {
   _id: string;
@@ -82,6 +83,27 @@ export default function NotificationsButton({ }: {
     }
   };
 
+  const handleDeleteNotification = async (notificationId: string) => {
+    try {
+      await deleteNotification(notificationId, username as string);
+      setNotifications(notifications.filter(n => n._id !== notificationId));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    try {
+      await Promise.all(
+        notifications.map(notification =>
+          deleteNotification(notification._id, username as string)
+        )
+      );
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error deleting all notifications:', error);
+    }
+  };
 
   const open = Boolean(anchorEl);
   const id = open ? 'notifications-popover' : undefined;
@@ -174,22 +196,42 @@ export default function NotificationsButton({ }: {
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
               Notifications
             </Typography>
-            {unreadCount > 0 && (
-              <Button
-                onClick={handleMarkAllAsRead}
-                size="small"
-                sx={{
-                  color: 'rgba(255,255,255,0.7)',
-                  textTransform: 'none',
-                  '&:hover': {
-                    color: 'white',
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                Mark all as read
-              </Button>
-            )}
+            <Stack direction="row" spacing={1}>
+              {unreadCount > 0 && (
+                <Button
+                  onClick={handleMarkAllAsRead}
+                  size="small"
+                  sx={{
+                    fontSize: '12px',
+                    color: 'rgba(255,255,255,0.7)',
+                    textTransform: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                >
+                  Mark all as read
+                </Button>
+              )}
+              {notifications.length > 0 && (
+                <Button
+                  onClick={handleDeleteAll}
+                  size="small"
+                  sx={{
+                    fontSize: '12px',
+                    color: 'rgba(255,255,255,0.7)',
+                    textTransform: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                >
+                  Remove all
+                </Button>
+              )}
+            </Stack>
           </Box>
           <Box sx={{
             overflowY: 'auto',
@@ -238,25 +280,59 @@ export default function NotificationsButton({ }: {
                       {formatTimestamp(notification.timestamp)}
                     </Typography>
                   </Box>
-                  {!notification.read && (
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markNotificationAsRead(notification._id);
-                        setNotifications(notifications.map(n =>
-                          n._id === notification._id ? { ...n, read: true } : n
-                        ));
-                      }}
-                      sx={{
-                        ml: 1,
-                        color: 'rgba(255,255,255,0.5)',
-                        '&:hover': { color: 'white' }
-                      }}
-                    >
-                      <DoneIcon fontSize="small" />
-                    </IconButton>
-                  )}
+                  <Stack direction="row" spacing={1}>
+                    {!notification.read && (
+                      <Tooltip title="Mark as read">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markNotificationAsRead(notification._id);
+                            setNotifications(notifications.map(n =>
+                              n._id === notification._id ? { ...n, read: true } : n
+                            ));
+                          }}
+                          sx={{
+                            padding: '4px',
+                            minWidth: '24px',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '4px',
+                            color: 'rgba(255,255,255,0.5)',
+                            '&:hover': {
+                              color: 'white',
+                              backgroundColor: 'rgba(255,255,255,0.1)'
+                            }
+                          }}
+                        >
+                          <DoneIcon sx={{ fontSize: '1rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteNotification(notification._id);
+                        }}
+                        sx={{
+                          padding: '4px',
+                          minWidth: '24px',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '4px',
+                          color: 'rgba(255,255,255,0.5)',
+                          '&:hover': {
+                            color: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)'
+                          }
+                        }}
+                      >
+                        <DeleteIcon sx={{ fontSize: '1rem' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
                 </Box>
               ))}
             </Stack>
