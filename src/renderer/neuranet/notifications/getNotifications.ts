@@ -26,7 +26,6 @@ export async function getNotifications(username: string) {
         }
     } catch (error) {
         console.error('Error fetching notifications:', error);
-        throw error;
     }
 }
 
