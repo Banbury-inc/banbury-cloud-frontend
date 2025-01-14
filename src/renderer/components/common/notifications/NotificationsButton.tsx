@@ -63,8 +63,23 @@ export default function NotificationsButton({ }: {
     setAnchorEl(null);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+  const handleMarkAllAsRead = async () => {
+    // Get all unread notifications
+    const unreadNotifications = notifications.filter(notif => !notif.read);
+
+    // Mark each unread notification as read in the backend
+    try {
+      await Promise.all(
+        unreadNotifications.map(notification =>
+          markNotificationAsRead(notification._id)
+        )
+      );
+
+      // Update local state only after successful backend updates
+      setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
+    }
   };
 
 
@@ -179,7 +194,21 @@ export default function NotificationsButton({ }: {
           <Box sx={{
             overflowY: 'auto',
             flex: 1,
-            p: 2
+            p: 2,
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '4px',
+              '&:hover': {
+                background: 'rgba(255,255,255,0.3)',
+              },
+            },
           }}>
             <Stack spacing={1}>
               {notifications.map((notification) => (
