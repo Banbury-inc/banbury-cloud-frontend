@@ -48,7 +48,7 @@ import TaskBoxButton from '../../common/notifications/NotificationsButton';
 import { fetchDeviceData } from './utils/fetchDeviceData';
 import { FileBreadcrumbs } from './components/FileBreadcrumbs';
 import { DatabaseData, Order } from './types/index';
-import ShareFileButton from '../../common/share_file_button';
+import ShareFileButton from '../../common/share_file_button/share_file_button';
 
 import SyncIcon from '@mui/icons-material/Sync';
 import AddFileToSyncButton from '../../common/add_file_to_sync_button';
@@ -58,11 +58,12 @@ import { newUseFileData } from './hooks/newUseFileData';
 import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import Dialog from '@mui/material/Dialog';
-import UploadProgress from '../../common/upload_progress';
+import UploadProgress from '../../common/upload_progress/upload_progress';
 import DownloadProgress from '../../common/download_progress/download_progress';
 import { addDownloadsInfo, getDownloadsInfo } from '../../common/download_progress/add_downloads_info';
 import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
+import SyncButton from '../../common/sync_button/sync_button';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -784,7 +785,11 @@ export default function Files() {
                   </Button>
                 </Tooltip>
               </Grid>
-
+              <Grid item paddingRight={1}>
+                <Tooltip title="Scan">
+                  <SyncButton />
+                </Tooltip>
+              </Grid>
               <Grid item paddingRight={1}>
                 <Tooltip title="Upload">
                   <NewInputFileUploadButton />

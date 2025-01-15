@@ -27,7 +27,7 @@ import DialogContent from '@mui/material/DialogContent';
 import { CircularProgress } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
-import UploadProgress from '../../common/upload_progress';
+import UploadProgress from '../../common/upload_progress/upload_progress';
 import DownloadProgress from '../../common/download_progress/download_progress';
 
 interface SearchResult {
