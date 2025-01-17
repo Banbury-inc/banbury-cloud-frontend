@@ -40,10 +40,17 @@ export default function SyncButton() {
     setAnchorEl(event.currentTarget);
     // Fetch folders to display, but don't start scanning
     const syncFolders = await getSyncFolders(devices || [], username || '');
-    // Initialize all folders with progress: 0
+    // Initialize folders while preserving existing progress
     const foldersWithProgress = {
       ...syncFolders,
-      syncingFiles: syncFolders.syncingFiles.map((f: any) => ({ ...f, progress: 0 }))
+      syncingFiles: syncFolders.syncingFiles.map((f: any) => {
+        const existingFile = syncData.syncingFiles.find(ef => ef.filename === f.filename);
+        return {
+          ...f,
+          progress: existingFile ? existingFile.progress : 0,
+          speed: existingFile ? existingFile.speed : undefined
+        };
+      })
     };
     setSyncData(foldersWithProgress);
   };
@@ -88,13 +95,20 @@ export default function SyncButton() {
   const handleSyncClick = async () => {
     setIsScanning(true);
 
-    // Reset all folders to 0 progress when starting a new scan
+    // Only reset progress for folders that haven't completed scanning
     setSyncData(prev => ({
       ...prev,
-      syncingFiles: prev.syncingFiles.map(f => ({ ...f, progress: 0, speed: undefined }))
+      syncingFiles: prev.syncingFiles.map(f => ({
+        ...f,
+        progress: f.progress === 100 ? 100 : 0,
+        speed: f.progress === 100 ? 'Synced' : undefined
+      }))
     }));
 
     for (const file of syncData.syncingFiles) {
+      // Skip already synced files
+      if (file.progress === 100) continue;
+
       let task_description = 'Scanning folder';
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
 
@@ -137,12 +151,12 @@ export default function SyncButton() {
 
   const handleClose = () => {
     setAnchorEl(null);
-    setIsScanning(false);
-    // Reset progress to 0 when closing
-    setSyncData(prev => ({
-      ...prev,
-      syncingFiles: prev.syncingFiles.map(f => ({ ...f, progress: 0, speed: undefined }))
-    }));
+    // Remove the reset of scanning state and progress
+    // setIsScanning(false);
+    // setSyncData(prev => ({
+    //   ...prev,
+    //   syncingFiles: prev.syncingFiles.map(f => ({ ...f, progress: 0, speed: undefined }))
+    // }));
   };
 
   const handleRemoveFolder = async (folderPath: string) => {
@@ -259,12 +273,12 @@ export default function SyncButton() {
                             mr: 1
                           }}
                         >
-                          {`${Math.round(file.progress || 0)}%`}
+                          {`${Math.round(file.progress)}%`}
                         </Typography>
                         <Box sx={{ width: '100px' }}>
                           <LinearProgress
                             variant="determinate"
-                            value={file.progress || 0}
+                            value={file.progress}
                             sx={{
                               backgroundColor: 'rgba(255, 255, 255, 0.1)',
                               '& .MuiLinearProgress-bar': {
