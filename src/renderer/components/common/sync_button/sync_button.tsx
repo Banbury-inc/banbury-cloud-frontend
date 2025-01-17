@@ -26,6 +26,7 @@ export default function SyncButton() {
     syncingFiles: any[];
     recentlyChanged: any[];
   }>({ syncingFiles: [], recentlyChanged: [] });
+  const [isScanning, setIsScanning] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -34,12 +35,25 @@ export default function SyncButton() {
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
+    // Fetch folders to display, but don't start scanning
     const syncFolders = await getSyncFolders(devices || [], username || '');
-    setSyncData(syncFolders);
+    // Initialize all folders with progress: 0
+    const foldersWithProgress = {
+      ...syncFolders,
+      syncingFiles: syncFolders.syncingFiles.map((f: any) => ({ ...f, progress: 0 }))
+    };
+    setSyncData(foldersWithProgress);
   };
 
+  const handleSyncClick = async () => {
+    setIsScanning(true);
 
-  const handleSyncClick = async (syncData: any) => {
+    // Reset all folders to 0 progress when starting a new scan
+    setSyncData(prev => ({
+      ...prev,
+      syncingFiles: prev.syncingFiles.map(f => ({ ...f, progress: 0, speed: undefined }))
+    }));
+
     for (const file of syncData.syncingFiles) {
       let task_description = 'Scanning folder';
       let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
@@ -73,20 +87,22 @@ export default function SyncButton() {
 
         if (result === 'success') {
           let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-          // Refresh sync folders data after completion
-          const syncFolders = await getSyncFolders(devices || [], username || '');
-          setSyncData(syncFolders);
         }
       } catch (error) {
         console.error('Sync error:', error);
-        // Handle error state if needed
       }
     }
+    setIsScanning(false);
   };
-
 
   const handleClose = () => {
     setAnchorEl(null);
+    setIsScanning(false);
+    // Reset progress to 0 when closing
+    setSyncData(prev => ({
+      ...prev,
+      syncingFiles: prev.syncingFiles.map(f => ({ ...f, progress: 0, speed: undefined }))
+    }));
   };
 
   return (
@@ -142,11 +158,11 @@ export default function SyncButton() {
           </Button>
 
           <Stack spacing={2}>
-            {/* Syncing Section */}
+            {/* Folders Section */}
             {syncData.syncingFiles.length > 0 && (
               <>
                 <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  SYNCING
+                  Folders
                 </Typography>
                 {syncData.syncingFiles.map((file, index) => (
                   <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -154,41 +170,44 @@ export default function SyncButton() {
                       <FileIcon filename={file.filename} />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" noWrap>{file.filename}</Typography>
-                        {file.speed && (
+                        {isScanning && file.speed && (
                           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                             {file.speed}
                           </Typography>
                         )}
                       </Box>
                     </Box>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        minWidth: '35px',
-                        textAlign: 'right',
-                        mr: 1
-                      }}
-                    >
-                      {`${Math.round(file.progress)}%`}
-                    </Typography>
-                    <Box sx={{ width: '100px' }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={file.progress}
-                        sx={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#ffffff'
-                          }
-                        }}
-                      />
-                    </Box>
+                    {isScanning && (
+                      <>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            minWidth: '35px',
+                            textAlign: 'right',
+                            mr: 1
+                          }}
+                        >
+                          {`${Math.round(file.progress || 0)}%`}
+                        </Typography>
+                        <Box sx={{ width: '100px' }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={file.progress || 0}
+                            sx={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: '#ffffff'
+                              }
+                            }}
+                          />
+                        </Box>
+                      </>
+                    )}
                   </Box>
                 ))}
               </>
             )}
-
 
             {/* Up to date status */}
             {syncData.syncingFiles.length === 0 && (
@@ -208,11 +227,12 @@ export default function SyncButton() {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => handleSyncClick(syncData)}
+            onClick={handleSyncClick}
+            disabled={isScanning}
             startIcon={<SearchIcon />}
             sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px', paddingTop: '4px', paddingBottom: '4px', mt: 2 }}
           >
-            Scan
+            {isScanning ? 'Scanning...' : 'Scan'}
           </Button>
         </Box>
       </Popover>
