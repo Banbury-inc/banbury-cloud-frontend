@@ -776,21 +776,6 @@ export default function Files() {
               {/*   </Tooltip> */}
               {/* </Grid> */}
               <Grid item paddingRight={1}>
-                <Tooltip title="Sync">
-                  <Button
-                    onClick={handleSyncClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <SyncIcon fontSize="inherit" />
-                  </Button>
-                </Tooltip>
-              </Grid>
-              <Grid item paddingRight={1}>
-                <Tooltip title="Scan">
-                  <SyncButton />
-                </Tooltip>
-              </Grid>
-              <Grid item paddingRight={1}>
                 <Tooltip title="Upload">
                   <NewInputFileUploadButton />
                 </Tooltip>
@@ -834,6 +819,11 @@ export default function Files() {
               <Grid item paddingRight={1} paddingLeft={1}>
                 <Tooltip title="Add to Sync">
                   <AddFileToSyncButton selectedFileNames={selectedFileNames} />
+                </Tooltip>
+              </Grid>
+              <Grid item paddingRight={1}>
+                <Tooltip title="Scan">
+                  <SyncButton />
                 </Tooltip>
               </Grid>
               <Grid item paddingRight={1}>
