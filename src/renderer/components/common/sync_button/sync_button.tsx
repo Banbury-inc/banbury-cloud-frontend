@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress, IconButton } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
@@ -19,6 +19,7 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import SearchIcon from '@mui/icons-material/Search';
 import { getSyncFolders } from './getSyncFolders';
 import path from 'path';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 
@@ -144,6 +145,26 @@ export default function SyncButton() {
     }));
   };
 
+  const handleRemoveFolder = async (folderPath: string) => {
+    try {
+      let task_description = `Removing folder: ${folderPath}`;
+      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+
+      const removeResult = await neuranet.device.remove_scanned_folder(folderPath, username ?? '');
+
+      if (removeResult === 'success') {
+        await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+        // Get fresh devices data first
+        const updatedDevices = await neuranet.device.fetchDeviceData(username ?? '');
+        // Then get updated folders with fresh device data
+        const updatedFolders = await getSyncFolders(updatedDevices || [], username || '');
+        setSyncData(updatedFolders);
+      }
+    } catch (error) {
+      console.error('Error removing folder:', error);
+    }
+  };
+
   return (
     <>
       <input
@@ -254,6 +275,19 @@ export default function SyncButton() {
                         </Box>
                       </>
                     )}
+                    <IconButton
+                      onClick={() => handleRemoveFolder(file.filename)}
+                      size="small"
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        '&:hover': {
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                        }
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                 ))}
               </>
