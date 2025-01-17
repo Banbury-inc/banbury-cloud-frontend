@@ -16,7 +16,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import SearchIcon from '@mui/icons-material/Search';
-import { getSyncFiles } from './getSyncFiles';
+import { getSyncFolders } from './getSyncFolders';
 
 
 
@@ -29,13 +29,59 @@ export default function SyncButton() {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const { username, devices } = useAuth();
+  const { username, devices, tasks, setTasks } = useAuth();
 
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
-    const syncFiles = await getSyncFiles(devices || [], username || '');
-    setSyncData(syncFiles);
+    const syncFolders = await getSyncFolders(devices || [], username || '');
+    setSyncData(syncFolders);
+  };
+
+
+  const handleSyncClick = async (syncData: any) => {
+    for (const file of syncData.syncingFiles) {
+      let task_description = 'Scanning folder';
+      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+
+      // Update local state to show scanning started
+      setSyncData(prev => ({
+        ...prev,
+        syncingFiles: prev.syncingFiles.map(f =>
+          f.filename === file.filename
+            ? { ...f, progress: 0, speed: 'Starting scan...' }
+            : f
+        )
+      }));
+
+      try {
+        let result = await neuranet.device.scanFolder(
+          username ?? '',
+          file.filename,
+          (progress, speed) => {
+            console.log('Progress update:', progress, speed);
+            setSyncData(prev => ({
+              ...prev,
+              syncingFiles: prev.syncingFiles.map(f =>
+                f.filename === file.filename
+                  ? { ...f, progress: Math.min(100, progress), speed }
+                  : f
+              )
+            }));
+          }
+        );
+
+        if (result === 'success') {
+          let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+          // Refresh sync folders data after completion
+          const syncFolders = await getSyncFolders(devices || [], username || '');
+          setSyncData(syncFolders);
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+        // Handle error state if needed
+      }
+    }
   };
 
 
@@ -162,6 +208,7 @@ export default function SyncButton() {
           <Button
             fullWidth
             variant="contained"
+            onClick={() => handleSyncClick(syncData)}
             startIcon={<SearchIcon />}
             sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px', paddingTop: '4px', paddingBottom: '4px', mt: 2 }}
           >
