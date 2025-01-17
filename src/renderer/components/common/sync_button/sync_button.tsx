@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress } from '@mui/material';
+import FolderIcon from '@mui/icons-material/Folder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -167,7 +168,7 @@ export default function SyncButton() {
                 {syncData.syncingFiles.map((file, index) => (
                   <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                      <FileIcon filename={file.filename} />
+                      <FolderIcon />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" noWrap>{file.filename}</Typography>
                         {isScanning && file.speed && (
