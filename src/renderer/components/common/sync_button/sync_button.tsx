@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress } from '@mui/material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
@@ -16,19 +16,28 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import SearchIcon from '@mui/icons-material/Search';
-import { SyncProgress } from './sync_progress';
+import { getSyncFiles } from './getSyncFiles';
+
 
 
 
 export default function SyncButton() {
-  const { syncingFiles, recentlyChanged } = SyncProgress()
+  const [syncData, setSyncData] = useState<{
+    syncingFiles: any[];
+    recentlyChanged: any[];
+  }>({ syncingFiles: [], recentlyChanged: [] });
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { username, devices } = useAuth();
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
+    const syncFiles = await getSyncFiles(devices || [], username || '');
+    setSyncData(syncFiles);
   };
+
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -56,7 +65,7 @@ export default function SyncButton() {
         }}
         PaperProps={{
           sx: {
-            width: '300px',
+            width: '500px',
             backgroundColor: '#000000',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
@@ -88,12 +97,12 @@ export default function SyncButton() {
 
           <Stack spacing={2}>
             {/* Syncing Section */}
-            {syncingFiles.length > 0 && (
+            {syncData.syncingFiles.length > 0 && (
               <>
                 <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                   SYNCING
                 </Typography>
-                {syncingFiles.map((file, index) => (
+                {syncData.syncingFiles.map((file, index) => (
                   <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                       <FileIcon filename={file.filename} />
@@ -124,7 +133,7 @@ export default function SyncButton() {
                         sx={{
                           backgroundColor: 'rgba(255, 255, 255, 0.1)',
                           '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#2fca45'
+                            backgroundColor: '#ffffff'
                           }
                         }}
                       />
@@ -136,7 +145,7 @@ export default function SyncButton() {
 
 
             {/* Up to date status */}
-            {syncingFiles.length === 0 && (
+            {syncData.syncingFiles.length === 0 && (
               <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -154,13 +163,7 @@ export default function SyncButton() {
             fullWidth
             variant="contained"
             startIcon={<SearchIcon />}
-            sx={{
-              mt: 2,
-              backgroundColor: '#2fca45',
-              '&:hover': {
-                backgroundColor: '#27a338',
-              },
-            }}
+            sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px', paddingTop: '4px', paddingBottom: '4px', mt: 2 }}
           >
             Scan
           </Button>
