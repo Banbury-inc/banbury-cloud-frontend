@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
@@ -18,6 +18,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import SearchIcon from '@mui/icons-material/Search';
 import { getSyncFolders } from './getSyncFolders';
+import path from 'path';
 
 
 
@@ -28,7 +29,7 @@ export default function SyncButton() {
     recentlyChanged: any[];
   }>({ syncingFiles: [], recentlyChanged: [] });
   const [isScanning, setIsScanning] = useState(false);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { username, devices, tasks, setTasks } = useAuth();
@@ -44,6 +45,43 @@ export default function SyncButton() {
       syncingFiles: syncFolders.syncingFiles.map((f: any) => ({ ...f, progress: 0 }))
     };
     setSyncData(foldersWithProgress);
+  };
+
+  const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+    const file = event.target.files ? event.target.files[0] : null;
+    if (!file) return;
+
+    try {
+      // Get the folder path from the first file
+      const entirepath = file.webkitRelativePath;
+      const folderPath = file.webkitRelativePath.split('/')[0];
+      const absoluteFolderPath = path.dirname(file.path);
+
+      // Add the selected folder as a scanned folder
+      let task_description = `Adding scanned folder: ${absoluteFolderPath}`;
+      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
+
+      const addResult = await neuranet.device.add_scanned_folder(absoluteFolderPath, username ?? '');
+
+      if (addResult === 'success') {
+        console.log('addResult', addResult);
+        await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
+        // Get fresh devices data first
+        const updatedDevices = await neuranet.device.fetchDeviceData(username ?? '');
+        // Then get updated folders with fresh device data
+        const updatedFolders = await getSyncFolders(updatedDevices || [], username || '');
+        setSyncData(updatedFolders);
+      }
+    } catch (error) {
+      console.error('Error selecting folder:', error);
+    }
+  };
+
+  const triggerFolderSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleSyncClick = async () => {
@@ -108,6 +146,16 @@ export default function SyncButton() {
 
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        webkitdirectory=""
+        directory=""
+        multiple
+        onChange={handleFolderSelect}
+      />
+
       <Button
         onClick={handleClick}
         sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
@@ -144,6 +192,7 @@ export default function SyncButton() {
           <Button
             fullWidth
             variant="outlined"
+            onClick={triggerFolderSelect}
             startIcon={<CreateNewFolderIcon />}
             sx={{
               mb: 2,
