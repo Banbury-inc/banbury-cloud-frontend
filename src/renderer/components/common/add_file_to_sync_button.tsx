@@ -7,9 +7,8 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useAuth } from '../../context/AuthContext';
 import { neuranet } from '../../neuranet';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
-import { useError } from '../../context/ErrorContext';
+import { useAlert } from '../../context/AlertContext';
 
-import path from 'path';
 // Extend the InputHTMLAttributes interface to include webkitdirectory and directory
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -21,14 +20,15 @@ declare module 'react' {
 export default function AddFileToSyncButton({ selectedFileNames }: { selectedFileNames: string[] }) {
   const [loading, setLoading] = useState(false);
   const { username, tasks, setTasks, setTaskbox_expanded } = useAuth();
-  const { showError } = useError();
+  const { showAlert } = useAlert();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddFileToSync = async () => {
     if (!selectedFileNames || selectedFileNames.length === 0) {
-      showError(
+      showAlert(
         'No Files Selected',
-        ['Please select one or more files to add to sync']
+        ['Please select one or more files to add to sync'],
+        'warning'
       );
       return;
     }
@@ -63,7 +63,7 @@ export default function AddFileToSyncButton({ selectedFileNames }: { selectedFil
           );
         }
         // Show error notification
-        showError(
+        showAlert(
           'Error Adding File to Sync',
           [error instanceof Error ? error.message : 'An unknown error occurred while adding file to sync']
         );
@@ -79,7 +79,7 @@ export default function AddFileToSyncButton({ selectedFileNames }: { selectedFil
     } catch (error) {
       console.error('Error cleaning up:', error);
       setLoading(false); // Ensure loading state is reset even if cleanup fails
-      showError(
+      showAlert(
         'Error Cleaning Up',
         ['Failed to clean up after file sync operation']
       );

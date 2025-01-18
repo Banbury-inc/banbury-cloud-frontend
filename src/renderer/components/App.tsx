@@ -9,9 +9,9 @@ import { AuthProvider } from "../context/AuthContext";
 import TitleBar from 'frameless-titlebar';
 import { BrowserWindow } from 'electron';
 import './index.css';
-import { ErrorProvider } from '../context/ErrorContext';
-import { ErrorAlert } from '../../components/ErrorAlert';
-import { useError } from '../context/ErrorContext';
+import { AlertProvider } from '../context/AlertContext';
+import { Alert } from '../../components/alert';
+import { useAlert } from '../context/AlertContext';
 // Define the Platform type
 type Platform = 'win32' | 'linux' | 'darwin';
 
@@ -195,16 +195,17 @@ import { TitleBarTheme } from "frameless-titlebar/dist/title-bar/typings";
 import { ipcRenderer } from 'electron';
 
 // Create a wrapper component to use the error context
-function ErrorWrapper() {
-  const { error } = useError();
+function AlertWrapper() {
+  const { alert } = useAlert();
   
-  if (!error.show) return null;
+  if (!alert.show) return null;
   
   return (
-    <ErrorAlert 
-      title={error.title}
-      messages={error.messages}
-      isVisible={error.isVisible}
+    <Alert 
+      title={alert.title}
+      messages={alert.messages}
+      variant={alert.variant}
+      isVisible={alert.isVisible}
     />
   );
 }
@@ -229,7 +230,7 @@ export default function App(): JSX.Element {
     // https://mui.com/customization/theming/
     //
     <ThemeProvider theme={theme}>
-      <ErrorProvider>
+      <AlertProvider>
         <div style={{ position: 'fixed', width: '100%' }}>
           <TitleBar
             theme={customTheme}
@@ -238,7 +239,7 @@ export default function App(): JSX.Element {
             onMaximize={handleMaximize}
           />
         </div>
-        <ErrorWrapper />
+        <AlertWrapper />
         <CssBaseline />
         <BrowserRouter>
           <AuthProvider>
@@ -253,7 +254,7 @@ export default function App(): JSX.Element {
             </Box>
           </AuthProvider>
         </BrowserRouter>
-      </ErrorProvider>
+      </AlertProvider>
     </ThemeProvider>
   );
 }

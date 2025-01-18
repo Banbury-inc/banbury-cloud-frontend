@@ -11,7 +11,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import { CONFIG } from '../../../config/config';
-import { useError } from '../../../context/ErrorContext';
+import { useAlert } from '../../../context/AlertContext';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -54,7 +54,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
   const [togglePublicSuccess, setTogglePublicSuccess] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [copyLinkSuccess, setCopyLinkSuccess] = useState(false);
-  const { showError } = useError();
+  const { showAlert } = useAlert();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -146,7 +146,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
     } catch (error) {
       console.error('Error sharing files:', error);
-      showError('Share Failed', ['Failed to share files with selected users.']);
+      showAlert('Share Failed', ['Failed to share files with selected users.']);
       setIsSharing(false);
     }
   };
@@ -154,13 +154,13 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
   const handleMakePublic = async () => {
     if (!selectedFileInfo || selectedFileInfo.length === 0) {
-      showError('Permission Change Failed', ['No file selected']);
+      showAlert('Permission Change Failed', ['No file selected']);
       return;
     }
 
     const device_name = selectedFileInfo[0]?.device_name;
     if (!device_name) {
-      showError('Permission Change Failed', ['Device information not found']);
+      showAlert('Permission Change Failed', ['Device information not found']);
       return;
     }
 
@@ -178,20 +178,20 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
     } catch (error) {
       console.error('Error making file public:', error);
-      showError('Permission Change Failed', ['Failed to make file public.']);
+      showAlert('Permission Change Failed', ['Failed to make file public.']);
     }
   };
 
 
   const handleMakePrivate = async () => {
     if (!selectedFileInfo || selectedFileInfo.length === 0) {
-      showError('Permission Change Failed', ['No file selected']);
+      showAlert('Permission Change Failed', ['No file selected']);
       return;
     }
 
     const device_name = selectedFileInfo[0]?.device_name;
     if (!device_name) {
-      showError('Permission Change Failed', ['Device information not found']);
+      showAlert('Permission Change Failed', ['Device information not found']);
       return;
     }
 
@@ -209,7 +209,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
     } catch (error) {
       console.error('Error making file private:', error);
-      showError('Permission Change Failed', ['Failed to make file private.']);
+      showAlert('Permission Change Failed', ['Failed to make file private.']);
       setIsSharing(false);
     }
   };
