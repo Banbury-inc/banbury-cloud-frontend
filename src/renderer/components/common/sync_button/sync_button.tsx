@@ -179,6 +179,8 @@ export default function SyncButton() {
     }
   };
 
+
+
   return (
     <>
       <input
@@ -211,7 +213,6 @@ export default function SyncButton() {
         }}
         PaperProps={{
           sx: {
-            width: '500px',
             backgroundColor: '#000000',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
@@ -225,21 +226,19 @@ export default function SyncButton() {
       >
         <Box sx={{ p: 2 }}>
           <Button
-            fullWidth
-            variant="outlined"
             onClick={triggerFolderSelect}
-            startIcon={<CreateNewFolderIcon />}
+            startIcon={<CreateNewFolderIcon fontSize="inherit" />}
             sx={{
-              mb: 2,
-              color: '#ffffff',
-              borderColor: 'rgba(255, 255, 255, 0.23)',
+              mr: 2, mb: 2, width: '100%',
+              justifyContent: 'flex-start',
+              padding: '12px 16px',
+              borderRadius: '8px',
               '&:hover': {
-                borderColor: 'rgba(255, 255, 255, 0.4)',
                 backgroundColor: 'rgba(255, 255, 255, 0.08)',
               },
             }}
           >
-            Add Folder
+            <Typography fontSize="body1">Add Folder</Typography>
           </Button>
 
           <Stack spacing={2}>
@@ -307,7 +306,7 @@ export default function SyncButton() {
               </>
             )}
 
-            {/* Up to date status */}
+            {/* Loading status */}
             {syncData.syncingFiles.length === 0 && (
               <Box sx={{
                 display: 'flex',
@@ -316,22 +315,25 @@ export default function SyncButton() {
                 color: '#2fca45',
                 mt: 1
               }}>
-                <CheckCircleIcon fontSize="small" />
-                <Typography>Up to date</Typography>
+                <Typography>Loading...</Typography>
               </Box>
             )}
           </Stack>
 
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleSyncClick}
-            disabled={isScanning}
-            startIcon={<SearchIcon />}
-            sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px', paddingTop: '4px', paddingBottom: '4px', mt: 2 }}
-          >
-            {isScanning ? 'Scanning...' : 'Scan'}
-          </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{
+                fontSize: '12px',
+              }}
+              onClick={handleSyncClick}
+              disabled={isScanning}
+              startIcon={<SearchIcon />}
+            >
+              {isScanning ? 'Scanning...' : 'Scan'}
+            </Button>
+          </Box>
         </Box>
       </Popover>
     </>
