@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { getSyncFolders } from './getSyncFolders';
 import path from 'path';
 import CloseIcon from '@mui/icons-material/Close';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/alert';
 
 
 
@@ -34,6 +35,15 @@ export default function SyncButton() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { username, devices, tasks, setTasks } = useAuth();
+  const [error, setError] = useState<string | null>('Test notification');
+
+  useEffect(() => {
+    // Show notification on component mount
+    // setError('Welcome to Banbury Cloud!');
+
+    // Optional: Hide after 5 seconds
+    setTimeout(() => setError(null), 50000);
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -56,7 +66,6 @@ export default function SyncButton() {
   };
 
   const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-
     const file = event.target.files ? event.target.files[0] : null;
     if (!file) return;
 
@@ -81,8 +90,8 @@ export default function SyncButton() {
         const updatedFolders = await getSyncFolders(updatedDevices || [], username || '');
         setSyncData(updatedFolders);
       }
-    } catch (error) {
-      console.error('Error selecting folder:', error);
+    } catch (err) {
+      handleError('Failed to sync folder. Please try again.');
     }
   };
 
@@ -179,7 +188,11 @@ export default function SyncButton() {
     }
   };
 
-
+  const handleError = (errorMessage: string) => {
+    setError(errorMessage);
+    // Auto-hide the error after 5 seconds
+    setTimeout(() => setError(null), 5000);
+  };
 
   return (
     <>
@@ -199,6 +212,19 @@ export default function SyncButton() {
       >
         <SyncIcon fontSize="inherit" />
       </Button>
+
+      <Alert
+        open={error !== null}
+        onClose={() => setError(null)}
+        size="sm"
+        className="fixed top-4 right-4 z-50 max-w-md animate-in fade-in slide-in-from-top-2 duration-300"
+      >
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          {error}
+        </AlertDescription>
+      </Alert>
+
       <Popover
         anchorEl={anchorEl}
         open={open}
