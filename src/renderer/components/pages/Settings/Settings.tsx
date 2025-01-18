@@ -14,6 +14,7 @@ import App from './App';
 import CloudSync from './CloudSync';
 import Public_Profile from './Public_Profile';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
+import { useAlert } from '../../../context/AlertContext';
 
 interface Section {
   id: string;
@@ -27,14 +28,21 @@ const sections: Section[] = [
 ];
 
 export default function Settings() {
-
+  const { showAlert } = useAlert();
   const [activeSection, setActiveSection] = useState('public-profile');
 
   const handleSectionClick = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    try {
+      setActiveSection(sectionId);
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        showAlert('Warning', [`Section "${sectionId}" not found`], 'warning');
+      }
+    } catch (error) {
+      console.error('Error navigating to section:', error);
+      showAlert('Error', ['Failed to navigate to section', error instanceof Error ? error.message : 'Unknown error'], 'error');
     }
   };
 
