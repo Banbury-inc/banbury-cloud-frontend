@@ -65,6 +65,7 @@ import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
 import SyncButton from '../../common/sync_button/sync_button';
 import DownloadFileButton from '../../common/DownloadFileButton/DownloadFileButton';
+import DeleteFileButton from '../../common/DeleteFileBtton/DeleteFileButton';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -745,30 +746,25 @@ export default function Files() {
 
               <Grid item paddingRight={1}>
                 <Tooltip title="Delete">
-                  <Button
-                    onClick={() => {
-                      handlers.files.deleteFile(
-                        setSelectedFileNames,
-                        selectedFileNames,
-                        global_file_path,
-                        setdeleteLoading,
-                        setIsAddingFolder,
-                        setNewFolderName,
-                        setDisableFetch,
-                        username,
-                        updates,
-                        setUpdates,
-                      );
-                      setSelected([]);
-                    }}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <DeleteIcon fontSize="inherit" />
-                  </Button>
+                  <DeleteFileButton
+                    selectedFileNames={selectedFileNames}
+                    global_file_path={global_file_path || ''}
+                    setSelectedFileNames={setSelectedFileNames}
+                    setdeleteLoading={setdeleteLoading}
+                    setIsAddingFolder={setIsAddingFolder}
+                    setNewFolderName={setNewFolderName}
+                    setDisableFetch={setDisableFetch}
+                    updates={updates}
+                    setUpdates={setUpdates}
+                    setSelected={setSelected}
+                    setTaskbox_expanded={setTaskbox_expanded}
+                    tasks={tasks || []}
+                    setTasks={setTasks}
+                    websocket={websocket as WebSocket}
+                  />
                 </Tooltip>
               </Grid>
-              <Divider orientation="vertical" flexItem />
-              <Grid item paddingRight={1} paddingLeft={1}>
+              <Grid item paddingRight={1} paddingLeft={0}>
                 <Tooltip title="Add to Sync">
                   <AddFileToSyncButton selectedFileNames={selectedFileNames} />
                 </Tooltip>
@@ -792,10 +788,16 @@ export default function Files() {
               <Grid item></Grid>
               <Grid item>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-                  <Stack direction="row">
-                    <UploadProgress uploads={uploads} />
-                    <DownloadProgress downloads={downloads} />
-                    <NotificationsButton />
+                    <Stack paddingRight={1} direction="row">
+                      <Grid item paddingRight={1}>
+                        <UploadProgress uploads={uploads} />
+                      </Grid>
+                      <Grid item paddingRight={1}>
+                        <DownloadProgress downloads={downloads} />
+                      </Grid>
+                      <Grid item paddingRight={1}>
+                        <NotificationsButton />
+                      </Grid>
                   </Stack>
                   <Stack paddingLeft={1} direction="row">
                     <AccountMenuIcon />
