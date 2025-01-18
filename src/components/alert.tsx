@@ -2,6 +2,7 @@ import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import React from 'react'
 import { Text } from './text'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 
 const sizes = {
@@ -20,24 +21,36 @@ export function Alert({
   size = 'md',
   className,
   children,
+  onClose,
   ...props
-}: { size?: keyof typeof sizes; className?: string; children: React.ReactNode } & Omit<
+}: {
+  size?: keyof typeof sizes;
+  className?: string;
+  children: React.ReactNode;
+  onClose?: () => void;
+} & Omit<
   Headless.DialogProps,
   'as' | 'className'
 >) {
   return (
-    <Headless.Dialog static {...props}>
-      <div className="fixed inset-0 flex w-screen justify-center overflow-y-auto px-2 py-2 z-50 sm:px-6 sm:py-8 lg:px-8 lg:py-16" />
+    <Headless.Dialog {...props} onClose={onClose}>
+      <div className="fixed inset-0 flex w-screen justify-center overflow-y-auto px-2 py-2 z-50 pointer-events-none sm:px-6 sm:py-8 lg:px-8 lg:py-16" />
 
-      <div className="fixed inset-0 w-screen overflow-y-auto pt-6 z-50 sm:pt-0">
+      <div className="fixed inset-0 w-screen overflow-y-auto pt-6 z-50 pointer-events-none sm:pt-0">
         <div className="grid min-h-full grid-rows-[1fr_auto_1fr] justify-items-center p-8 sm:grid-rows-[1fr_auto_3fr] sm:p-4">
           <Headless.DialogPanel
             className={clsx(
               className,
               sizes[size],
-              'row-start-2 w-full rounded-2xl bg-white p-8 shadow-lg ring-1 ring-zinc-950/10 sm:rounded-2xl sm:p-6 dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline'
+              'relative row-start-2 w-full rounded-2xl bg-white p-8 shadow-lg ring-1 ring-zinc-950/10 sm:rounded-2xl sm:p-6 dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline pointer-events-auto'
             )}
           >
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 rounded-lg p-1 text-zinc-400 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
             {children}
           </Headless.DialogPanel>
         </div>
