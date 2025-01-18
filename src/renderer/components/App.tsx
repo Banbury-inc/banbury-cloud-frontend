@@ -204,6 +204,7 @@ function ErrorWrapper() {
     <ErrorAlert 
       title={error.title}
       messages={error.messages}
+      isVisible={error.isVisible}
     />
   );
 }

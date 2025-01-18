@@ -4,6 +4,7 @@ type ErrorState = {
   title: string;
   messages: string[];
   show: boolean;
+  isVisible: boolean;
 };
 
 type ErrorContextType = {
@@ -19,13 +20,24 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
     title: '',
     messages: [],
     show: false,
+    isVisible: false,
   });
 
   const showError = (title: string, messages: string[]) => {
+    // First mount the component with opacity 0
     setError({
       title,
       messages,
       show: true,
+      isVisible: false,
+    });
+
+    // Then trigger the fade in after a brief delay
+    requestAnimationFrame(() => {
+      setError(prev => ({
+        ...prev,
+        isVisible: true,
+      }));
     });
 
     // Automatically hide error after 5 seconds
@@ -35,10 +47,19 @@ export function ErrorProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hideError = () => {
+    // First trigger the fade out
     setError(prev => ({
       ...prev,
-      show: false,
+      isVisible: false,
     }));
+
+    // Then remove the component after animation completes
+    setTimeout(() => {
+      setError(prev => ({
+        ...prev,
+        show: false,
+      }));
+    }, 300); // Match this with the CSS transition duration
   };
 
   return (

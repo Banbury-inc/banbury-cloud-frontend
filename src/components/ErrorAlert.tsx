@@ -1,20 +1,14 @@
 import { XCircleIcon } from '@heroicons/react/20/solid'
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 interface ErrorAlertProps {
     title: string;
     messages: string[];
     variant?: 'error' | 'warning' | 'success' | 'info';
+    isVisible: boolean;
 }
 
-export function ErrorAlert({ title, messages, variant = 'error' }: ErrorAlertProps) {
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        setIsVisible(true);
-        return () => setIsVisible(false);
-    }, []);
-
+export function ErrorAlert({ title, messages, variant = 'error', isVisible }: ErrorAlertProps) {
     const variantStyles = {
         error: 'bg-[#1f1f1f] text-white border border-white/10',
         warning: 'bg-[#1f1f1f] text-white border border-white/10',
