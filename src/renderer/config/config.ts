@@ -14,7 +14,7 @@ export const CONFIG = {
   run_device_predictions_loop: false,
   prod: false,
   dev: false,
-  semi_local: true,
+  semi_local: false,
   get url() {
     //return this.prod ? 'https://banbury-cloud-backend-prod-389236221119.us-east1.run.app/' : 'http://localhost:8080/';
     if (this.prod) {

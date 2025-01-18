@@ -12,6 +12,12 @@ export function downloadFile(username: string, files: string[], devices: string[
 
     console.log("Downloading file:", files[0], fileInfo, taskInfo);
 
+    try {
+      neuranet.analytics.addFileRequest();
+    } catch (error) {
+      console.error('Error adding file request:', error);
+    }
+
     // Create timeout ID that we can clear later
     let timeoutId: NodeJS.Timeout;
 
@@ -23,6 +29,11 @@ export function downloadFile(username: string, files: string[], devices: string[
           // Check for success conditions
           if (data.message === 'File transaction complete' && data.file_name === files[0]) {
             clearTimeout(timeoutId); // Clear the timeout
+            try {
+              neuranet.analytics.addFileRequestSuccess();
+            } catch (error) {
+              console.error('Error adding file request success:', error);
+            }
             websocket.removeEventListener('message', messageHandler);
             resolve('success');
           }
