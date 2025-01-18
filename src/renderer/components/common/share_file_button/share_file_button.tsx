@@ -185,13 +185,13 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
   const handleMakePrivate = async () => {
     if (!selectedFileInfo || selectedFileInfo.length === 0) {
-      showAlert('Permission Change Failed', ['No file selected']);
+      showAlert('Permission Change Failed', ['No file selected'], 'warning');
       return;
     }
 
     const device_name = selectedFileInfo[0]?.device_name;
     if (!device_name) {
-      showAlert('Permission Change Failed', ['Device information not found']);
+      showAlert('Permission Change Failed', ['Device information not found'], 'error');
       return;
     }
 

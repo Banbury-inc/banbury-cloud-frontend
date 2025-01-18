@@ -64,6 +64,7 @@ import { addDownloadsInfo, getDownloadsInfo } from '../../common/download_progre
 import { getUploadsInfo } from '../../common/upload_progress/add_uploads_info';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
 import SyncButton from '../../common/sync_button/sync_button';
+import DownloadFileButton from '../../common/DownloadFileButton/DownloadFileButton';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -434,60 +435,6 @@ export default function Files() {
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
-  const handleDownloadClick = async () => {
-    try {
-      setSelectedFiles(selected);
-      let task_description = 'Downloading ' + selectedFileNames.join(', ');
-      let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
-
-      // Initialize download progress for selected files
-      const initialDownloads = selectedFileInfo.map(fileInfo => ({
-        filename: fileInfo.file_name,
-        fileType: fileInfo.kind || 'Unknown',
-        progress: 0,
-        status: 'downloading' as const,
-        totalSize: fileInfo.file_size || 0,
-        downloadedSize: 0,
-        timeRemaining: undefined
-      }));
-
-      // Add to downloads tracking
-      addDownloadsInfo(initialDownloads);
-
-      // Add timeout promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Download request timed out')), 30000); // 30 second timeout
-      });
-
-      // Race between the download and timeout
-      const response = await Promise.race([
-        handlers.files.downloadFile(
-          username ?? '',
-          selectedFileNames,
-          selectedDeviceNames,
-          selectedFileInfo,
-          taskInfo,
-          tasks || [],
-          setTasks,
-          setTaskbox_expanded,
-          websocket as unknown as WebSocket,
-        ),
-        timeoutPromise
-      ]);
-
-      if (response === 'No file selected' || response === 'file_not_found') {
-        await neuranet.sessions.failTask(username ?? '', taskInfo, response, tasks, setTasks);
-      } else if (response === 'success') {
-        await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
-      }
-
-      setSelected([]);
-    } catch (error) {
-      console.error('Download error:', error);
-      setSelected([]);
-      // Optionally show error to user via toast/alert
-    }
-  };
 
   const handleAddDeviceClick = async () => {
     // Here, we are specifically adding the task after the device has been created
@@ -782,12 +729,17 @@ export default function Files() {
               </Grid>
               <Grid item paddingRight={1}>
                 <Tooltip title="Download">
-                  <Button
-                    onClick={handleDownloadClick}
-                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }} // Adjust the left and right padding as needed
-                  >
-                    <DownloadIcon fontSize="inherit" />
-                  </Button>
+                  <DownloadFileButton
+                    selectedFileNames={selectedFileNames}
+                    selectedFileInfo={selectedFileInfo}
+                    selectedDeviceNames={selectedDeviceNames}
+                    setSelectedFiles={setSelectedFiles}
+                    setSelected={setSelected}
+                    setTaskbox_expanded={setTaskbox_expanded}
+                    tasks={tasks || []}
+                    setTasks={setTasks}
+                    websocket={websocket as WebSocket}
+                  />
                 </Tooltip>
               </Grid>
 
