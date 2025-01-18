@@ -45,7 +45,7 @@ export default function DeleteFileButton({
   const handleDeleteClick = async () => {
     try {
       if (selectedFileNames.length === 0) {
-        showAlert('Delete failed', ['Please select file to delete'], 'warning');
+        showAlert('No file selected', ['Please select one or more files to delete'], 'warning');
         return;
       }
 

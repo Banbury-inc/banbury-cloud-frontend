@@ -33,7 +33,7 @@ export default function DownloadFileButton({
 
   const handleDownloadClick = async () => {
     if (selectedFileNames.length === 0) {
-      showAlert('Download failed', ['Please select file to download'], 'warning');
+      showAlert('No file selected', ['Please select one or more files to download'], 'warning');
       return;
     }
 
