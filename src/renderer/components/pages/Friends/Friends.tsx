@@ -29,6 +29,7 @@ import Skeleton from '@mui/material/Skeleton';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
 import UploadProgress from '../../common/upload_progress/upload_progress';
 import DownloadProgress from '../../common/download_progress/download_progress';
+import { useAlert } from '../../../context/AlertContext';
 
 interface SearchResult {
   id: number;
@@ -55,7 +56,7 @@ export default function Friends() {
   const [followList, setFollowList] = useState<any[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isLoadingFriendInfo, setIsLoadingFriendInfo] = useState(false);
-
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (selectedFriend) {
@@ -105,22 +106,21 @@ export default function Friends() {
 
 
   // Update search handler to handle the API response correctly
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
-      handlers.users.typeahead(query)
-        .then(response => {
-          if (response && response.data) {
-            console.log("response", response.data);
-            setSearchResults(response.data.users || []);
-          } else {
-            setSearchResults([]);
-          }
-        })
-        .catch(error => {
-          console.error('Search failed:', error);
+      try {
+        const response = await handlers.users.typeahead(query);
+        if (response?.data) {
+          setSearchResults(response.data.users || []);
+        } else {
           setSearchResults([]);
-        });
+        }
+      } catch (error) {
+        console.error('Search failed:', error);
+        setSearchResults([]);
+        showAlert('Error', ['Search failed', error instanceof Error ? error.message : 'Unknown error'], 'error');
+      }
     } else {
       setSearchResults([]);
     }
@@ -131,8 +131,7 @@ export default function Friends() {
     setFollowDialog('friends');
     try {
       const response = await handlers.users.getUserFriends(selectedFriend.username);
-      console.log("response", response);
-      if (response && response.data && Array.isArray(response.data.friends.friends)) {
+      if (response?.data?.friends?.friends) {
         setFollowList(response.data.friends.friends);
       } else {
         setFollowList([]);
@@ -140,8 +139,10 @@ export default function Friends() {
     } catch (error) {
       console.error('Error fetching friends:', error);
       setFollowList([]);
+      showAlert('Error', ['Failed to fetch friends list', error instanceof Error ? error.message : 'Unknown error'], 'error');
+    } finally {
+      setIsLoadingFriends(false);
     }
-    setIsLoadingFriends(false);
   };
 
 
@@ -185,6 +186,72 @@ export default function Friends() {
       connectWebSocket();
     }
   }, [username]);
+
+  // Update the friend request accept handler
+  const handleAcceptFriendRequest = async (requestUsername: string) => {
+    try {
+      await handlers.users.acceptFriendRequest(username || '', requestUsername);
+      setUpdates(prevUpdates => [...prevUpdates, 'friend_request_accepted']);
+      
+      // Refresh both friends and requests lists
+      const [friendsResponse, requestsResponse] = await Promise.all([
+        handlers.users.getFriends(username || ''),
+        handlers.users.getFriendRequests(username || '')
+      ]);
+
+      if (friendsResponse?.data) {
+        setFriends(friendsResponse.data.friends);
+      }
+      if (requestsResponse?.data) {
+        setFriendRequests(requestsResponse.data.friend_requests);
+      }
+
+      showAlert('Success', ['Friend request accepted'], 'success');
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      showAlert('Error', ['Failed to accept friend request', error instanceof Error ? error.message : 'Unknown error'], 'error');
+    }
+  };
+
+  // Update the friend request reject handler
+  const handleRejectFriendRequest = async (requestUsername: string) => {
+    try {
+      await handlers.users.rejectFriendRequest(username || '', requestUsername);
+      const response = await handlers.users.getFriendRequests(username || '');
+      if (response?.data) {
+        setFriendRequests(response.data.friend_requests);
+      }
+      showAlert('Success', ['Friend request rejected'], 'success');
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      showAlert('Error', ['Failed to reject friend request', error instanceof Error ? error.message : 'Unknown error'], 'error');
+    }
+  };
+
+  // Update the send friend request handler
+  const handleSendFriendRequest = async (requestUsername: string) => {
+    try {
+      await handlers.users.sendFriendRequest(username || '', requestUsername);
+      setUpdates(prevUpdates => [...prevUpdates, 'friend_request_sent']);
+      showAlert('Success', ['Friend request sent'], 'success');
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      showAlert('Error', ['Failed to send friend request', error instanceof Error ? error.message : 'Unknown error'], 'error');
+    }
+  };
+
+  // Update the remove friend handler
+  const handleRemoveFriend = async (friendUsername: string) => {
+    try {
+      await handlers.users.removeFriend(username || '', friendUsername);
+      setUpdates(prevUpdates => [...prevUpdates, 'friend_removed']);
+      setSelectedFriend(null);
+      showAlert('Success', ['Friend removed successfully'], 'success');
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      showAlert('Error', ['Failed to remove friend', error instanceof Error ? error.message : 'Unknown error'], 'error');
+    }
+  };
 
   return (
     // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
@@ -309,39 +376,10 @@ export default function Friends() {
                   >
                     <Avatar sx={{ mr: 2, width: 24, height: 24, fontSize: '12px' }}>{request.first_name ? request.first_name[0] : '?'}</Avatar>
                     <ListItemText primary={`${request.first_name || ''} ${request.last_name || ''}`.trim() || 'Unknown User'} secondary={request.username} />
-                    <IconButton color="success" size="small" onClick={() => {
-                      handlers.users.acceptFriendRequest(username || '', request.username || '')
-                        .then(() => {
-                          setUpdates(prevUpdates => [...prevUpdates, 'friend_request_accepted']);
-                          // Refresh both friends and requests lists
-                          handlers.users.getFriends(username || '')
-                            .then(response => {
-                              if (response && response.data) {
-                                setFriends(response.data.friends);
-                              }
-                            });
-                          handlers.users.getFriendRequests(username || '')
-                            .then(response => {
-                              if (response && response.data) {
-                                setFriendRequests(response.data.friend_requests);
-                              }
-                            });
-                        });
-                    }}>
+                    <IconButton color="success" size="small" onClick={() => handleAcceptFriendRequest(request.username)}>
                       <CheckIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
-                    <IconButton color="error" size="small" onClick={() => {
-                      handlers.users.rejectFriendRequest(username || '', request.username || '')
-                        .then(() => {
-                          // Refresh friend requests list
-                          handlers.users.getFriendRequests(username || '')
-                            .then(response => {
-                              if (response && response.data) {
-                                setFriendRequests(response.data.friend_requests);
-                              }
-                            });
-                        });
-                    }}>
+                    <IconButton color="error" size="small" onClick={() => handleRejectFriendRequest(request.username)}>
                       <CloseIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
                   </ListItemButton>
@@ -361,10 +399,7 @@ export default function Friends() {
                       primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
                       secondary={user.username}
                     />
-                    <IconButton color="primary" size="small" onClick={() => {
-                      handlers.users.sendFriendRequest(username || '', user.username || '')
-                      setUpdates(prevUpdates => [...prevUpdates, 'friend_request_sent']);
-                    }}>
+                    <IconButton color="primary" size="small" onClick={() => handleSendFriendRequest(user.username)}>
                       <PersonAddIcon sx={{ fontSize: '16px' }} />
                     </IconButton>
                   </ListItemButton>
@@ -425,10 +460,7 @@ export default function Friends() {
                       </>
                     )}
                   </Stack>
-                  <IconButton color="error" onClick={() => {
-                    handlers.users.removeFriend(username || '', selectedFriend.username || '')
-                    setUpdates(prevUpdates => [...prevUpdates, 'friend_removed']);
-                  }}>
+                  <IconButton color="error" onClick={() => handleRemoveFriend(selectedFriend.username)}>
                     <PersonRemoveIcon />
                   </IconButton>
                 </Box>
