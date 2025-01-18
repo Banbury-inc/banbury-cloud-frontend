@@ -86,10 +86,15 @@ export default function UploadProgress({ uploads }: UploadProgressProps) {
         }}
         PaperProps={{
           sx: {
-            bgcolor: '#1A1A1A',
-            width: '400px',
+            backgroundColor: '#000000',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
-          }
+            mt: 1,
+            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)',
+            '& .MuiTypography-root': {
+              color: '#ffffff',
+            },
+          },
         }}
       >
         <Box sx={{ p: 2 }}>

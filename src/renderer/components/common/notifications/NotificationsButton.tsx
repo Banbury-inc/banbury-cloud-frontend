@@ -170,10 +170,11 @@ export default function NotificationsButton({ }: {
         }}
         PaperProps={{
           sx: {
-            bgcolor: '#1A1A1A',
+            backgroundColor: '#000000',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
             width: '400px',
             maxHeight: '80vh',
-            borderRadius: '12px',
           }
         }}
       >
@@ -191,7 +192,8 @@ export default function NotificationsButton({ }: {
             top: 0,
             zIndex: 1,
             borderBottom: '1px solid rgba(255,255,255,0.1)',
-            bgcolor: 'rgba(54,54,54,255)',
+            bgcolor: 'rgba(31,31,31,255)',
+
           }}>
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
               Notifications
