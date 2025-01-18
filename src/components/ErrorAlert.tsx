@@ -9,17 +9,17 @@ interface ErrorAlertProps {
 
 export function ErrorAlert({ title, messages, variant = 'error' }: ErrorAlertProps) {
     const variantStyles = {
-        error: 'bg-red-50 text-red-700',
-        warning: 'bg-yellow-50 text-yellow-700',
-        success: 'bg-green-50 text-green-700',
-        info: 'bg-blue-50 text-blue-700'
+        error: 'bg-[#1f1f1f] text-white border border-white/10',
+        warning: 'bg-[#1f1f1f] text-white border border-white/10',
+        success: 'bg-[#1f1f1f] text-white border border-white/10',
+        info: 'bg-[#1f1f1f] text-white border border-white/10'
     }
 
     return (
         <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 rounded-md p-4 ${variantStyles[variant]}`}>
             <div className="flex">
                 <div className="flex-shrink-0">
-                    <XCircleIcon className="h-5 w-5" aria-hidden="true" />
+                    <XCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
                 </div>
                 <div className="ml-3">
                     <h3 className="text-sm font-medium">{title}</h3>
