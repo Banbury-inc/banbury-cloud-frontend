@@ -1,5 +1,5 @@
 import { XCircleIcon } from '@heroicons/react/20/solid'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ErrorAlertProps {
     title: string;
@@ -8,6 +8,13 @@ interface ErrorAlertProps {
 }
 
 export function ErrorAlert({ title, messages, variant = 'error' }: ErrorAlertProps) {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        setIsVisible(true);
+        return () => setIsVisible(false);
+    }, []);
+
     const variantStyles = {
         error: 'bg-[#1f1f1f] text-white border border-white/10',
         warning: 'bg-[#1f1f1f] text-white border border-white/10',
@@ -16,7 +23,15 @@ export function ErrorAlert({ title, messages, variant = 'error' }: ErrorAlertPro
     }
 
     return (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 rounded-md p-4 ${variantStyles[variant]}`}>
+        <div 
+            className={`
+                fixed top-4 right-4 z-50 rounded-md p-4 
+                transition-all duration-300 ease-in-out
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}
+                ${variantStyles[variant]}
+            `}
+            style={{ maxWidth: '400px' }}
+        >
             <div className="flex">
                 <div className="flex-shrink-0">
                     <XCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />

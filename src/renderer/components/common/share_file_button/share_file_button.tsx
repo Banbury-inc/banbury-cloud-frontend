@@ -11,6 +11,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import { CONFIG } from '../../../config/config';
+import { useError } from '../../../context/ErrorContext';
 
 interface ShareFileButtonProps {
   selectedFileNames: string[];
@@ -53,6 +54,7 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
   const [togglePublicSuccess, setTogglePublicSuccess] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [copyLinkSuccess, setCopyLinkSuccess] = useState(false);
+  const { showError } = useError();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -144,15 +146,25 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
     } catch (error) {
       console.error('Error sharing files:', error);
+      showError('Share Failed', ['Failed to share files with selected users.']);
       setIsSharing(false);
     }
   };
 
 
   const handleMakePublic = async () => {
-    const device_name = selectedFileInfo[0].device_name;
+    if (!selectedFileInfo || selectedFileInfo.length === 0) {
+      showError('Permission Change Failed', ['No file selected']);
+      return;
+    }
+
+    const device_name = selectedFileInfo[0]?.device_name;
+    if (!device_name) {
+      showError('Permission Change Failed', ['Device information not found']);
+      return;
+    }
+
     try {
-      // Wait for all share operations to complete
       await Promise.all(
         selectedFileNames.map(file =>
           neuranet.files.makeFilePublic(username, file, device_name)
@@ -160,21 +172,30 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
       );
       setTogglePublicSuccess(true);
 
-      // Close after showing success for 2 seconds
       setTimeout(() => {
         handleClose();
       }, 2000);
 
     } catch (error) {
       console.error('Error making file public:', error);
+      showError('Permission Change Failed', ['Failed to make file public.']);
     }
   };
 
 
   const handleMakePrivate = async () => {
-    const device_name = selectedFileInfo[0].device_name;
+    if (!selectedFileInfo || selectedFileInfo.length === 0) {
+      showError('Permission Change Failed', ['No file selected']);
+      return;
+    }
+
+    const device_name = selectedFileInfo[0]?.device_name;
+    if (!device_name) {
+      showError('Permission Change Failed', ['Device information not found']);
+      return;
+    }
+
     try {
-      // Wait for all share operations to complete
       await Promise.all(
         selectedFileNames.map(file =>
           neuranet.files.makeFilePrivate(username, file, device_name)
@@ -182,13 +203,13 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
       );
       setTogglePublicSuccess(true);
 
-      // Close after showing success for 2 seconds
       setTimeout(() => {
         handleClose();
       }, 2000);
 
     } catch (error) {
       console.error('Error making file private:', error);
+      showError('Permission Change Failed', ['Failed to make file private.']);
       setIsSharing(false);
     }
   };

@@ -199,13 +199,13 @@ export default function SyncButton() {
       >
         <SyncIcon fontSize="inherit" />
       </Button>
-      <ErrorAlert
+      {/* <ErrorAlert
         title="There were 2 errors with your submission"
         messages={[
           "Your password must be at least 8 characters",
           "Your password must include at least one pro wrestling finishing move"
         ]}
-      />
+      /> */}
 
       <Popover
         anchorEl={anchorEl}

@@ -9,6 +9,9 @@ import { AuthProvider } from "../context/AuthContext";
 import TitleBar from 'frameless-titlebar';
 import { BrowserWindow } from 'electron';
 import './index.css';
+import { ErrorProvider } from '../context/ErrorContext';
+import { ErrorAlert } from '../../components/ErrorAlert';
+import { useError } from '../context/ErrorContext';
 // Define the Platform type
 type Platform = 'win32' | 'linux' | 'darwin';
 
@@ -191,6 +194,20 @@ switch (currentPlatform) {
 import { TitleBarTheme } from "frameless-titlebar/dist/title-bar/typings";
 import { ipcRenderer } from 'electron';
 
+// Create a wrapper component to use the error context
+function ErrorWrapper() {
+  const { error } = useError();
+  
+  if (!error.show) return null;
+  
+  return (
+    <ErrorAlert 
+      title={error.title}
+      messages={error.messages}
+    />
+  );
+}
+
 export default function App(): JSX.Element {
 
   const handleClose = () => {
@@ -211,49 +228,31 @@ export default function App(): JSX.Element {
     // https://mui.com/customization/theming/
     //
     <ThemeProvider theme={theme}>
-      <div style={{ position: 'fixed', width: '100%' }}>
-        <TitleBar
-          theme={customTheme}
-          onClose={handleClose}
-          onMinimize={handleMinimize}
-          onMaximize={handleMaximize}
-        />
-      </div>
-
-      <CssBaseline />
-      <BrowserRouter>
-        <AuthProvider>
-          <Box
-            sx={{
-              backgroundColor: (theme) => theme.palette.background.default,
-            }}
-          >
-            {/*   <main>  */}
-            {/* <Signin /> */}
-            {/*   <Routes> */}
-            {/*     <Route path="/" element={<Signin />} /> */}
-            {/*     <Route path="/main" element={<Main />} /> */}
-            {/*     <Route path="/register" element={<Signup />} /> */}
-            {/*     <Route path="/login" element={<Signin />} /> */}
-            {/*     <Route path="/settings" element={<Settings />} /> */}
-            {/*     <Route path="/profile" element={<Profile />} /> */}
-            {/*   </Routes> */}
-            {/* </main> */}
-
-
-            <main>
-              <Login />
-              {/* <Routes> */}
-              {/*   <Route path="/" element={<Signin />} /> */}
-              {/*   <Route path="/login" element={<Signin />} /> */}
-              {/*   <Route path="/register" element={<Signup />} /> */}
-              {/* </Routes> */}
-            </main>
-            {/* <Main /> */}
-
-          </Box>
-        </AuthProvider>
-      </BrowserRouter>
+      <ErrorProvider>
+        <div style={{ position: 'fixed', width: '100%' }}>
+          <TitleBar
+            theme={customTheme}
+            onClose={handleClose}
+            onMinimize={handleMinimize}
+            onMaximize={handleMaximize}
+          />
+        </div>
+        <ErrorWrapper />
+        <CssBaseline />
+        <BrowserRouter>
+          <AuthProvider>
+            <Box
+              sx={{
+                backgroundColor: (theme) => theme.palette.background.default,
+              }}
+            >
+              <main>
+                <Login />
+              </main>
+            </Box>
+          </AuthProvider>
+        </BrowserRouter>
+      </ErrorProvider>
     </ThemeProvider>
   );
 }
