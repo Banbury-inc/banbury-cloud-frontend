@@ -82,38 +82,71 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
   };
 
   const handleCopyLink = async () => {
-    const file_id = selectedFileInfo[0]._id;
-    const link = `http://www.banbury.io/filedownload/${username}/${file_id}`;
-    navigator.clipboard.writeText(link);
+    if (selectedFileNames.length === 0) {
+      showAlert('No file selected', ['Please select one or more files to copy link'], 'warning');
+      return;
+    }
 
+    if (!selectedFileInfo || selectedFileInfo.length === 0) {
+      showAlert('Error', ['File information not found'], 'error');
+      return;
+    }
 
-    setCopyLinkSuccess(true);
+    const file_id = selectedFileInfo[0]?._id;
+    if (!file_id) {
+      showAlert('Error', ['File ID not found'], 'error');
+      return;
+    }
 
-    // Close after showing success for 2 seconds
-    setTimeout(() => {
-      handleClose();
-    }, 2000);
+    try {
+      const link = `http://www.banbury.io/filedownload/${username}/${file_id}`;
+      await navigator.clipboard.writeText(link);
+      setCopyLinkSuccess(true);
 
+      // Close after showing success for 2 seconds
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      showAlert('Error', ['Failed to copy link to clipboard'], 'error');
+    }
   };
 
   // Update search handler to handle the API response correctly
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    if (query.trim()) {
-      handlers.users.typeahead(query)
-        .then(response => {
-          if (response && response.data) {
-            setSearchResults(response.data.users || []);
-          } else {
-            setSearchResults([]);
-          }
-        })
-        .catch(error => {
-          console.error('Search failed:', error);
-          setSearchResults([]);
-        });
-    } else {
+    if (!query.trim()) {
       setSearchResults([]);
+      return;
+    }
+
+    try {
+      const response = await handlers.users.typeahead(query);
+      
+      if (!response) {
+        throw new Error('No response received from server');
+      }
+
+      if (!response.data?.users) {
+        throw new Error('Invalid response format');
+      }
+
+      setSearchResults(response.data.users);
+
+    } catch (error) {
+      console.error('Search failed:', error);
+      setSearchResults([]);
+      
+      // Determine error message based on error type
+      let errorMessage = 'Failed to search for users';
+      if (error instanceof TypeError) {
+        errorMessage = 'Network error while searching for users';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      showAlert('Search Error', [errorMessage], 'warning');
     }
   };
 
