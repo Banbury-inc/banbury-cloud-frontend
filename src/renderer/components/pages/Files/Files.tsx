@@ -67,6 +67,12 @@ import SyncButton from '../../common/sync_button/sync_button';
 import DownloadFileButton from '../../common/DownloadFileButton/DownloadFileButton';
 import DeleteFileButton from '../../common/DeleteFileBtton/DeleteFileButton';
 import { styled } from '@mui/material/styles';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import GridViewIcon from '@mui/icons-material/GridView';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -197,6 +203,15 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
+// Add view type enum and interface
+type ViewType = 'list' | 'grid' | 'large_grid' | 'large_list';
+
+interface ViewOption {
+  value: ViewType;
+  label: string;
+  icon: React.ReactNode;
+}
+
 export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
@@ -245,6 +260,8 @@ export default function Files() {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
+  const [viewType, setViewType] = useState<ViewType>('list');
+  const [viewMenuAnchor, setViewMenuAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -644,30 +661,6 @@ export default function Files() {
     setIsShareModalOpen(false);
   };
 
-  const old_uploads = [
-    {
-      filename: 'family_deer.mp4',
-      fileType: 'MP4',
-      progress: 13.5,
-      status: 'uploading' as 'uploading' | 'failed' | 'completed' | 'skipped',
-      totalSize: 200,
-      uploadedSize: 27,
-      timeRemaining: 21
-    },
-    // ... other uploads
-  ];
-
-  const old_downloads = [
-    {
-      filename: 'family_deer.mp4',
-      fileType: 'MP4',
-      progress: 13.5,
-      status: 'downloading' as 'downloading' | 'failed' | 'completed' | 'skipped',
-      totalSize: 200,
-      downloadedSize: 27,
-      timeRemaining: 21
-    },
-  ];
 
   // Add new state for downloads
   const [downloads, setDownloads] = useState<{
@@ -714,6 +707,27 @@ export default function Files() {
     // Cleanup interval on unmount
     return () => clearInterval(uploadUpdateInterval);
   }, []);
+
+  // Add view options
+  const viewOptions: ViewOption[] = [
+    { value: 'grid', label: 'Grid', icon: <GridViewIcon fontSize="small" /> },
+    { value: 'large_grid', label: 'Large grid', icon: <GridViewIcon /> },
+    { value: 'list', label: 'List', icon: <ViewListIcon fontSize="small" /> },
+  ];
+
+  // Add handlers
+  const handleViewMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setViewMenuAnchor(event.currentTarget);
+  };
+
+  const handleViewMenuClose = () => {
+    setViewMenuAnchor(null);
+  };
+
+  const handleViewChange = (newView: ViewType) => {
+    setViewType(newView);
+    handleViewMenuClose();
+  };
 
   return (
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -890,7 +904,28 @@ export default function Files() {
         </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
-            <FileBreadcrumbs />
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              px: 2, // Add padding to match breadcrumbs padding
+              borderBottom: 0,
+              borderColor: 'divider',
+              paddingRight: 4
+            }}>
+              <FileBreadcrumbs />
+              <Tooltip title="Change view">
+                <LoadingButton
+                  onClick={handleViewMenuOpen}
+                  sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
+                >
+                  {viewType.includes('grid') ? 
+                    <GridViewIcon fontSize="inherit" /> : 
+                    <ViewListIcon fontSize="inherit" />
+                  }
+                </LoadingButton>
+              </Tooltip>
+            </Box>
             {fileRows.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 5 }}>
                 <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
@@ -903,136 +938,118 @@ export default function Files() {
               </Box>
             ) : (
               <>
-                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
-                  <EnhancedTableHead
-                    numSelected={selected.length}
-                    order={order}
-                    orderBy={orderBy}
-                    onSelectAllClick={handleSelectAllClick}
-                    onRequestSort={handleRequestSort}
-                    rowCount={fileRows.length}
-                  />
-                  <TableBody>
-                    {isLoading
-                      ? Array.from(new Array(rowsPerPage)).map((_, index) => (
-                        <TableRow key={`skeleton-${index}`}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                      : stableSort(fileRows, getComparator(order, orderBy))
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((row, index) => {
-                          const isItemSelected = isSelected(row.id as number);
-                          const labelId = `enhanced-table-checkbox-${index}`;
+                {viewType.includes('grid') ? (
+                  <Grid container spacing={2} sx={{ p: 2 }}>
+                    {fileRows.map((row) => (
+                      <Grid item xs={viewType === 'grid' ? 3 : 4} key={row.id}>
+                        <Card
+                          sx={{
+                            cursor: 'pointer',
+                            '&:hover': { bgcolor: 'action.hover' },
+                          }}
+                          onClick={(event) => handleClick(event, row.id as number)}
+                        >
+                          <CardContent>
+                            <Typography variant="body2" noWrap>
+                              {row.file_name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {row.file_size}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
+                    <EnhancedTableHead
+                      numSelected={selected.length}
+                      order={order}
+                      orderBy={orderBy}
+                      onSelectAllClick={handleSelectAllClick}
+                      onRequestSort={handleRequestSort}
+                      rowCount={fileRows.length}
+                    />
+                    <TableBody>
+                      {isLoading
+                        ? Array.from(new Array(rowsPerPage)).map((_, index) => (
+                          <TableRow key={`skeleton-${index}`}>
+                            <TableCell padding="checkbox">
+                              <Skeleton variant="rectangular" width={24} height={24} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width="100%" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                        : stableSort(fileRows, getComparator(order, orderBy))
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((row, index) => {
+                            const isItemSelected = isSelected(row.id as number);
+                            const labelId = `enhanced-table-checkbox-${index}`;
 
-                          return (
-                            <TableRow
-                              hover
-                              onClick={(event) => handleClick(event, row.id as number)}
-                              role="checkbox"
-                              aria-checked={isItemSelected}
-                              tabIndex={-1}
-                              key={row.id}
-                              selected={isItemSelected}
-                              onMouseEnter={() => setHoveredRowId(row.id as number)} // Track hover state
-                              onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
-                            >
-                              <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
-                                {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
-                                  <Checkbox
-                                    color="primary"
-                                    size="small"
-                                    checked={isItemSelected}
-                                    inputProps={{ 'aria-labelledby': labelId }}
-                                  />
-                                ) : null}
-                              </TableCell>
-
-                              <TableCell
-                                sx={{
-                                  borderBottomColor: '#424242',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                                component="th"
-                                id={labelId}
-                                scope="row"
-                                padding="normal"
+                            return (
+                              <TableRow
+                                hover
+                                onClick={(event) => handleClick(event, row.id as number)}
+                                role="checkbox"
+                                aria-checked={isItemSelected}
+                                tabIndex={-1}
+                                key={row.id}
+                                selected={isItemSelected}
+                                onMouseEnter={() => setHoveredRowId(row.id as number)} // Track hover state
+                                onMouseLeave={() => setHoveredRowId(null)} // Clear hover state
                               >
-                                <ButtonBase
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    handleFileNameClick(row.id as number);
-                                  }}
-                                  style={{ textDecoration: 'none' }}
-                                >
-                                  {row.file_name}
-                                </ButtonBase>
-                              </TableCell>
+                                <TableCell sx={{ borderBottomColor: '#424242' }} padding="checkbox">
+                                  {hoveredRowId === row.id || isItemSelected ? ( // Only render Checkbox if row is hovered
+                                    <Checkbox
+                                      color="primary"
+                                      size="small"
+                                      checked={isItemSelected}
+                                      inputProps={{ 'aria-labelledby': labelId }}
+                                    />
+                                  ) : null}
+                                </TableCell>
 
-                              <TableCell
-                                align="left"
-                                padding="normal"
-                                sx={{
-                                  borderBottomColor: '#424242',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {row.file_size}
-                              </TableCell>
-
-                              {(!isCloudSync) && (
                                 <TableCell
-                                  align="left"
                                   sx={{
                                     borderBottomColor: '#424242',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                   }}
+                                  component="th"
+                                  id={labelId}
+                                  scope="row"
+                                  padding="normal"
                                 >
-                                  {row.kind}
+                                  <ButtonBase
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleFileNameClick(row.id as number);
+                                    }}
+                                    style={{ textDecoration: 'none' }}
+                                  >
+                                    {row.file_name}
+                                  </ButtonBase>
                                 </TableCell>
-                              )}
 
-                              {(!isCloudSync) && (
-                                <TableCell
-                                  align="left"
-                                  sx={{
-                                    borderBottomColor: '#424242',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}
-                                >
-                                  {row.device_name}
-                                </TableCell>
-                              )}
-
-                              {(!isCloudSync) && (
                                 <TableCell
                                   align="left"
                                   padding="normal"
@@ -1041,36 +1058,63 @@ export default function Files() {
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    color:
-                                      row.available === 'Available'
-                                        ? '#1DB954'
-                                        : row.available === 'Unavailable'
-                                          ? 'red'
-                                          : 'inherit', // Default color is 'inherit'
                                   }}
                                 >
-                                  {row.available}
+                                  {row.file_size}
                                 </TableCell>
-                              )}
 
-                              <TableCell
-                                align="left"
-                                padding="normal"
-                                sx={{
-                                  borderBottomColor: '#424242',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {row.is_public ? 'Public' : 'Private'}
-                              </TableCell>
+                                {(!isCloudSync) && (
+                                  <TableCell
+                                    align="left"
+                                    sx={{
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}
+                                  >
+                                    {row.kind}
+                                  </TableCell>
+                                )}
 
-                              {isCloudSync && (
+                                {(!isCloudSync) && (
+                                  <TableCell
+                                    align="left"
+                                    sx={{
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}
+                                  >
+                                    {row.device_name}
+                                  </TableCell>
+                                )}
+
+                                {(!isCloudSync) && (
+                                  <TableCell
+                                    align="left"
+                                    padding="normal"
+                                    sx={{
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      color:
+                                        row.available === 'Available'
+                                          ? '#1DB954'
+                                          : row.available === 'Unavailable'
+                                            ? 'red'
+                                            : 'inherit', // Default color is 'inherit'
+                                    }}
+                                  >
+                                    {row.available}
+                                  </TableCell>
+                                )}
+
                                 <TableCell
                                   align="left"
                                   padding="normal"
-                                  onClick={(e) => e.stopPropagation()}
                                   sx={{
                                     borderBottomColor: '#424242',
                                     whiteSpace: 'nowrap',
@@ -1078,103 +1122,119 @@ export default function Files() {
                                     textOverflow: 'ellipsis',
                                   }}
                                 >
-                                  <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    width: '75%',
-                                    position: 'relative',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
-                                    borderRadius: '2px',  // Optional: slight rounding of corners
-                                  }}>
-                                    <LinearProgress
-                                      variant="determinate"
-                                      value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
+                                  {row.is_public ? 'Public' : 'Private'}
+                                </TableCell>
+
+                                {isCloudSync && (
+                                  <TableCell
+                                    align="left"
+                                    padding="normal"
+                                    onClick={(e) => e.stopPropagation()}
+                                    sx={{
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}
+                                  >
+                                    <Box sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      width: '75%',
+                                      position: 'relative',
+                                      border: '1px solid rgba(255, 255, 255, 0.2)',  // Add subtle white border
+                                      borderRadius: '2px',  // Optional: slight rounding of corners
+                                    }}>
+                                      <LinearProgress
+                                        variant="determinate"
+                                        value={(Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0)}
+                                        sx={{
+                                          flexGrow: 1,
+                                          height: 16,
+                                          backgroundColor: 'transparent',
+                                          borderRadius: '1px',  // Match the outer border radius
+                                          '& .MuiLinearProgress-bar': {
+                                            backgroundColor: (theme) => {
+                                              const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
+                                              if (percentage >= 80) return '#1DB954';
+                                              if (percentage >= 50) return '#CD853F';
+                                              return '#FF4444';
+                                            }
+                                          }
+                                        }}
+                                      />
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          position: 'absolute',
+                                          width: '100%',
+                                          textAlign: 'center',
+                                          color: '#ffffff',
+                                          mixBlendMode: 'normal'
+                                        }}
+                                      >
+                                        {Array.isArray(row.device_ids) ?
+                                          `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` :
+                                          '0%'
+                                        }
+                                      </Typography>
+                                    </Box>
+                                  </TableCell>
+                                )}
+
+                                {isCloudSync && (
+                                  <TableCell
+                                    align="left"
+                                    padding="normal"
+                                    onClick={(e) => e.stopPropagation()}
+                                    sx={{
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}
+                                  >
+                                    <Rating
+                                      name={`priority-${row.id}`}
+                                      value={Number(row.file_priority)}
+                                      max={5}
+                                      onChange={(event, newValue) => handlePriorityChange(row, newValue)}
                                       sx={{
-                                        flexGrow: 1,
-                                        height: 16,
-                                        backgroundColor: 'transparent',
-                                        borderRadius: '1px',  // Match the outer border radius
-                                        '& .MuiLinearProgress-bar': {
-                                          backgroundColor: (theme) => {
-                                            const percentage = Array.isArray(row.device_ids) ? (row.device_ids.length / (devices?.length || 1)) * 100 : 0;
-                                            if (percentage >= 80) return '#1DB954';
-                                            if (percentage >= 50) return '#CD853F';
-                                            return '#FF4444';
+                                        fontSize: '16px',
+                                        '& .MuiRating-iconFilled': {
+                                          color: (theme) => {
+                                            const priority = Number(row.file_priority);
+                                            if (priority >= 4) return '#FF9500';
+                                            if (priority === 3) return '#FFCC00';
+                                            return '#1DB954';
                                           }
                                         }
                                       }}
                                     />
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        position: 'absolute',
-                                        width: '100%',
-                                        textAlign: 'center',
-                                        color: '#ffffff',
-                                        mixBlendMode: 'normal'
-                                      }}
-                                    >
-                                      {Array.isArray(row.device_ids) ?
-                                        `${((row.device_ids.length / (devices?.length || 1)) * 100).toFixed(2)}%` :
-                                        '0%'
-                                      }
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                              )}
+                                  </TableCell>
+                                )}
 
-                              {isCloudSync && (
-                                <TableCell
-                                  align="left"
-                                  padding="normal"
-                                  onClick={(e) => e.stopPropagation()}
-                                  sx={{
-                                    borderBottomColor: '#424242',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}
-                                >
-                                  <Rating
-                                    name={`priority-${row.id}`}
-                                    value={Number(row.file_priority)}
-                                    max={5}
-                                    onChange={(event, newValue) => handlePriorityChange(row, newValue)}
+                                {(!isCloudSync) && (
+                                  <TableCell
+                                    padding="normal"
+                                    align="right"
                                     sx={{
-                                      fontSize: '16px',
-                                      '& .MuiRating-iconFilled': {
-                                        color: (theme) => {
-                                          const priority = Number(row.file_priority);
-                                          if (priority >= 4) return '#FF9500';
-                                          if (priority === 3) return '#FFCC00';
-                                          return '#1DB954';
-                                        }
-                                      }
+                                      borderBottomColor: '#424242',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
                                     }}
-                                  />
-                                </TableCell>
-                              )}
-
-                              {(!isCloudSync) && (
-                                <TableCell
-                                  padding="normal"
-                                  align="right"
-                                  sx={{
-                                    borderBottomColor: '#424242',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}
-                                >
-                                  {row.date_uploaded}
-                                </TableCell>
-                              )}
-                            </TableRow>
-                          );
-                        })}
-                  </TableBody>
-                </Table>
-                </TableContainer>
+                                  >
+                                    {row.date_uploaded}
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            );
+                          })}
+                    </TableBody>
+                  </Table>
+                  </TableContainer>
+                )}
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
@@ -1196,6 +1256,35 @@ export default function Files() {
         fullWidth
       >
       </Dialog>
+      <Menu
+        anchorEl={viewMenuAnchor}
+        open={Boolean(viewMenuAnchor)}
+        onClose={handleViewMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        {viewOptions.map((option) => (
+          <MenuItem
+            key={option.value}
+            onClick={() => handleViewChange(option.value)}
+            selected={viewType === option.value}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {option.icon}
+              {option.label}
+              {viewType === option.value && (
+                <Box component="span" sx={{ ml: 1 }}>✓</Box>
+              )}
+            </Box>
+          </MenuItem>
+        ))}
+      </Menu>
     </Box>
   );
 }
