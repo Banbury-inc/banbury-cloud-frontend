@@ -944,11 +944,12 @@ export default function Files() {
               <Box sx={{ flexGrow: 1 }}>
                 <FileBreadcrumbs />
               </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 2 }}>
               <Tooltip title="Change view">
-                <Button
-                  onClick={handleViewMenuOpen}
-                  size="small"
-                  sx={{ paddingLeft: '4px', paddingRight: 3, minWidth: '30px' }}
+                  <Button
+                    onClick={handleViewMenuOpen}
+                    size="small"
+                    sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
                 >
                   {viewType.includes('grid') ? 
                     <GridViewIcon fontSize="inherit" /> : 
@@ -956,6 +957,7 @@ export default function Files() {
                   }
                 </Button>
               </Tooltip>
+              </Box>
               <StyledMenu
                 anchorEl={viewMenuAnchor}
                 open={Boolean(viewMenuAnchor)}
