@@ -737,9 +737,9 @@ export default function Files() {
 
   // Add view options
   const viewOptions: ViewOption[] = [
+    { value: 'list', label: 'List', icon: <ViewListIcon fontSize="small" /> },
     { value: 'grid', label: 'Grid', icon: <GridViewIcon fontSize="small" /> },
     { value: 'large_grid', label: 'Large grid', icon: <GridViewIcon /> },
-    { value: 'list', label: 'List', icon: <ViewListIcon fontSize="small" /> },
   ];
 
   // Add handlers
@@ -1017,7 +1017,7 @@ export default function Files() {
                       {fileRows.map((row) => {
                         const isItemSelected = isSelected(row.id as number);
                         return (
-                          <Grid item xs={viewType === 'grid' ? 3 : 4} key={row.id}>
+                          <Grid item xs={viewType === 'grid' ? 2.4 : 4} key={row.id}>
                             <Card
                               sx={{
                                 cursor: 'pointer',
