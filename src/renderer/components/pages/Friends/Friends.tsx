@@ -87,7 +87,7 @@ export default function Friends() {
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isLoadingFriendInfo, setIsLoadingFriendInfo] = useState(false);
   const { showAlert } = useAlert();
-  const [friendListWidth, setFriendListWidth] = useState(250);
+  const [friendListWidth, setFriendListWidth] = useState(350);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
@@ -226,7 +226,7 @@ export default function Friends() {
     try {
       await handlers.users.acceptFriendRequest(username || '', requestUsername);
       setUpdates(prevUpdates => [...prevUpdates, 'friend_request_accepted']);
-      
+
       // Refresh both friends and requests lists
       const [friendsResponse, requestsResponse] = await Promise.all([
         handlers.users.getFriends(username || ''),
@@ -345,9 +345,9 @@ export default function Friends() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
-        <Stack 
-          sx={{ 
-            position: 'relative', 
+        <Stack
+          sx={{
+            position: 'relative',
             width: `${friendListWidth}px`,
             flexShrink: 0,
             transition: isDragging ? 'none' : 'width 0.3s ease',
@@ -355,9 +355,9 @@ export default function Friends() {
             borderColor: 'divider',
           }}
         >
-          <Card variant="outlined" sx={{ 
-            height: '100%', 
-            width: '100%', 
+          <Card variant="outlined" sx={{
+            height: '100%',
+            width: '100%',
             overflow: 'hidden',
             borderLeft: 0,
             borderRight: 0,
@@ -493,9 +493,9 @@ export default function Friends() {
           />
         </Stack>
 
-        <Card variant="outlined" sx={{ 
+        <Card variant="outlined" sx={{
           flexGrow: 1,
-          height: '100%', 
+          height: '100%',
           overflow: 'auto',
           borderLeft: 0,
           borderRadius: 0,
