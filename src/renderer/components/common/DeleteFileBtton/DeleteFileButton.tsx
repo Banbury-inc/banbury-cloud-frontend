@@ -1,7 +1,7 @@
 import { neuranet } from "../../../neuranet";
 import { useAuth } from "../../../context/AuthContext";
 import { useAlert } from "../../../context/AlertContext";
-import { Button } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import React from "react";
 import { handlers } from "../../../handlers";
@@ -83,11 +83,13 @@ export default function DeleteFileButton({
   };
 
   return (
-    <Button
-      onClick={handleDeleteClick}
-      sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
+    <Tooltip title="Delete">
+      <Button
+        onClick={handleDeleteClick}
+        sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
     >
-      <DeleteIcon fontSize="inherit" />
-    </Button>
+        <DeleteIcon fontSize="inherit" />
+      </Button>
+    </Tooltip>
   );
 }

@@ -2,22 +2,40 @@ import { neuranet } from "../../../neuranet";
 import { useAuth } from "../../../context/AuthContext";
 
 export const getSyncFolders = async (devices: any[], username: string) => {
-    const deviceId = await neuranet.device.getDeviceId(username || 'default');
-    const device = devices?.find((device) => device._id === deviceId);
-    const scannedFolders = device?.scanned_folders || [];
+    try {
+        if (!Array.isArray(devices)) {
+            throw new Error('Invalid devices array provided');
+        }
 
-    // Get scan progress from device if available
-    const scanProgress = device?.scan_progress || {};
+        const deviceId = await neuranet.device.getDeviceId(username || 'default');
+        if (!deviceId) {
+            throw new Error('Failed to retrieve device ID');
+        }
 
-    // Transform scanned folders into the required format
-    const syncingFiles = scannedFolders.map((folder: any) => ({
-        filename: folder,
-        progress: scanProgress[folder] || 100,
-        speed: scanProgress[folder] < 100 ? 'Scanning...' : 'Synced'
-    }));
+        const device = devices.find((device) => device._id === deviceId);
+        if (!device) {
+            throw new Error(`Device not found for ID: ${deviceId}`);
+        }
 
-    return {
-        syncingFiles,
-        recentlyChanged: []
-    };
+        const scannedFolders = device.scanned_folders || [];
+        const scanProgress = device.scan_progress || {};
+
+        const syncingFiles = scannedFolders.map((folder: any) => ({
+            filename: folder,
+            progress: scanProgress[folder] || 100,
+            speed: scanProgress[folder] < 100 ? 'Scanning...' : 'Synced'
+        }));
+
+        return {
+            syncingFiles,
+            recentlyChanged: []
+        };
+    } catch (error) {
+        console.error('Error in getSyncFolders:', error);
+        return {
+            syncingFiles: [],
+            recentlyChanged: [],
+            error: error instanceof Error ? error.message : 'An unknown error occurred'
+        };
+    }
 };

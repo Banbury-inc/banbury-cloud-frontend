@@ -729,7 +729,6 @@ export default function Files() {
                 </Tooltip>
               </Grid>
               <Grid item paddingRight={1}>
-                <Tooltip title="Download">
                   <DownloadFileButton
                     selectedFileNames={selectedFileNames}
                     selectedFileInfo={selectedFileInfo}
@@ -741,11 +740,9 @@ export default function Files() {
                     setTasks={setTasks}
                     websocket={websocket as WebSocket}
                   />
-                </Tooltip>
               </Grid>
 
               <Grid item paddingRight={1}>
-                <Tooltip title="Delete">
                   <DeleteFileButton
                     selectedFileNames={selectedFileNames}
                     global_file_path={global_file_path || ''}
@@ -762,7 +759,6 @@ export default function Files() {
                     setTasks={setTasks}
                     websocket={websocket as WebSocket}
                   />
-                </Tooltip>
               </Grid>
               <Grid item paddingRight={1} paddingLeft={0}>
                 <Tooltip title="Add to Sync">

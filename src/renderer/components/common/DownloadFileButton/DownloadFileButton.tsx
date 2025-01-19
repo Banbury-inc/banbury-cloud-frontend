@@ -1,7 +1,7 @@
 import { neuranet } from "../../../neuranet";
 import { useAuth } from "../../../context/AuthContext";
 import { useAlert } from "../../../context/AlertContext";
-import { Button } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import DownloadIcon from '@mui/icons-material/Download';
 import React from "react";
 import { handlers } from "../../../handlers";
@@ -94,12 +94,14 @@ export default function DownloadFileButton({
   };
 
   return (
-    <Button
-      onClick={handleDownloadClick}
-    //   disabled={selectedFileNames.length === 0}
+    <Tooltip title="Download">
+      <Button
+        onClick={handleDownloadClick}
+        //   disabled={selectedFileNames.length === 0}
       sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
     >
-      <DownloadIcon fontSize="inherit" />
-    </Button>
+        <DownloadIcon fontSize="inherit" />
+      </Button>
+    </Tooltip>
   );
 }

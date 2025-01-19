@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress, IconButton } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, LinearProgress, IconButton, Tooltip } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
@@ -192,13 +192,14 @@ export default function SyncButton() {
         multiple
         onChange={handleFolderSelect}
       />
-
-      <Button
-        onClick={handleClick}
-        sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
+      <Tooltip title="Sync">
+        <Button
+          onClick={handleClick}
+          sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
-        <SyncIcon fontSize="inherit" />
-      </Button>
+          <SyncIcon fontSize="inherit" />
+        </Button>
+      </Tooltip>
       {/* <ErrorAlert
         title="There were 2 errors with your submission"
         messages={[

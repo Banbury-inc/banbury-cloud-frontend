@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch } from '@mui/material';
+import { Button, Popover, Box, Typography, Stack, Autocomplete, TextField, Chip, Paper, Badge, CircularProgress, Switch, Tooltip } from '@mui/material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -250,12 +250,14 @@ export default function ShareFileButton({ selectedFileNames, selectedFileInfo, o
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
+      <Tooltip title="Share">
+        <Button
+          onClick={handleClick}
+          sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
       >
         <ShareOutlinedIcon fontSize="inherit" />
       </Button>
+      </Tooltip>
       <Popover
         anchorEl={anchorEl}
         open={open}
