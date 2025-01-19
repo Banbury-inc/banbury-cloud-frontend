@@ -935,12 +935,14 @@ export default function Files() {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              px: 2, // Add padding to match breadcrumbs padding
+              p: 2,
               borderBottom: 0,
               borderColor: 'divider',
-              paddingRight: 4
+              minHeight: 48
             }}>
-              <FileBreadcrumbs />
+              <Box sx={{ flexGrow: 1 }}>
+                <FileBreadcrumbs />
+              </Box>
               <Tooltip title="Change view">
                 <Button
                   onClick={handleViewMenuOpen}
