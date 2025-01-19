@@ -31,7 +31,7 @@ export function FileBreadcrumbs() {
       </Link>
       {pathSegments.length > 0 && (
         <>
-          <span style={{ margin: '0 8px' }}>/</span>
+          <span style={{ margin: '0 4px' }}>/</span>
           <Breadcrumbs aria-label="breadcrumb" separator="/">
             {pathSegments.map((segment, index) => {
               const pathUpToSegment = pathSegments.slice(0, index + 1).join('/');

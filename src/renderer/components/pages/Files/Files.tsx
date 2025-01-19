@@ -935,7 +935,8 @@ export default function Files() {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              p: 2,
+              pl: 2,
+              pr: 2,
               borderBottom: 0,
               borderColor: 'divider',
               minHeight: 48
@@ -947,7 +948,7 @@ export default function Files() {
                 <Button
                   onClick={handleViewMenuOpen}
                   size="small"
-                  sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
+                  sx={{ paddingLeft: '4px', paddingRight: 3, minWidth: '30px' }}
                 >
                   {viewType.includes('grid') ? 
                     <GridViewIcon fontSize="inherit" /> : 
