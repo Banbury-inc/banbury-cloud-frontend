@@ -38,7 +38,7 @@ export default function Settings() {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       } else {
-        showAlert('Warning', [`Section "${sectionId}" not found`], 'warning');
+        // showAlert('Warning', [`Section "${sectionId}" not found`], 'warning');
       }
     } catch (error) {
       console.error('Error navigating to section:', error);
