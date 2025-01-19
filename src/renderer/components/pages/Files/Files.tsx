@@ -35,7 +35,7 @@ import { readdir, stat } from 'fs/promises';
 import isEqual from 'lodash/isEqual';
 import os from 'os';
 import path, { join } from 'path';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { handlers } from '../../../handlers';
 import { neuranet } from '../../../neuranet';
@@ -66,6 +66,7 @@ import NotificationsButton from '../../common/notifications/NotificationsButton'
 import SyncButton from '../../common/sync_button/sync_button';
 import DownloadFileButton from '../../common/DownloadFileButton/DownloadFileButton';
 import DeleteFileButton from '../../common/DeleteFileBtton/DeleteFileButton';
+import { styled } from '@mui/material/styles';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -96,7 +97,35 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'date_uploaded', numeric: true, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
 
-
+const ResizeHandle = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  right: -4,
+  top: 0,
+  bottom: 0,
+  width: 8,
+  cursor: 'col-resize',
+  zIndex: 1000,
+  '&:hover': {
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 4,
+      width: 2,
+      backgroundColor: theme.palette.primary.main,
+    }
+  },
+  '&.dragging::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 4,
+    width: 2,
+    backgroundColor: theme.palette.primary.main,
+  }
+}));
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -213,6 +242,41 @@ export default function Files() {
   } = useAuth();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState('');
+  const [fileTreeWidth, setFileTreeWidth] = useState(250);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(0);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const deltaX = e.clientX - dragStartX.current;
+        const newWidth = Math.max(100, Math.min(600, dragStartWidth.current + deltaX));
+        setFileTreeWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = fileTreeWidth;
+  };
 
   const getSelectedFileNames = () => {
     return selected
@@ -222,8 +286,6 @@ export default function Files() {
       })
       .filter((file_name) => file_name !== null); // Filter out any null values if a file wasn't found
   };
-
-
 
   // useEffect(() => {
   //   const fetchAndUpdateDevices = async () => {
@@ -251,8 +313,6 @@ export default function Files() {
   //   fetchAndUpdateDevices();
   // }, [username, disableFetch, updates, global_file_path]);
 
-
-
   const { isLoading, allFiles, fileRows, setAllFiles } = newUseFileData(
     username,
     disableFetch,
@@ -270,7 +330,6 @@ export default function Files() {
   useEffect(() => {
 
   }, [files]);
-
 
   useEffect(() => {
     const fetchAndUpdateDevices = async () => {
@@ -293,10 +352,6 @@ export default function Files() {
     fetchAndUpdateDevices();
 
   }, []);
-
-
-
-
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof DatabaseData) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -449,7 +504,6 @@ export default function Files() {
 
   const [selectedfiles, setSelectedFiles] = useState<readonly number[]>([]);
 
-
   const handleAddDeviceClick = async () => {
     // Here, we are specifically adding the task after the device has been created
     // Because the database will not know what device to add it to, as the device does not
@@ -485,9 +539,6 @@ export default function Files() {
 
   const [backHistory, setBackHistory] = useState<any[]>([]);
   const [forwardHistory, setForwardHistory] = useState<any[]>([]);
-
-
-
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -537,7 +588,6 @@ export default function Files() {
   const handlePriorityChange = async (row: any, newValue: number | null) => {
     if (newValue === null) return;
 
-
     let task_description = 'Updating File Priority';
     let taskInfo = await neuranet.sessions.addTask(username ?? '', task_description, tasks, setTasks);
     setTaskbox_expanded(true);
@@ -550,9 +600,6 @@ export default function Files() {
       let task_result = await neuranet.sessions.completeTask(username ?? '', taskInfo, tasks, setTasks);
       setUpdates(updates + 1);
     }
-
-
-
   };
 
   const isCloudSync = global_file_path?.includes('Cloud Sync') ?? false;
@@ -584,7 +631,6 @@ export default function Files() {
       console.error('Error fetching user info:', error);
     }
   };
-
 
   useEffect(() => {
     fetchUserInfo();
@@ -623,10 +669,6 @@ export default function Files() {
       timeRemaining: 21
     },
   ];
-
-
-
-
 
   // Add new state for downloads
   const [downloads, setDownloads] = useState<{
@@ -675,7 +717,6 @@ export default function Files() {
   }, []);
 
   return (
-    // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
       <Card variant="outlined" sx={{ borderTop: 0, borderLeft: 0, borderBottom: 0 }}>
         <CardContent sx={{ paddingBottom: '2px !important', paddingTop: '46px' }}>
@@ -814,21 +855,39 @@ export default function Files() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-        <Stack>
+        <Stack 
+          sx={{ 
+            position: 'relative', 
+            width: `${fileTreeWidth}px`,
+            flexShrink: 0,
+            transition: isDragging ? 'none' : 'width 0.3s ease',
+          }}
+        >
           <Box display="flex" flexDirection="column" height="100%">
             <Card
               variant="outlined"
-              sx={{ flexGrow: 0, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
+              sx={{ 
+                flexGrow: 0, 
+                height: '100%', 
+                overflow: 'hidden', 
+                borderLeft: 0, 
+                borderRight: 0,
+                width: '100%'
+              }}
             >
               <CardContent>
                 <Grid container spacing={0} sx={{ flexGrow: 0, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
-                  <Grid item>
+                  <Grid item sx={{ width: '100%' }}>
                     <FileTreeView />
                   </Grid>
                 </Grid>
               </CardContent>
             </Card>
           </Box>
+          <ResizeHandle
+            className={isDragging ? 'dragging' : ''}
+            onMouseDown={handleMouseDown}
+          />
         </Stack>
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
