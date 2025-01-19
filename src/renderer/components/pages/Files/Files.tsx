@@ -273,13 +273,26 @@ export default function Files() {
 
 
   useEffect(() => {
-    let new_devices = fetchDeviceData(username || '', disableFetch, global_file_path || '', {
-      setFirstname,
-      setLastname,
-      setDevices,
-    });
+    const fetchAndUpdateDevices = async () => {
+      const new_devices = await fetchDeviceData(
+        username || '',
+        disableFetch,
+        global_file_path || '',
+        {
+          setFirstname,
+          setLastname,
+          setDevices,
+        },
+      );
 
-  }, [devices]);
+      if (new_devices) {
+        setDevices(new_devices);
+      }
+    };
+
+    fetchAndUpdateDevices();
+
+  }, []);
 
 
 
@@ -766,18 +779,14 @@ export default function Files() {
                 </Tooltip>
               </Grid>
               <Grid item paddingRight={1}>
-                <Tooltip title="Scan">
                   <SyncButton />
-                </Tooltip>
               </Grid>
               <Grid item paddingRight={1}>
-                <Tooltip title="Share File">
                   <ShareFileButton
                     selectedFileNames={selectedFileNames}
                     selectedFileInfo={selectedFileInfo}
                     onShare={() => handleShareModalOpen(selectedFileNames[0])}
                   />
-                </Tooltip>
               </Grid>
             </Grid>
             <Grid container justifyContent="flex-end" alignItems="flex-end">
