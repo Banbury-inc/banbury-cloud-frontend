@@ -479,7 +479,6 @@ export default function Shared() {
   console.log('Shared files in table:', sharedFiles);
 
   return (
-    // <Box sx={{ width: '100%', pl: 4, pr: 4, mt: 0, pt: 5 }}>
     <Box sx={{ width: '100%', pt: 0 }}>
       <Card variant="outlined" sx={{ borderTop: 0, borderLeft: 0, borderBottom: 0 }}>
         <CardContent sx={{ paddingBottom: '2px !important', paddingTop: '46px' }}>
@@ -529,7 +528,51 @@ export default function Shared() {
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
-            {sharedFiles.length === 0 ? (
+            {isLoading ? (
+              <Box sx={{ width: '100%', mb: 2 }}>
+                <LinearProgress />
+                <TableContainer>
+                  <Table aria-labelledby="tableTitle" size="small" stickyHeader>
+                    <TableBody>
+                      {Array.from(new Array(rowsPerPage)).map((_, index) => (
+                        <TableRow key={`skeleton-${index}`}>
+                          <TableCell padding="checkbox">
+                            <Skeleton variant="rectangular" width={24} height={24} />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Skeleton variant="circular" width={20} height={20} sx={{ mr: 1 }} />
+                              <Skeleton variant="text" width={200} />
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={60} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={80} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="rectangular" width={100} height={24} sx={{ borderRadius: 1 }} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={120} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={100} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={140} />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton variant="text" width={140} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            ) : sharedFiles.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 5 }}>
                 <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
                 <Typography variant="h5" color="textSecondary">
@@ -541,43 +584,18 @@ export default function Shared() {
               </Box>
             ) : (
               <>
-                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
-                  <EnhancedTableHead
-                    numSelected={selected.length}
-                    order={order}
-                    orderBy={orderBy}
-                    onSelectAllClick={handleSelectAllClick}
-                    onRequestSort={handleRequestSort}
-                    rowCount={sharedFiles.length}
-                  />
-                  <TableBody>
-                    {isLoading
-                      ? Array.from(new Array(rowsPerPage)).map((_, index) => (
-                        <TableRow key={`skeleton-${index}`}>
-                          <TableCell padding="checkbox">
-                            <Skeleton variant="rectangular" width={24} height={24} />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton variant="text" width="100%" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                      : stableSort(sharedFiles, getComparator(order, orderBy))
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
+                  <Table aria-labelledby="tableTitle" size="small" stickyHeader>
+                    <EnhancedTableHead
+                      numSelected={selected.length}
+                      order={order}
+                      orderBy={orderBy}
+                      onSelectAllClick={handleSelectAllClick}
+                      onRequestSort={handleRequestSort}
+                      rowCount={sharedFiles.length}
+                    />
+                    <TableBody>
+                      {stableSort(sharedFiles, getComparator(order, orderBy))
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((row, index) => {
                           const isItemSelected = isSelected(row._id as string);
@@ -730,22 +748,22 @@ export default function Shared() {
                             </TableRow>
                           );
                         })}
-                  </TableBody>
-                </Table>
-                </TableContainer>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                  component="div"
-                  count={sharedFiles.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </>
-            )}
-          </CardContent>
-        </Card>
+                    </TableBody>
+                  </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                component="div"
+                count={sharedFiles.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
       </Stack>
     </Box>
   );

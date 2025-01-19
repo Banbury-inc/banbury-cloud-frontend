@@ -523,7 +523,41 @@ export default function Sync() {
         <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
-            {syncRows.length === 0 ? (
+            {isLoading ? (
+              <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}>
+                <Table aria-labelledby="tableTitle" size="small" stickyHeader>
+                  <EnhancedTableHead
+                    numSelected={selected.length}
+                    order={order}
+                    orderBy={orderBy}
+                    onSelectAllClick={handleSelectAllClick}
+                    onRequestSort={handleRequestSort}
+                    rowCount={syncRows.length}
+                  />
+                  <TableBody>
+                    {Array.from(new Array(rowsPerPage)).map((_, index) => (
+                      <TableRow key={`skeleton-${index}`}>
+                        <TableCell padding="checkbox">
+                          <Skeleton variant="rectangular" width={24} height={24} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width="100%" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : syncRows.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 5 }}>
                 <FolderOpenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
                 <Typography variant="h5" color="textSecondary">
