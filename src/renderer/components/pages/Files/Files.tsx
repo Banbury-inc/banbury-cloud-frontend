@@ -73,6 +73,8 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import LoadingButton from '@mui/lab/LoadingButton';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import FolderIcon from '@mui/icons-material/Folder';
 
 // Rename the interface to avoid collision with DOM Notification
 interface UserNotification {
@@ -482,7 +484,8 @@ export default function Files() {
       console.error('Error searching for file:', err);
     }
   };
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (event: React.MouseEvent<unknown> | React.ChangeEvent<HTMLInputElement>, id: number) => {
+    event.stopPropagation();
     const selectedIndex = selected.indexOf(id);
     let newSelected: readonly number[] = [];
 
@@ -939,28 +942,102 @@ export default function Files() {
             ) : (
               <>
                 {viewType.includes('grid') ? (
-                  <Grid container spacing={2} sx={{ p: 2 }}>
-                    {fileRows.map((row) => (
-                      <Grid item xs={viewType === 'grid' ? 3 : 4} key={row.id}>
-                        <Card
-                          sx={{
-                            cursor: 'pointer',
-                            '&:hover': { bgcolor: 'action.hover' },
-                          }}
-                          onClick={(event) => handleClick(event, row.id as number)}
-                        >
-                          <CardContent>
-                            <Typography variant="body2" noWrap>
-                              {row.file_name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {row.file_size}
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
+                  <Box sx={{ 
+                    height: 'calc(100vh - 180px)', 
+                    overflow: 'auto',
+                    px: 0.5 // Add slight padding to account for scrollbar
+                  }}>
+                    <Grid container spacing={2} sx={{ p: 2 }}>
+                      {fileRows.map((row) => {
+                        const isItemSelected = isSelected(row.id as number);
+                        return (
+                          <Grid item xs={viewType === 'grid' ? 3 : 4} key={row.id}>
+                            <Card
+                              sx={{
+                                cursor: 'pointer',
+                                '&:hover': { 
+                                  bgcolor: 'action.hover',
+                                  '& .selection-checkbox': {
+                                    opacity: 1
+                                  }
+                                },
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                position: 'relative',
+                                border: isItemSelected ? '2px solid' : '1px solid',
+                                borderColor: isItemSelected ? 'primary.main' : 'divider'
+                              }}
+                              onClick={(event) => handleClick(event, row.id as number)}
+                            >
+                              <Box
+                                className="selection-checkbox"
+                                sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  left: 8,
+                                  opacity: isItemSelected ? 1 : 0,
+                                  transition: 'opacity 0.2s',
+                                  zIndex: 1
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  onChange={(event) => handleClick(event, row.id as number)}
+                                  size="small"
+                                />
+                              </Box>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  p: 2,
+                                  bgcolor: 'background.default',
+                                  border: '1px solid',
+                                  borderColor: 'divider',
+                                  borderRadius: '8px',
+                                  m: 1.5,
+                                  minHeight: '120px'
+                                }}
+                              >
+                                {row.kind === 'Folder' ? (
+                                  <FolderIcon sx={{ fontSize: 60, color: 'primary.main' }} />
+                                ) : (
+                                  <InsertDriveFileIcon sx={{ fontSize: 60, color: 'text.secondary' }} />
+                                )}
+                              </Box>
+                              <CardContent sx={{ flexGrow: 1, pt: 1, px: 2, pb: 2 }}>
+                                <Typography variant="body2" noWrap>
+                                  {row.file_name}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  {row.file_size}
+                                </Typography>
+                                {!isCloudSync && (
+                                  <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                      color: row.available === 'Available' 
+                                        ? '#1DB954' 
+                                        : row.available === 'Unavailable' 
+                                          ? 'red' 
+                                          : 'inherit'
+                                    }}
+                                  >
+                                    {row.available}
+                                  </Typography>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </Box>
                 ) : (
                   <TableContainer sx={{ maxHeight: 'calc(100vh - 180px)' }}> <Table aria-labelledby="tableTitle" size="small" stickyHeader>
                     <EnhancedTableHead
