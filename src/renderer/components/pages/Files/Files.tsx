@@ -214,6 +214,30 @@ interface ViewOption {
   icon: React.ReactNode;
 }
 
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    backgroundColor: '#000000',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    marginTop: 8,
+    minWidth: 180,
+    boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.3)',
+    padding: '8px',
+    '& .MuiMenuItem-root': {
+      borderRadius: '8px',
+      padding: '8px 12px',
+      margin: '2px 0',
+      '&:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 0.08)'
+      },
+      '& .MuiSvgIcon-root': {
+        marginRight: 12,
+        fontSize: 20
+      }
+    }
+  }
+}));
+
 export default function Files() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
   const [order, setOrder] = useState<Order>('asc');
@@ -918,16 +942,53 @@ export default function Files() {
             }}>
               <FileBreadcrumbs />
               <Tooltip title="Change view">
-                <LoadingButton
+                <Button
                   onClick={handleViewMenuOpen}
+                  size="small"
                   sx={{ paddingLeft: '4px', paddingRight: '4px', minWidth: '30px' }}
                 >
                   {viewType.includes('grid') ? 
                     <GridViewIcon fontSize="inherit" /> : 
                     <ViewListIcon fontSize="inherit" />
                   }
-                </LoadingButton>
+                </Button>
               </Tooltip>
+              <StyledMenu
+                anchorEl={viewMenuAnchor}
+                open={Boolean(viewMenuAnchor)}
+                onClose={handleViewMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                {viewOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    onClick={() => handleViewChange(option.value)}
+                    selected={viewType === option.value}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      color: 'text.primary',
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.12)'
+                        }
+                      }
+                    }}
+                  >
+                    {option.icon}
+                    <Typography variant="body2">{option.label}</Typography>
+                  </MenuItem>
+                ))}
+              </StyledMenu>
             </Box>
             {fileRows.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 5 }}>
@@ -1333,35 +1394,6 @@ export default function Files() {
         fullWidth
       >
       </Dialog>
-      <Menu
-        anchorEl={viewMenuAnchor}
-        open={Boolean(viewMenuAnchor)}
-        onClose={handleViewMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        {viewOptions.map((option) => (
-          <MenuItem
-            key={option.value}
-            onClick={() => handleViewChange(option.value)}
-            selected={viewType === option.value}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {option.icon}
-              {option.label}
-              {viewType === option.value && (
-                <Box component="span" sx={{ ml: 1 }}>✓</Box>
-              )}
-            </Box>
-          </MenuItem>
-        ))}
-      </Menu>
     </Box>
   );
 }
