@@ -35,7 +35,7 @@ import { readdir, stat } from 'fs/promises';
 import isEqual from 'lodash/isEqual';
 import os from 'os';
 import path, { join } from 'path';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { handlers } from '../../../handlers';
 import { neuranet } from '../../../neuranet';
@@ -60,7 +60,7 @@ import Rating from '@mui/material/Rating';
 import { CONFIG } from '../../../config/config';
 import { fetchFileSyncData } from './utils/fetchFileSyncData';
 import NotificationsButton from '../../common/notifications/NotificationsButton';
-
+import { styled } from '@mui/material/styles';
 
 const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'file_name', numeric: false, label: 'Name', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
@@ -72,8 +72,6 @@ const getHeadCells = (isCloudSync: boolean): HeadCell[] => [
   { id: 'date_modified', numeric: false, label: 'Last Modified', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
   { id: 'date_uploaded', numeric: false, label: 'Date Uploaded', isVisibleOnSmallScreen: true, isVisibleNotOnCloudSync: true },
 ];
-
-
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -144,6 +142,35 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     </TableHead>
   );
 }
+
+const ResizeHandle = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  right: -4,
+  top: 0,
+  bottom: 0,
+  width: 8,
+  cursor: 'col-resize',
+  zIndex: 1000,
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 4,
+    width: 2,
+    backgroundColor: theme.palette.primary.main,
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+  },
+  '&:hover::after': {
+    opacity: 1,
+    transition: 'opacity 0.2s ease 0.15s',
+  },
+  '&.dragging::after': {
+    opacity: 1,
+    transition: 'none',
+  }
+}));
 
 export default function Shared() {
   const isSmallScreen = useMediaQuery('(max-width:960px)');
@@ -476,7 +503,42 @@ export default function Shared() {
     fetchUserInfo();
   }, [username]);
 
-  console.log('Shared files in table:', sharedFiles);
+
+  const [fileTreeWidth, setFileTreeWidth] = useState(250);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(0);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const deltaX = e.clientX - dragStartX.current;
+        const newWidth = Math.max(100, Math.min(600, dragStartWidth.current + deltaX));
+        setFileTreeWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = fileTreeWidth;
+  };
 
   return (
     <Box sx={{ width: '100%', pt: 0 }}>
@@ -509,23 +571,50 @@ export default function Shared() {
         </CardContent>
       </Card>
       <Stack direction="row" spacing={0} sx={{ width: '100%', height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
-        <Stack>
+        <Stack 
+          sx={{ 
+            position: 'relative', 
+            width: `${fileTreeWidth}px`,
+            flexShrink: 0,
+            transition: isDragging ? 'none' : 'width 0.3s ease',
+            borderRight: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Box display="flex" flexDirection="column" height="100%">
             <Card
               variant="outlined"
-              sx={{ flexGrow: 1, height: '100%', overflow: 'hidden', borderLeft: 0, borderRight: 0 }}
+              sx={{ 
+                flexGrow: 1, 
+                height: '100%', 
+                overflow: 'hidden', 
+                borderLeft: 0, 
+                borderRight: 0,
+                borderRadius: 0,
+              }}
             >
               <CardContent>
                 <Grid container spacing={4} sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
-                  <Grid item>
+                  <Grid item sx={{ width: '100%' }}>
                     <FileTreeView />
                   </Grid>
                 </Grid>
               </CardContent>
             </Card>
           </Box>
+          <ResizeHandle
+            className={isDragging ? 'dragging' : ''}
+            onMouseDown={handleMouseDown}
+          />
         </Stack>
-        <Card variant="outlined" sx={{ flexGrow: 1, height: '100%', width: '100%', overflow: 'hidden' }}>
+        <Card variant="outlined" sx={{ 
+          flexGrow: 1, 
+          height: '100%', 
+          width: '100%', 
+          overflow: 'hidden',
+          borderLeft: 0,
+          borderRadius: 0,
+        }}>
           <CardContent sx={{ height: '100%', width: '100%', overflow: 'hidden', padding: 0 }}>
             <FileBreadcrumbs />
             {isLoading ? (
