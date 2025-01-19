@@ -105,18 +105,7 @@ const ResizeHandle = styled('div')(({ theme }) => ({
   width: 8,
   cursor: 'col-resize',
   zIndex: 1000,
-  '&:hover': {
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: 4,
-      width: 2,
-      backgroundColor: theme.palette.primary.main,
-    }
-  },
-  '&.dragging::after': {
+  '&::after': {
     content: '""',
     position: 'absolute',
     top: 0,
@@ -124,6 +113,16 @@ const ResizeHandle = styled('div')(({ theme }) => ({
     left: 4,
     width: 2,
     backgroundColor: theme.palette.primary.main,
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+  },
+  '&:hover::after': {
+    opacity: 1,
+    transition: 'opacity 0.2s ease 0.15s',
+  },
+  '&.dragging::after': {
+    opacity: 1,
+    transition: 'none',
   }
 }));
 
